@@ -293,16 +293,13 @@ function osdb_cache_get($key, $default = null)
         $result = $query->fetchAll(PDO::FETCH_ASSOC);
         if (is_array($result) && isset($result[0])) {
             $raw = $result[0]['cache_value'];
-
-            if ($raw) {
-                $value = json_decode($raw, true);
-                if (!$value) {
-                    $value = $raw;
-                }
-                return $value;
-            } elseif ($result) {
-                return $result;
+            if ($raw === null) {
+                return $default;
             }
+            // What osdb_cache_set() stored is JSON (an empty list is "[]", 0 is "0"), anything else is returned as it is
+            $value = json_decode($raw, true);
+
+            return json_last_error() === JSON_ERROR_NONE ? $value : $raw;
         }
     }
     return $default;

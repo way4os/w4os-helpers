@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix: `directory_info.php` failed on its second visit (an empty cache was read back as text)
 - fix: `eventsparser.php` failed on the first event (`opensim_latin1_only()` did not exist)
 - new: `guide_source` in `helpers.ini` gives the destinations of the guide
 - fix: `guide.php` shows nothing behind the router, and its pages show what the file holds as text
