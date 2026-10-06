@@ -356,6 +356,8 @@ class OpenSim_Helpers_GridConfig
             'OPENSIM_DB' => true,
             'OPENSIM_ROUTES' => self::routes($settings),
             'OPENSIM_HELPERS_PATH' => $settings['base_path'],
+            // Whatever the theme folder of the grid holds replaces the templates and the assets of the helpers
+            'OPENSIM_THEME_PATH' => $o['theme_path'] ?? ($settings['dir'] ?? '') . '/theme',
         ];
         $given = [
             'OPENSIM_USE_UTC_TIME' => isset($o['use_utc_time']) ? self::flag($o['use_utc_time']) : null,

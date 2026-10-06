@@ -1,0 +1,28 @@
+{# The guide keeps its own markup (#guide), the viewers' panel and the css of assets/css/guide.css depend on it #}
+<div id="guide" class="block block-guide">
+    <div class="header">
+        {% if back is defined or items is defined %}
+            {% if back is defined and back %}<h2>{{ title }}</h2>{% else %}<h1>{{ title }}</h1>{% endif %}
+        {% else %}
+            <h1>{{ title }}</h1>
+        {% endif %}
+        {% if back is defined and back %}<a href="{{ back.url }}" class="back">{{ back.label }}</a>{% endif %}
+        <span class="disclaimer">{{ disclaimer }}</span>
+    </div>
+    {% if reason is defined %}<!-- {{ reason }} -->{% endif %}
+    {% if text is defined %}
+        <div class="error">{{ text }}</div>
+    {% else %}
+        <div class="list">
+            {% for item in items %}
+                <a href="{{ item.url }}">
+                    <div class="item">
+                        <img class="thumbnail" src="{{ item.image }}" alt="{{ item.name }}">
+                        <div class="name">{{ item.name }}</div>
+                        <div class="data">{{ item.data }}</div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

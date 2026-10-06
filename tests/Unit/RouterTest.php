@@ -106,12 +106,12 @@ describe('Router', function () {
         expect($script)->toBeNull();
     });
 
-    test('finds the file of a page script, which keeps its name in the URL', function () {
-        $_SERVER['REQUEST_URI'] = '/helpers/guide.php';
-        $cwd = getcwd();
-        $script = OpenSim_Helpers_Router::run();
-        chdir($cwd);
-
-        expect($script)->toBe(dirname(__DIR__, 2) . '/pages/guide.php');
+    test('serves as pages what were scripts, which keep their name in the URL', function () {
+        expect(OpenSim_Helpers_Router::match('/helpers/guide.php'))
+            ->toBe(['page', 'guide'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/directory_info.php'))
+            ->toBe(['page', 'directory_info'])
+            ->and(OpenSim_Helpers_Router::match('/guide', ['/guide' => 'guide.php']))
+            ->toBe(['page', 'guide']);
     });
 });

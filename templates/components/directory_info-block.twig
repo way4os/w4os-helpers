@@ -1,0 +1,9 @@
+{% extends 'components/block-component.twig' %}
+{% block body %}
+    <p class="totals"><strong>{{ summary[0] }}</strong>, {{ summary[1] }}, {{ summary[2] }}</p>
+    <ul class="grids">
+        {% for grid in grids %}
+            <li><a href="?gatekeeperURL={{ grid.url|url_encode }}">{{ grid.name }}</a> {{ grid.detail }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

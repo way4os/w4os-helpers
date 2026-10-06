@@ -4,7 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}{{ grid_name }}{% endblock %}</title>
-        {% block style %}<link rel="stylesheet" href="{{ assets_url }}css/page.css">{% endblock %}
+        {# The styles in the head, versioned by their date: the page is styled when it shows, and a browser keeps them #}
+        <link rel="stylesheet" href="{{ stylesheet }}">
+        {% for css in assets.css %}<link rel="stylesheet" href="{{ css }}">{% endfor %}
     </head>
     {# One layout for every page, left to right: what the grid is, the main content, what is new. A viewer shows the content
        alone, except on the splash page; a browser has the top bar and the footer too. #}
@@ -43,5 +45,6 @@
                 <span>{{ grid_name }}</span> · <span>{{ labels.powered_by }}</span>
             </footer>
         {% endif %}
+        {% for js in assets.js %}<script src="{{ js }}"></script>{% endfor %}
     </body>
 </html>

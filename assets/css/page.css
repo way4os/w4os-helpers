@@ -6,12 +6,12 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
 a { color: var(--accent); }
-/* Left to right: what the grid is, the main content, what is new. On a narrow window the main content comes first. */
-.layout { display: grid; gap: 1.25rem; max-width: 80rem; margin: 0 auto; padding: 1.25rem 1rem; }
-.layout.with-sidebars { grid-template-columns: minmax(0, 16rem) minmax(0, 1fr) minmax(0, 16rem); }
-.layout.content-only { max-width: 48rem; }
+/* Left to right, 3-6-3, over the whole width: what the grid is, the main content, what is new. On a narrow window the main
+   content comes first. */
+.layout { display: grid; gap: 1.25rem; padding: 1.25rem 1rem; }
+.layout.with-sidebars { grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); }
 main { min-width: 0; }
-body.viewer .layout { padding: .75rem; max-width: none; }
+body.viewer .layout { padding: .75rem; }
 @media (max-width: 52rem) {
     .layout.with-sidebars { grid-template-columns: minmax(0, 1fr); }
     .layout.with-sidebars main { order: -1; }

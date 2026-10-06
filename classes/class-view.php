@@ -105,23 +105,72 @@ class OpenSim_Helpers_View
             'menu' => $menu,
             'labels' => $labels,
             'assets_url' => self::assets_url(''),
+            'stylesheet' => self::asset_url('css/page.css'),
         ];
     }
 
     /**
-     * The template folders: the one of the operator (OPENSIM_TEMPLATES_DIR) first, so a template can be customized.
+     * The folder of the theme of the grid, where whatever it holds replaces the files of the helpers: `templates/` (layouts,
+     * pages, components) and `assets/` (css, js, images, fonts) with the same structure as theirs. None when the grid has
+     * none (OPENSIM_THEME_PATH, the `theme` folder of the grid by default).
+     *
+     * @return string|null
+     */
+    public static function theme_path()
+    {
+        return defined('OPENSIM_THEME_PATH') && is_dir(OPENSIM_THEME_PATH) ? rtrim(OPENSIM_THEME_PATH, '/') : null;
+    }
+
+    /**
+     * The template folders: the one of the theme first, so any template can be customized.
      *
      * @return string[]
      */
     public static function template_dirs()
     {
         $dirs = [];
-        if (defined('OPENSIM_TEMPLATES_DIR')) {
-            $dirs[] = OPENSIM_TEMPLATES_DIR;
+        if (($theme = self::theme_path()) !== null) {
+            $dirs[] = "$theme/templates";
         }
         $dirs[] = dirname(__DIR__) . '/templates';
 
         return $dirs;
+    }
+
+    /**
+     * The asset folders, the one of the theme first.
+     *
+     * @return string[]
+     */
+    public static function assets_dirs()
+    {
+        $dirs = [];
+        if (($theme = self::theme_path()) !== null) {
+            $dirs[] = "$theme/assets";
+        }
+        $dirs[] = dirname(__DIR__) . '/assets';
+
+        return $dirs;
+    }
+
+    /** The file of an asset: the one of the theme if it has it, else the one of the helpers, null when there is none. */
+    public static function asset_file($file)
+    {
+        foreach (self::assets_dirs() as $dir) {
+            if (is_file("$dir/$file")) {
+                return "$dir/$file";
+            }
+        }
+
+        return null;
+    }
+
+    /** The URL of an asset with its date, so a browser keeps it until it changes (css/page.css?v=1790000000). */
+    public static function asset_url($file)
+    {
+        $path = self::asset_file($file);
+
+        return self::assets_url($file) . ($path === null ? '' : '?v=' . filemtime($path));
     }
 
     /** Whether a template exists in one of the folders. */
@@ -137,7 +186,7 @@ class OpenSim_Helpers_View
     }
 
     /**
-     * Render a template (`template.twig`, `template-content-home.twig`). The blocks it shows are plain variables:
+     * Render a template (`layouts/base-layout.twig`, `pages/home-page.twig`). The blocks it shows are plain variables:
      * `{{ grid_info }}`, `{{ grid_status }}`, `{{ motd }}`... (the name of the block, dashes as underscores); only the ones
      * it uses are made. `render_block('grid-status', { title: 'Status' })` is there for what needs more.
      *
@@ -161,18 +210,24 @@ class OpenSim_Helpers_View
         // The blocks the template uses as variables
         preg_match_all('/\{\{-?\s*([a-z][a-z0-9_]*)\s*(?:\|[^}]*)?-?\}\}/', $loader->getSourceContext($template)->getCode(), $found);
         foreach (array_unique($found[1]) as $variable) {
-            $name = str_replace('_', '-', $variable);
-            if (!isset($context[$variable]) && OpenSim_Helpers_Blocks::exists($name)) {
+            $name = OpenSim_Helpers_Blocks::from_variable($variable);
+            if ($name !== null && !isset($context[$variable])) {
                 $context[$variable] = new \Twig\Markup(OpenSim_Helpers_Blocks::render($name, [], $dirs), 'UTF-8');
             }
         }
+        // The files the blocks need, for the layout to link in its head
+        $needed = OpenSim_Helpers_Blocks::assets();
+        $context['assets'] = [
+            'css' => array_map(fn($file) => self::asset_url("css/$file"), $needed['css']),
+            'js' => array_map(fn($file) => self::asset_url("js/$file"), $needed['js']),
+        ];
 
         return $twig->render($template, $context);
     }
 
     /**
-     * The main content of a page: the template of the grid for that page (`template-content-<slug>.twig`) if there is one,
-     * else the block of the same name (the guide, the search...), else nothing.
+     * The main content of a page: the template of the page (`pages/<slug>-page.twig`, the theme of the grid first) if there is
+     * one, else the block of the same name (the guide, the search...), else nothing.
      *
      * @param  string               $slug
      * @param  array<string,mixed>  $context
@@ -182,18 +237,18 @@ class OpenSim_Helpers_View
      */
     public static function main($slug, $context, $dirs = null, $args = [])
     {
-        if (self::has_template("template-content-$slug.twig", $dirs)) {
-            return self::render("template-content-$slug.twig", $context, $dirs);
+        if (self::has_template("pages/$slug-page.twig", $dirs)) {
+            return self::render("pages/$slug-page.twig", $context, $dirs);
         }
         if (OpenSim_Helpers_Blocks::exists($slug)) {
-            return OpenSim_Helpers_Blocks::render($slug, $args + ['title' => null], $dirs);
+            return OpenSim_Helpers_Blocks::render($slug, $args + ['level' => 'h1'], $dirs);
         }
 
         return null;
     }
 
     /**
-     * A page: the layout (`template.twig`) around the main content of the slug. Null when there is nothing to show for it.
+     * A page: the layout (`layouts/base-layout.twig`) around the main content of the slug. Null when there is nothing to show for it.
      *
      * @param  string               $slug
      * @param  array<string,mixed>  $extra what the page adds to the context
@@ -209,6 +264,6 @@ class OpenSim_Helpers_View
         }
         $context['main'] = new \Twig\Markup($main, 'UTF-8');
 
-        return self::render('template.twig', $context, $dirs);
+        return self::render('layouts/base-layout.twig', $context, $dirs);
     }
 }

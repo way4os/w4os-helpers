@@ -14,30 +14,23 @@
 	--guide-color-orange: #ff7f00;
 	--guide-color-text: white;
 }
-body {
-}
-
-body.destination-guide {
-	padding: 0;
-	margin: 0;
-	/* background: var(--guide-color-orange); */
-	height: 100vh; /* Set the height of the body to the full viewport height */
-	display: flex;
-	justify-content: center; /* Center the #guide div horizontally */
-	align-items: center; /* Center #guide both horizontally and vertically */
-	overflow: hidden; /* Hide any content that overflows outside #guide */
-}
-
+/* The guide is a page of the layout: in a viewer it is the whole panel, in a browser it is the main content */
 #guide {
 	font-family: "Liberation Sans", Arial, Roboto, "Helvetica", sans-serif;
 	background: var(--guide-color-orange);
 	color: var(--guide-color-text);
 	padding: 10px;
-	width: 100%; /* Allow #guide to fill the entire width of the viewport */
-	height: 100vh; /* Set the height of #guide to the full viewport height */
-	overflow: hidden; /* Hide any content that overflows outside #guide */
-	display: flex; /* Add this line to use flexbox layout */
-	flex-direction: column; /* Add this line to set the flex direction to column */
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	min-height: 20rem;
+	overflow: hidden;
+}
+body.viewer #guide {
+	height: 100vh;
+}
+body.viewer .layout {
+	padding: 0;
 }
 
 #guide .header {

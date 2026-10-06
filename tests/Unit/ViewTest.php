@@ -14,6 +14,15 @@ defined('OPENSIM_GRID_NAME') || define('OPENSIM_GRID_NAME', 'Alpha <b>World');
 defined('OPENSIM_LOGIN_URI') || define('OPENSIM_LOGIN_URI', 'http://127.0.0.1:9');
 defined('OPENSIM_MOTD') || define('OPENSIM_MOTD', 'Hello <USERNAME>\nSecond line');
 
+// The theme of the grid: what it holds replaces the files of the helpers
+$theme = sys_get_temp_dir() . '/theme-' . bin2hex(random_bytes(4));
+mkdir("$theme/templates/pages", 0o755, true);
+mkdir("$theme/assets/css", 0o755, true);
+file_put_contents("$theme/templates/pages/themed-page.twig", 'Themed {{ grid_name }}');
+file_put_contents("$theme/templates/pages/home-page.twig", 'Home of the theme');
+file_put_contents("$theme/assets/css/theme.css", 'body { color: red; }');
+defined('OPENSIM_THEME_PATH') || define('OPENSIM_THEME_PATH', $theme);
+
 const FIREFOX = 'Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0';
 const FIRESTORM = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) SecondLife/7.1.9 (Firestorm-Releasex64; default skin)';
 
@@ -23,6 +32,7 @@ function own_templates(array $files): array
     $own = sys_get_temp_dir() . '/tpl-' . bin2hex(random_bytes(4));
     mkdir($own, 0o755, true);
     foreach ($files as $name => $content) {
+        @mkdir(dirname("$own/$name"), 0o755, true);
         file_put_contents("$own/$name", $content);
     }
 
@@ -57,6 +67,33 @@ describe('The URLs of the helpers', function () {
             ->toBe('/helpers/assets/css/page.css')
             ->and(OpenSim_Helpers_View::block_url('grid-info'))
             ->toBe('/helpers/blocks/grid-info');
+    });
+});
+
+describe('The theme of the grid', function () {
+    test('replaces a template of the helpers, and adds its own', function () {
+        $_SERVER['HTTP_USER_AGENT'] = FIREFOX;
+        $themed = OpenSim_Helpers_View::page('themed');
+        $home = OpenSim_Helpers_View::page('home');
+
+        expect($themed)
+            ->toContain('Themed Alpha &lt;b&gt;World')
+            ->and($home)
+            ->toContain('Home of the theme')
+            ->not->toContain('class="grid-name"')
+            // The layout is still the one of the helpers
+            ->toContain('class="topbar"');
+    });
+
+    test('replaces an asset of the helpers, and adds its own, each with its date', function () {
+        expect(OpenSim_Helpers_View::asset_file('css/theme.css'))
+            ->toBe(OPENSIM_THEME_PATH . '/assets/css/theme.css')
+            ->and(OpenSim_Helpers_View::asset_file('css/page.css'))
+            ->toBe(dirname(__DIR__, 2) . '/assets/css/page.css')
+            ->and(OpenSim_Helpers_View::asset_file('css/nothing.css'))
+            ->toBeNull()
+            ->and(OpenSim_Helpers_View::asset_url('css/theme.css'))
+            ->toMatch('#^/helpers/assets/css/theme\.css\?v=\d+$#');
     });
 });
 
@@ -108,7 +145,7 @@ describe('The main content of a page', function () {
 
     test('is the template of the grid for that page when it has one', function () {
         $_SERVER['HTTP_USER_AGENT'] = FIRESTORM;
-        $dirs = own_templates(['template-content-motd.twig' => 'Mine {{ grid_name }}']);
+        $dirs = own_templates(['pages/motd-page.twig' => 'Mine {{ grid_name }}']);
         $html = OpenSim_Helpers_View::page('motd', [], $dirs);
 
         expect($html)->toContain('Mine Alpha &lt;b&gt;World')->not->toContain('Second line');
@@ -121,22 +158,22 @@ describe('The main content of a page', function () {
 
 describe('A template', function () {
     test('shows a block as a variable of its name, only the ones it uses are made', function () {
-        $dirs = own_templates(['template-content-x.twig' => '[{{ motd }}] [{{ grid_info }}]']);
-        $html = OpenSim_Helpers_View::render('template-content-x.twig', OpenSim_Helpers_View::context('x'), $dirs);
+        $dirs = own_templates(['pages/x-page.twig' => '[{{ motd }}] [{{ grid_info }}]']);
+        $html = OpenSim_Helpers_View::render('pages/x-page.twig', OpenSim_Helpers_View::context('x'), $dirs);
 
         expect($html)->toContain('block-motd')->toContain('block-grid-info')->not->toContain('block-grid-status');
     });
 
     test('keeps the markup of the grid name as text, not the one of a block', function () {
-        $dirs = own_templates(['template-content-x.twig' => '{{ grid_name }} {{ motd }}']);
-        $html = OpenSim_Helpers_View::render('template-content-x.twig', OpenSim_Helpers_View::context('x'), $dirs);
+        $dirs = own_templates(['pages/x-page.twig' => '{{ grid_name }} {{ motd }}']);
+        $html = OpenSim_Helpers_View::render('pages/x-page.twig', OpenSim_Helpers_View::context('x'), $dirs);
 
         expect($html)->toContain('Alpha &lt;b&gt;World')->toContain('<section class="block block-motd">');
     });
 
     test('can still ask a block with arguments, for what needs more', function () {
-        $dirs = own_templates(['template-content-x.twig' => "{{ render_block('motd', { title: 'News <i>' }) }}"]);
-        $html = OpenSim_Helpers_View::render('template-content-x.twig', OpenSim_Helpers_View::context('x'), $dirs);
+        $dirs = own_templates(['pages/x-page.twig' => "{{ render_block('motd', { title: 'News <i>' }) }}"]);
+        $html = OpenSim_Helpers_View::render('pages/x-page.twig', OpenSim_Helpers_View::context('x'), $dirs);
 
         expect($html)->toContain('News &lt;i&gt;');
     });

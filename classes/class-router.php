@@ -9,7 +9,7 @@
  *
  * What answers, by kind:
  * - the scripts are the API (query.php, register.php, currency.php...), at the root of the helpers under their well known
- *   names, and the pages that keep theirs (guide.php, directory_info.php, in pages/);
+ *   names; the pages that were scripts keep their name in the URL (guide.php, directory_info.php);
  * - the pages are all made by the same template, with a main content by page (`@home`, `@splash`, see OpenSim_Helpers_View);
  * - the blocks are pieces of pages, served alone as fragments to embed (`<prefix>/blocks/grid-status`);
  * - the files of the pages (css, js, images, fonts) are in assets/, served at `<prefix>/assets/...`.
@@ -37,12 +37,16 @@ class OpenSim_Helpers_Router
         'eventsparser.php' => 'eventsparser.php',
         'motd.php' => 'motd.php',
         'textgen.php' => 'textgen.php',
-        'guide.php' => 'pages/guide.php',
-        'directory_info.php' => 'pages/directory_info.php',
+    ];
+
+    /** The scripts that were pages: their name in the URL, and the page that answers it. */
+    const ALIASES = [
+        'guide.php' => 'guide',
+        'directory_info.php' => 'directory_info',
     ];
 
     /** The pages: the slug of what each shows (see OpenSim_Helpers_View::main). */
-    const PAGES = ['home', 'splash', 'profile', 'health'];
+    const PAGES = ['home', 'splash', 'profile', 'health', 'guide', 'directory_info'];
 
     const MIME = [
         'svg' => 'image/svg+xml',
@@ -105,6 +109,9 @@ class OpenSim_Helpers_Router
             if (isset(self::SCRIPTS[$target])) {
                 return ['script', $target];
             }
+            if (isset(self::ALIASES[$target])) {
+                return ['page', self::ALIASES[$target]];
+            }
 
             return null;
         }
@@ -130,6 +137,9 @@ class OpenSim_Helpers_Router
             if (isset(self::SCRIPTS[$segment])) {
                 return ['script', $segment];
             }
+            if (isset(self::ALIASES[$segment])) {
+                return ['page', self::ALIASES[$segment]];
+            }
         }
 
         return null;
@@ -144,7 +154,7 @@ class OpenSim_Helpers_Router
      */
     public static function pathInfo($path)
     {
-        $scripts = implode('|', array_map(fn($script) => preg_quote($script, '#'), array_keys(self::SCRIPTS)));
+        $scripts = implode('|', array_map(fn($script) => preg_quote($script, '#'), array_keys(self::SCRIPTS + self::ALIASES)));
 
         return preg_match("#/(?:$scripts)(/.*)$#", rawurldecode((string) $path), $found) ? $found[1] : '';
     }
@@ -197,9 +207,10 @@ class OpenSim_Helpers_Router
 
                 return null;
             case 'asset':
-                $file = "$root/assets/$what";
-                $type = self::MIME[strtolower(pathinfo($file, PATHINFO_EXTENSION))] ?? null;
-                if ($type === null || !is_file($file)) {
+                // The assets of the theme of the grid first, then the ones of the helpers
+                $file = OpenSim_Helpers_View::asset_file($what);
+                $type = self::MIME[strtolower(pathinfo($what, PATHINFO_EXTENSION))] ?? null;
+                if ($type === null || $file === null) {
                     http_response_code(404);
 
                     return null;
