@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix: a simulator that cannot be reached is asked again later, more and more late, not at every run
 - fix: a parcel without picture or group got the ones of the parcel before it in the search tables
 - fix: the search by name gives the second page (`query_start` is a string), and sorts places by traffic
 - fix: an answer of the search without result still has its (empty) list of data, which the module reads
