@@ -13,7 +13,7 @@ require_once __DIR__ . '/blocks/class-block-grid-info.php';
 require_once __DIR__ . '/blocks/class-block-grid-status.php';
 require_once __DIR__ . '/blocks/class-block-motd.php';
 require_once __DIR__ . '/blocks/class-block-health.php';
-require_once __DIR__ . '/blocks/class-block-guide.php';
+require_once __DIR__ . '/blocks/class-block-destination-guide.php';
 require_once __DIR__ . '/blocks/class-block-directory-info.php';
 
 class OpenSim_Helpers_Blocks
@@ -24,7 +24,7 @@ class OpenSim_Helpers_Blocks
         'grid-status' => 'OpenSim_Helpers_Block_GridStatus',
         'motd' => 'OpenSim_Helpers_Block_Motd',
         'health' => 'OpenSim_Helpers_Block_Health',
-        'guide' => 'OpenSim_Helpers_Block_Guide',
+        'destination_guide' => 'OpenSim_Helpers_Block_DestinationGuide',
         'directory_info' => 'OpenSim_Helpers_Block_DirectoryInfo',
     ];
 

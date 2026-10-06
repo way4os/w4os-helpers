@@ -16,7 +16,7 @@
  *
  * The routes are the constant OPENSIM_ROUTES, made from the addresses the grid gives to its services in its official
  * settings (see OpenSim_Helpers_GridConfig::routes): URL path => script (`query.php`) or page (`@home`, `@splash`,
- * `@profile`, `@health`, `@guide`). A route answers its sub-paths too (`/guide/<topic>/`, `offline.php/SaveMessage/`), what
+ * `@profile`, `@health`, `@destination_guide`). A route answers its sub-paths too (`/guide/<topic>/`, `offline.php/SaveMessage/`), what
  * follows it is given as PATH_INFO. Without config, the defaults are the paths under `/helpers` (see defaults()). A profile is
  * also `<profile>/<first>.<last>`, `<profile>/<first>-<last>` and `/@<first>.<last>`.
  *
@@ -43,12 +43,12 @@ class OpenSim_Helpers_Router
 
     /** The scripts that were pages: their name in the URL, and the page that answers it. */
     const ALIASES = [
-        'guide.php' => 'guide',
+        'guide.php' => 'destination_guide',
         'directory_info.php' => 'directory_info',
     ];
 
     /** The pages: the slug of what each shows (see OpenSim_Helpers_View::main). */
-    const PAGES = ['home', 'splash', 'profile', 'health', 'guide', 'directory_info'];
+    const PAGES = ['home', 'splash', 'profile', 'health', 'destination_guide', 'directory_info'];
 
     const MIME = [
         'svg' => 'image/svg+xml',

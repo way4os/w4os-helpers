@@ -97,6 +97,21 @@ describe('The theme of the grid', function () {
     });
 });
 
+describe('The home page', function () {
+    test('shows the destination guide, the message of an empty one included, and nothing for a block that does not exist yet', function () {
+        $_SERVER['HTTP_USER_AGENT'] = FIREFOX;
+        ini_set('error_log', '/dev/null');
+        // The templates of the helpers alone, whatever theme the grid has
+        $html = OpenSim_Helpers_View::page('home', [], [dirname(__DIR__, 2) . '/templates']);
+
+        expect($html)
+            ->toContain('id="guide"')
+            ->toContain('realm of destinations')
+            ->not->toContain('block-popular-places')
+            ->not->toContain('block-search');
+    });
+});
+
 describe('The columns of a page', function () {
     test('are all there for a browser, with the top bar and the footer', function () {
         $_SERVER['HTTP_USER_AGENT'] = FIREFOX;

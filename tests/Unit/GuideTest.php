@@ -32,7 +32,7 @@ function guide_block(string $content, array $args = []): string
 {
     $file = tempnam(sys_get_temp_dir(), 'guide');
     file_put_contents($file, $content);
-    $html = OpenSim_Helpers_Blocks::render('guide', $args + ['source' => $file]);
+    $html = OpenSim_Helpers_Blocks::render('destination_guide', $args + ['source' => $file]);
     unlink($file);
 
     return $html;
@@ -126,7 +126,7 @@ describe('The guide block', function () {
         $file = tempnam(sys_get_temp_dir(), 'guide');
         file_put_contents($file, GUIDE_FILE);
         $_GET = ['source' => $file];
-        $html = OpenSim_Helpers_View::page('guide');
+        $html = OpenSim_Helpers_View::page('destination_guide');
         $_GET = [];
         unlink($file);
 

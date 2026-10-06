@@ -90,7 +90,7 @@ class OpenSim_Helpers_View
         $labels = self::labels();
         $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
         $menu = [['label' => $labels['home'], 'url' => '/']];
-        $guide = array_search('@guide', $routes, true);
+        $guide = array_search('@destination_guide', $routes, true);
         $menu[] = ['label' => $labels['guide'], 'url' => $guide !== false ? $guide : self::base_path() . '/guide.php'];
         $viewer = self::is_viewer();
 

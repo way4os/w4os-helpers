@@ -362,7 +362,7 @@ describe('The routes', function () {
                 '/profile' => '@profile',
                 '/helpers/currency.php' => 'currency.php',
                 '/helpers/landtool.php' => 'landtool.php',
-                '/helpers/guide.php' => '@guide',
+                '/helpers/guide.php' => '@destination_guide',
                 '/helpers/motd.php' => 'motd.php',
                 '/helpers/query.php' => 'query.php',
                 '/helpers/register.php' => 'register.php',
@@ -409,7 +409,7 @@ describe('The routes', function () {
         $table = $routes("[LoginService]\nDestinationGuide = \"https://play.example.org/guide\"\nMessageUrl = \"https://other.example.org/motd.php\"\n[GridInfoService]\nwelcome = \"https://play.example.org/splash\"\n");
 
         expect($table)
-            ->toMatchArray(['/guide' => '@guide', '/splash' => '@splash'])
+            ->toMatchArray(['/guide' => '@destination_guide', '/splash' => '@splash'])
             ->not->toHaveKeys(['/helpers/guide.php', '/helpers/motd.php', '/welcome']);
     });
 });

@@ -1,13 +1,13 @@
 <?php
 /**
- * Block guide: the destinations of the grid, by category, as the viewers (V3 destination guide) and the browsers show them.
+ * Block destination_guide: the destinations of the grid, by category, as the viewers (V3 destination guide) and the browsers show them.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
  */
 require_once dirname(__DIR__) . '/class-guide.php';
 
-class OpenSim_Helpers_Block_Guide
+class OpenSim_Helpers_Block_DestinationGuide
 {
     /** The files this block needs in the page. */
     public static function assets()

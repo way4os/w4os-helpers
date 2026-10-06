@@ -28,7 +28,7 @@ describe('Router', function () {
     });
 
     test('serves what is under a route too, and gives what follows it as PATH_INFO', function () {
-        $routes = ['/helpers/offline.php' => 'offline.php', '/guide' => '@guide', '/' => '@home'];
+        $routes = ['/helpers/offline.php' => 'offline.php', '/guide' => '@destination_guide', '/' => '@home'];
 
         expect(OpenSim_Helpers_Router::match('/helpers/offline.php/SaveMessage/', $routes))
             ->toBe(['script', 'offline.php'])
@@ -39,7 +39,7 @@ describe('Router', function () {
             ->and(OpenSim_Helpers_Router::pathInfo('/helpers/offline.php', $routes))
             ->toBe('')
             ->and(OpenSim_Helpers_Router::match('/guide/places/', $routes))
-            ->toBe(['page', 'guide'])
+            ->toBe(['page', 'destination_guide'])
             ->and(OpenSim_Helpers_Router::pathInfo('/guide/places/', $routes))
             ->toBe('/places/')
             // The root is the root, not everything
@@ -134,10 +134,10 @@ describe('Router', function () {
 
     test('serves as pages what were scripts, which keep their name in the URL', function () {
         expect(OpenSim_Helpers_Router::match('/helpers/guide.php'))
-            ->toBe(['page', 'guide'])
+            ->toBe(['page', 'destination_guide'])
             ->and(OpenSim_Helpers_Router::match('/helpers/directory_info.php'))
             ->toBe(['page', 'directory_info'])
             ->and(OpenSim_Helpers_Router::match('/guide', ['/guide' => 'guide.php']))
-            ->toBe(['page', 'guide']);
+            ->toBe(['page', 'destination_guide']);
     });
 });

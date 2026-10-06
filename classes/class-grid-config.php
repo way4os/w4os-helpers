@@ -431,7 +431,7 @@ class OpenSim_Helpers_GridConfig
         };
         $one = fn($section, $key) => ($value = $get($section, $key)) === null ? [] : [$value];
         $add($one('GridInfoService', 'welcome'), '@splash', '/welcome');
-        $add($one('LoginService', 'DestinationGuide'), '@guide', "$base/guide.php");
+        $add($one('LoginService', 'DestinationGuide'), '@destination_guide', "$base/guide.php");
         $add($one('LoginService', 'MessageUrl'), 'motd.php', "$base/motd.php");
         $add($one('GridInfoService', 'web_profile_url'), '@profile', '/profile');
         $add($one('Search', 'SearchURL'), 'query.php', "$base/query.php");
