@@ -2,11 +2,11 @@
 
 ### Unreleased
 
-- fix: with a money server, every transfer failed (the balances table was locked with an invalid query, `make_random_guid()` and `opensim_get_region_info()` did not exist)
-- fix: buying currency for a land no longer takes the whole balance of the avatar
-- fix: `currency.php` failed without `currency_rate` in `helpers.ini` (10 for 1000 now), and when a purchase was refused
-- fix: Gloebit offers the pack that covers the amount, the balance is given only with the secure session
-- fix: `landtool.php` answers a negative amount, and a declined transaction, instead of nothing
+- fix: with a money server, every transfer failed (an invalid lock, two functions that did not exist)
+- fix: buying currency for a land no longer takes the whole balance
+- fix: `currency.php` failed without `currency_rate` (10 for 1000 now) and on a refused purchase
+- fix: Gloebit offers the pack that covers the amount; the balance needs the secure session
+- fix: `landtool.php` answers a negative amount or a declined transaction, instead of nothing
 - fix: `offline.php/SaveMessage/` and `/RetrieveMessages/` were a 404 behind the router: no offline message
 - fix: a simulator that cannot be reached is asked again later, more and more late, not at every run
 - fix: a parcel without picture or group got the ones of the parcel before it in the search tables
