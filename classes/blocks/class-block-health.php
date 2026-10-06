@@ -62,8 +62,13 @@ class OpenSim_Helpers_Block_Health
         // What the viewers read at the login address (/get_grid_info), else what the config of Robust says
         $rows = [];
         foreach (self::GRID_INFO as $name) {
-            $value = $name === 'login' ? $login : $live[$name] ?? ($robust['GridInfoService'][$name] ?? '');
-            $rows[] = ['label' => $name, 'url' => (string) $value, 'method' => 'get'];
+            $value = (string) ($name === 'login' ? $login : $live[$name] ?? ($robust['GridInfoService'][$name] ?? ''));
+            $row = ['label' => $name, 'url' => $value, 'method' => 'get'];
+            // The addresses of the grid itself answer at /get_grid_info, what the viewers ask first
+            if (in_array($name, ['login', 'gatekeeper', 'uas'], true) && $value !== '') {
+                $row['probe'] = rtrim($value, '/') . '/get_grid_info';
+            }
+            $rows[] = $row;
         }
         $groups[] = ['title' => _('Grid info (what the viewers read)'), 'rows' => $rows];
 
@@ -106,7 +111,7 @@ class OpenSim_Helpers_Block_Health
                 if ($row['url'] === '') {
                     continue;
                 }
-                $handle = curl_init($row['url']);
+                $handle = curl_init($row['probe'] ?? $row['url']);
                 curl_setopt_array($handle, [
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_TIMEOUT => self::TIMEOUT,
@@ -142,7 +147,7 @@ class OpenSim_Helpers_Block_Health
         foreach ($groups as $g => $group) {
             foreach ($group['rows'] as $r => $row) {
                 $groups[$g]['rows'][$r] += self::verdict(null, '', 0);
-                unset($groups[$g]['rows'][$r]['method']);
+                unset($groups[$g]['rows'][$r]['method'], $groups[$g]['rows'][$r]['probe']);
             }
         }
 

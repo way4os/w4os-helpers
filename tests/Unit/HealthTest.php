@@ -64,6 +64,7 @@ describe('An address in the health page', function () {
                     ['label' => 'broken', 'url' => $url('500'), 'method' => 'get'],
                     ['label' => 'moved', 'url' => $url('redirect'), 'method' => 'get'],
                     ['label' => 'api', 'url' => $url('200'), 'method' => 'xmlrpc'],
+                    ['label' => 'probed', 'url' => $url('404'), 'probe' => $url('200'), 'method' => 'get'],
                     ['label' => 'empty', 'url' => '', 'method' => 'get'],
                     ['label' => 'nobody', 'url' => 'http://127.0.0.1:9/', 'method' => 'get'],
                 ],
@@ -82,6 +83,8 @@ describe('An address in the health page', function () {
             ->toBe('302')
             ->and($by['api']['level'])
             ->toBe('ok')
+            ->and($by['probed'])
+            ->toMatchArray(['level' => 'ok', 'url' => $url('404')])
             ->and($by['empty']['status'])
             ->toBe('not defined')
             ->and($by['nobody']['level'])
