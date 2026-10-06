@@ -94,11 +94,28 @@ class OpenSim_Helpers_Router
         if (preg_match('#^/assets/(.+)$#', $path, $m)) {
             return ['asset', $m[1]];
         }
-        if (in_array(basename($path), self::SCRIPTS, true)) {
-            return ['script', basename($path)];
+        // A script by its name, under any prefix, with or without what OpenSimulator adds to it (offline.php/SaveMessage/)
+        foreach (explode('/', $path) as $segment) {
+            if (in_array($segment, self::SCRIPTS, true)) {
+                return ['script', $segment];
+            }
         }
 
         return null;
+    }
+
+    /**
+     * What follows a script in a URL, as the web server gives it in PATH_INFO: /helpers/offline.php/SaveMessage/ gives
+     * /SaveMessage/, empty when nothing follows.
+     *
+     * @param  string $path The path of the request, as it was asked (the slashes at its end count).
+     * @return string
+     */
+    public static function pathInfo($path)
+    {
+        $scripts = implode('|', array_map(fn($script) => preg_quote($script, '#'), self::SCRIPTS));
+
+        return preg_match("#/(?:$scripts)(/.*)$#", rawurldecode((string) $path), $found) ? $found[1] : '';
     }
 
     /**
@@ -153,7 +170,8 @@ class OpenSim_Helpers_Router
     public static function run()
     {
         $own = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
-        $found = self::match(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH), $own);
+        $requested = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        $found = self::match($requested, $own);
         if ($found === null) {
             http_response_code(404);
             header('Content-Type: text/plain; charset=utf-8');
@@ -193,6 +211,10 @@ class OpenSim_Helpers_Router
                 $_SERVER['SCRIPT_NAME'] = '/' . $what;
                 $_SERVER['SCRIPT_FILENAME'] = "$root/$what";
                 $_SERVER['PHP_SELF'] = '/' . $what;
+                // As the web server gives what follows the script (offline.php/SaveMessage/), which offline.php reads
+                if (($info = self::pathInfo($requested)) !== '') {
+                    $_SERVER['PATH_INFO'] = $info;
+                }
 
                 return $root . '/' . $what;
         }

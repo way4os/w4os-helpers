@@ -29,7 +29,7 @@ if (empty($request_xml)) {
     die();
 }
 
-$method = @$_SERVER['PATH_INFO)'];
+$method = $_SERVER['PATH_INFO'] ?? '';
 if (empty($method)) {
     $method = '/' . basename(getenv('REDIRECT_URL')) . '/';
 }

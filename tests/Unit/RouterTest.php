@@ -21,6 +21,19 @@ describe('Router', function () {
             ->toBe(['script', 'currency.php']);
     });
 
+    test('serves a script called with what OpenSimulator adds to it', function () {
+        expect(OpenSim_Helpers_Router::match('/helpers/offline.php/SaveMessage/'))
+            ->toBe(['script', 'offline.php'])
+            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/offline.php/SaveMessage/'))
+            ->toBe('/SaveMessage/')
+            ->and(OpenSim_Helpers_Router::pathInfo('/offline.php/RetrieveMessages/'))
+            ->toBe('/RetrieveMessages/')
+            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/query.php'))
+            ->toBe('')
+            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/'))
+            ->toBe('');
+    });
+
     test('serves the routes of the operator', function () {
         $own = ['/search/' => 'query.php', '/hello' => '@splash'];
 
