@@ -229,7 +229,15 @@ class OpenSim_Guide
 
     private function no_result()
     {
-        $content =
+        // The visitor gets the joke, the one who runs the grid gets the reason (here, in the log, and in the health page)
+        error_log(
+            'opensim-helpers guide: ' .
+                (empty($this->source)
+                    ? 'no source for the guide, set guide_source in helpers.ini (or OPENSIM_GUIDE_SOURCE in config.php)'
+                    : 'no destination in the source of the guide, which is not readable or empty: ' . $this->source),
+        );
+        $content = "<!-- no destination: guide_source of helpers.ini is not set, not readable or empty -->\n";
+        $content .=
             '<div class="error">' .
             _(
                 'The realm of destinations you seek has eluded our grasp, spirited away by elusive knomes. Rally the grid managers, let them venture forth to curate a grand tapestry of remarkable places for your exploration!',

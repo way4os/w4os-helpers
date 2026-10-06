@@ -89,7 +89,9 @@ describe('The destination guide', function () {
         expect($page)->toContain('Single')->not->toContain('Back to categories');
     });
 
-    test('says there is nothing to show when the file holds no destination', function () {
-        expect(guide_page("# nothing here\n\n"))->toContain('realm of destinations');
+    test('says there is nothing to show when the file holds no destination, and why to the one who reads the source', function () {
+        expect(guide_page("# nothing here\n\n"))
+            ->toContain('realm of destinations')
+            ->toContain('<!-- no destination: guide_source');
     });
 });
