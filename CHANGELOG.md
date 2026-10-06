@@ -2,7 +2,7 @@
 
 ### Unreleased
 
-- fix: with a money server, every transfer failed (`make_random_guid()` and `opensim_get_region_info()` did not exist)
+- fix: with a money server, every transfer failed (the balances table was locked with an invalid query, `make_random_guid()` and `opensim_get_region_info()` did not exist)
 - fix: buying currency for a land no longer takes the whole balance of the avatar
 - fix: `currency.php` failed without `currency_rate` in `helpers.ini` (10 for 1000 now), and when a purchase was refused
 - fix: Gloebit offers the pack that covers the amount, the balance is given only with the secure session

@@ -172,21 +172,24 @@ function currency_set_currency_balance($agentID, $amount, &$deprecated = null)
     global $CurrencyDB;
     $balances_table = CURRENCY_MONEY_TBL;
 
-    $CurrencyDB->query("LOCK TABLES $balances_table");
-    $currentbalance = $CurrencyDB->prepareAndExecute("SELECT balance FROM $balances_table WHERE user = :user", [
-        'user' => $agentID,
-    ]);
-    if ($currentbalance) {
-        [$cash] = $currentbalance->fetch();
-        $balance = (int) $cash + (int) $amount;
-        $result = $CurrencyDB->prepareAndExecute("UPDATE $balances_table SET balance = :balance WHERE user = :user", [
-            'balance' => $balance,
+    $CurrencyDB->query("LOCK TABLES $balances_table WRITE");
+    try {
+        $currentbalance = $CurrencyDB->prepareAndExecute("SELECT balance FROM $balances_table WHERE user = :user", [
             'user' => $agentID,
         ]);
-    } else {
-        $result = false;
+        $row = $currentbalance ? $currentbalance->fetch() : false;
+        if ($row) {
+            $balance = (int) $row[0] + (int) $amount;
+            $result = $CurrencyDB->prepareAndExecute("UPDATE $balances_table SET balance = :balance WHERE user = :user", [
+                'balance' => $balance,
+                'user' => $agentID,
+            ]);
+        } else {
+            $result = false;
+        }
+    } finally {
+        $CurrencyDB->query('UNLOCK TABLES');
     }
-    $CurrencyDB->query("UNLOCK TABLES $balances_table");
     return $result;
 }
 
