@@ -352,6 +352,7 @@ class OpenSim_Helpers_GridConfig
             'ROBUST_DB' => true,
             'OPENSIM_DB' => true,
             'OPENSIM_ROUTES' => self::routes($settings),
+            'OPENSIM_HELPERS_PATH' => $settings['base_path'],
         ];
         $given = [
             'OPENSIM_USE_UTC_TIME' => isset($o['use_utc_time']) ? self::flag($o['use_utc_time']) : null,

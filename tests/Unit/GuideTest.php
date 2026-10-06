@@ -33,7 +33,7 @@ function guide_page(string $content, array $query = []): string
         '$_SERVER = ["HTTP_HOST" => "grid.example", "REQUEST_URI" => "/helpers/guide.php", "DOCUMENT_ROOT" => "/var/www"];' .
         '$_GET = ' .
         var_export($query, true) .
-        ";require '$root/guide.php';";
+        ";require '$root/pages/guide.php';";
     $process = proc_open([PHP_BINARY, '-d', 'display_errors=0', '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
     $out = (string) stream_get_contents($pipes[1]);
     proc_close($process);

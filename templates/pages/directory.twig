@@ -1,0 +1,14 @@
+{% extends 'base.twig' %}
+{# The grids that registered their places in the search directory #}
+{% block title %}{{ title }} - {{ grid_name }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<section class="block block-directory">
+<p class="totals">{{ summary|raw }}</p>
+<ul class="grids">
+{% for grid in grids %}
+<li><a href="?gatekeeperURL={{ grid.url|url_encode }}">{{ grid.name }}</a> {{ detail[loop.index0] }}</li>
+{% endfor %}
+</ul>
+</section>
+{% endblock %}

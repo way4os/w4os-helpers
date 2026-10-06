@@ -2,6 +2,11 @@
 
 ### Unreleased
 
+- new: blocks (grid info, grid status) in the home and splash pages, and alone at `<prefix>/blocks/<name>`
+- new: the pages show the content alone to a viewer, with the top bar and the footer in a browser
+- update: the static files are in `static/` (`<prefix>/static/`), the scripts of pages in `pages/`
+- update: `directory_info.php` is a page of the grid layout, one query per grid
+- removed: the page system of the former wizard (`init.php`, `class-grid.php`, `class-page.php`, `class-form.php`...), nothing used it
 - fix: `directory_info.php` failed on its second visit (an empty cache was read back as text)
 - fix: `eventsparser.php` failed on the first event (`opensim_latin1_only()` did not exist)
 - new: `guide_source` in `helpers.ini` gives the destinations of the guide (a file of the grid folder, a path or a URL)

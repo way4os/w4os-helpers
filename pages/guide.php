@@ -16,7 +16,8 @@
  */
 
 // require_once __DIR__ . '/includes/config.php'; // DEBUG: disabled until we're ready with WP
-require_once __DIR__ . '/includes/functions.php';
+require_once dirname(__DIR__) . '/includes/functions.php';
+require_once dirname(__DIR__) . '/classes/class-view.php';
 
 class OpenSim_Guide
 {
@@ -31,7 +32,6 @@ class OpenSim_Guide
         set_helpers_locale();
 
         $this->public_url = $this->get_public_url();
-        $this->internal_url = $this->get_child_script_url();
 
         if (!empty($source)) {
             $this->source = $source;
@@ -243,7 +243,7 @@ class OpenSim_Guide
     private function place_thumbnail()
     {
         // Replace this with the actual URL for the thumbnail placeholder
-        return $this->internal_url . '/no-img.jpg';
+        return OpenSim_Helpers_View::static_url('img/no-img.jpg');
     }
 
     private function place_traffic()
@@ -297,8 +297,8 @@ class OpenSim_Guide
 
         $content .=
             '<link rel="stylesheet" type="text/css" href="' .
-            $this->internal_url .
-            '/css/guide.css?' .
+            OpenSim_Helpers_View::static_url('css/guide.css') .
+            '?' .
             time() .
             '">' .
             '<div id="guide">';
@@ -308,7 +308,7 @@ class OpenSim_Guide
     private function html_suffix()
     {
         $content = '</div>';
-        $content .= '<script src="' . $this->internal_url . '/js/guide.js?' . time() . '"></script>';
+        $content .= '<script src="' . OpenSim_Helpers_View::static_url('js/guide.js') . '?' . time() . '"></script>';
         if ($this->fullHTML) {
             $content .= '</body></html>';
         }
@@ -339,37 +339,6 @@ class OpenSim_Guide
             return $this->public_url;
         }
         return $this->public_url . '?' . http_build_query($args);
-    }
-
-    // ... (other methods in the OpenSim_Guide class)
-
-    private function get_child_script_url()
-    {
-        // Get the full path of the current file (the helper script)
-        $helper_script_path = __FILE__;
-
-        // Get the directory path of the current file
-        $directory_path = dirname($helper_script_path);
-
-        // Get the server's document root path
-        $document_root = $_SERVER['DOCUMENT_ROOT'];
-
-        // Convert the directory path to a URL by replacing the document root with an empty string
-        $child_script_url = str_replace($document_root, '', $directory_path);
-
-        // Ensure the URL starts with a slash to make it an absolute URL
-        $child_script_url = '/' . ltrim($child_script_url, '/');
-
-        // Get the current protocol (http or https)
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-
-        // Get the host
-        $host = $_SERVER['HTTP_HOST'];
-
-        // Combine the protocol, host, and child script URL to get the full URL of the child script
-        $full_child_script_url = $protocol . $host . $child_script_url;
-
-        return $full_child_script_url;
     }
 }
 

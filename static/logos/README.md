@@ -1,0 +1,1 @@
+The logo of the grid, shown in the top bar of its pages: `logo.svg` or `logo.png` here is the one used. Another one is set with `grid_logo_url` in `helpers.ini` (`OPENSIM_GRID_LOGO_URL` in `includes/config.php`).

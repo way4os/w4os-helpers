@@ -11,6 +11,14 @@ The helpers are the most shared scripts of the community: whoever wrote the orig
 
 A constant the settings leave out takes the default of `bootstrap.php` (a service database is the main one), so a new constant does not break an existing config. The helpers answer 503 and say why in the log when there is no config, or no database in it.
 
+## Layout
+
+- The scripts of the API stay at the root under their well known names (`query.php`, `register.php`, `offline.php`, `currency.php`, `landtool.php`, `parser.php`, `eventsparser.php`, `motd.php`, `textgen.php`): they are documented and configured everywhere.
+- `pages/` has the scripts that make a page and keep their name in the URL (`guide.php`, `directory_info.php`); the `index.php` router knows the file of each (`OpenSim_Helpers_Router::SCRIPTS`).
+- `templates/` has the Twig templates: `base.twig`, the layout that adapts to who asks (a viewer, recognized by its User-Agent or `?viewer=1`, gets the content alone, a browser gets the top bar and the footer too), `pages/` the pages (`home`, `splash`, `directory`), `blocks/` the blocks. A grid replaces any of them with `OPENSIM_TEMPLATES_DIR`.
+- A block is a piece of a page (grid info, grid status...): a class of `classes/blocks/` gives its data, a template of `templates/blocks/` shows it. A page includes it with `{{ render_block('grid-status') }}`, a site that embeds the grid reads it as a fragment at `<prefix>/blocks/<name>`, or its data with `?format=json`.
+- `static/` has the files the pages link (css, js, pictures, the logo), served at `<prefix>/static/`. Not to be confused with the web assets, the textures and pictures of the grid, which are served at `<prefix>/assets/`.
+
 ## Build
 
 `dev/build.sh` makes what the project distributes into `dist/`, from the last commit (it refuses when changes are not committed or when `composer.lock` is not up to date; `DIRTY=1` builds the last commit anyway):

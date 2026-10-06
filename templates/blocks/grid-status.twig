@@ -1,0 +1,8 @@
+{% extends 'blocks/_block.twig' %}
+{% block body %}
+<table class="block-table">
+{% for row in rows %}
+<tr><th scope="row">{{ row.label }}</th><td>{% if row.url %}<a href="{{ row.url }}">{{ row.value }}</a>{% else %}{{ row.value }}{% endif %}</td></tr>
+{% endfor %}
+</table>
+{% endblock %}

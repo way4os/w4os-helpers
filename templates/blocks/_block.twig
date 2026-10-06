@@ -1,0 +1,5 @@
+{# What every block has: its section, its title #}
+<section class="block block-{{ name }}">
+{% if title %}<{{ level }} class="block-title">{{ title }}</{{ level }}>{% endif %}
+{% block body %}{% endblock %}
+</section>

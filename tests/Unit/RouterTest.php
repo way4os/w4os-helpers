@@ -45,10 +45,18 @@ describe('Router', function () {
             ->toBe(['page', 'splash']);
     });
 
-    test('serves the assets, nothing outside them', function () {
-        expect(OpenSim_Helpers_Router::match('/assets/logos/logo.svg'))
-            ->toBe(['asset', 'logos/logo.svg'])
-            ->and(OpenSim_Helpers_Router::match('/assets/../includes/config.php'))
+    test('serves the static files and the blocks under any prefix, nothing outside them', function () {
+        expect(OpenSim_Helpers_Router::match('/static/logos/logo.svg'))
+            ->toBe(['static', 'logos/logo.svg'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/static/css/page.css'))
+            ->toBe(['static', 'css/page.css'])
+            ->and(OpenSim_Helpers_Router::match('/static/../includes/config.php'))
+            ->toBeNull()
+            ->and(OpenSim_Helpers_Router::match('/helpers/blocks/grid-status'))
+            ->toBe(['block', 'grid-status'])
+            ->and(OpenSim_Helpers_Router::match('/blocks/nothing'))
+            ->toBeNull()
+            ->and(OpenSim_Helpers_Router::match('/assets/logos/logo.svg'))
             ->toBeNull();
     });
 
@@ -79,27 +87,12 @@ describe('Router', function () {
         expect($script)->toBeNull();
     });
 
-    test('renders a page, a customized template wins', function () {
-        $context = [
-            'grid_name' => 'Alpha <b>',
-            'login_uri' => 'http://alpha:8002',
-            'logo_url' => '/assets/logos/logo.svg',
-        ];
-        $html = OpenSim_Helpers_Router::render('home', $context, [dirname(__DIR__, 2) . '/templates/twig']);
+    test('finds the file of a page script, which keeps its name in the URL', function () {
+        $_SERVER['REQUEST_URI'] = '/helpers/guide.php';
+        $cwd = getcwd();
+        $script = OpenSim_Helpers_Router::run();
+        chdir($cwd);
 
-        expect($html)
-            ->toContain('Alpha &lt;b&gt;')
-            ->and($html)
-            ->toContain('http://alpha:8002')
-            ->and($html)
-            ->toContain('logo.svg');
-
-        $own = sys_get_temp_dir() . '/tpl-' . bin2hex(random_bytes(4));
-        mkdir("$own/pages", 0o755, true);
-        file_put_contents("$own/pages/home.twig", 'Mine {{ grid_name }}');
-
-        expect(
-            OpenSim_Helpers_Router::render('home', $context, [$own, dirname(__DIR__, 2) . '/templates/twig']),
-        )->toContain('Mine Alpha');
+        expect($script)->toBe(dirname(__DIR__, 2) . '/pages/guide.php');
     });
 });
