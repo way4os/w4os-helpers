@@ -95,6 +95,7 @@ describe('The guide block', function () {
             ->toContain('href="secondlife://testgrid.example:8002%20Welcome%20Plaza/128/128/22"')
             ->toContain('href="secondlife://other.example:8002%20Old%20Region/10/20/30"')
             ->toContain('Back to categories')
+            ->toContain('<h2>Places to see</h2>')
             ->not->toContain('Mall');
     });
 
@@ -111,7 +112,7 @@ describe('The guide block', function () {
     test('opens the only category of a file, with no way back', function () {
         $html = guide_block("Only category\nSingle|http://one.example:8002:One/1/2/3\n");
 
-        expect($html)->toContain('Single')->not->toContain('Back to categories');
+        expect($html)->toContain('Only category')->toContain('Single')->not->toContain('Back to categories');
     });
 
     test('says there is nothing to show when the file holds no destination, and why to the one who reads the source', function () {

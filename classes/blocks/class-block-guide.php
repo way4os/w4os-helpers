@@ -73,10 +73,10 @@ class OpenSim_Helpers_Block_Guide
             ];
         }
 
-        return $data + [
+        return array_merge($data, [
             'title' => $category,
             'items' => $items,
             'back' => count($destinations) > 1 ? ['url' => $link(), 'label' => _('Back to categories')] : null,
-        ];
+        ]);
     }
 }
