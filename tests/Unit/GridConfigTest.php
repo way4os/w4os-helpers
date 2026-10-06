@@ -143,6 +143,16 @@ describe('Grid config', function () {
             ->toBe('https://play.example.org/helper/currency.php');
     });
 
+    test('gives the destinations of the guide of helpers.ini', function () {
+        [$conf] = grid_config_tree("[Helpers]\nguide_source = \"/etc/opensim/destinations.txt\"\n");
+
+        $settings = OpenSim_Helpers_GridConfig::settings(null, $conf);
+
+        expect(OpenSim_Helpers_GridConfig::constants($settings)['OPENSIM_GUIDE_SOURCE'])->toBe(
+            '/etc/opensim/destinations.txt',
+        );
+    });
+
     test('gives the message of the day of helpers.ini', function () {
         [$conf] = grid_config_tree("[Helpers]\nmotd = \"Hello\\nthere\"\n");
 
