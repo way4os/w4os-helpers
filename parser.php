@@ -61,7 +61,7 @@ function hostCheck($hostname, $port)
     WHERE host = :host AND port = :port',
         [
             'failcounter' => $failcounter,
-            'nextcheck' => 0,
+            'nextcheck' => $nextcheck,
             'host' => $hostname,
             'port' => $port,
         ],
