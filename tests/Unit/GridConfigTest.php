@@ -80,6 +80,12 @@ describe('Reading the files', function () {
             ->toBe([]);
     });
 
+    test('keeps the first of a key given twice in a section, as OpenSimulator does', function () {
+        [, $grid] = grid_config_tree('', true, ['twice.ini' => "[DatabaseService]\nConnectionString = \"first\"\nConnectionString = \"second\"\n"]);
+
+        expect(OpenSim_Helpers_GridConfig::read_ini("$grid/twice.ini")['DatabaseService']['ConnectionString'])->toBe('first');
+    });
+
     test('expands the constants of Robust in the files of the simulators', function () {
         [$conf] = grid_config_tree('', true, ['sims/one.ini' => "[Messaging]\nOfflineMessageURL = \"\${Const|WebURL}/helpers/offline.php\"\n"]);
 

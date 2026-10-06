@@ -112,7 +112,8 @@ class OpenSim_Helpers_GridConfig
             if (preg_match('/^"(.*)"\s*(?:[;#].*)?$/', $value, $quoted)) {
                 $value = $quoted[1];
             }
-            $ini[$section][trim($m[1])] = $value;
+            // A key given twice in a section: the first is the one OpenSimulator keeps
+            $ini[$section][trim($m[1])] ??= $value;
         }
 
         return self::expand($ini, $constants);
