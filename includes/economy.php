@@ -498,6 +498,32 @@ function opensim_get_avatar_session($agentID, &$deprecated = null)
     return $av_session;
 }
 
+/** What the database of the grid knows of one of its regions (by UUID): name, handle and address. */
+function opensim_get_region_info($regionID, &$deprecated = null)
+{
+    global $OpenSimDB;
+    if (!opensim_isuuid($regionID)) {
+        return null;
+    }
+
+    $result = $OpenSimDB->prepareAndExecute(
+        'SELECT regionName, regionHandle, serverIP, serverHttpPort, serverURI FROM regions WHERE uuid = :uuid',
+        ['uuid' => $regionID],
+    );
+    $row = $result ? $result->fetch(PDO::FETCH_ASSOC) : false;
+    if (!$row) {
+        return null;
+    }
+
+    return [
+        'regionName' => $row['regionName'],
+        'regionHandle' => $row['regionHandle'],
+        'serverIP' => $row['serverIP'],
+        'serverHttpPort' => $row['serverHttpPort'],
+        'serverURI' => $row['serverURI'],
+    ];
+}
+
 function opensim_set_current_region($agentID, $regionid, &$deprecated = null)
 {
     global $OpenSimDB;
