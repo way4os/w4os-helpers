@@ -210,9 +210,6 @@ describe('The settings', function () {
             ThemePath = "/srv/theme"
             LogoURL = "https://play.example.org/logo.png"
             MailSender = "no-reply@play.example.org"
-            CurrencyRate = 4
-            CurrencyRatePer = 1000
-            CurrencyScriptKey = "secret"
             INI
             ,
         );
@@ -228,9 +225,7 @@ describe('The settings', function () {
             ->and($constants['OPENSIM_GRID_LOGO_URL'])
             ->toBe('https://play.example.org/logo.png')
             ->and($constants['OPENSIM_MAIL_SENDER'])
-            ->toBe('no-reply@play.example.org')
-            ->and([$constants['CURRENCY_RATE'], $constants['CURRENCY_RATE_PER'], $constants['CURRENCY_SCRIPT_KEY']])
-            ->toBe(['4', '1000', 'secret']);
+            ->toBe('no-reply@play.example.org');
     });
 
     test('have a guide source that is a path or a URL kept as it is, and a theme folder in the grid folder by default', function () {
@@ -245,30 +240,33 @@ describe('The settings', function () {
         expect(OpenSim_Helpers_GridConfig::constants(OpenSim_Helpers_GridConfig::settings(null, $conf))['OPENSIM_THEME_PATH'])->toBe("$grid/theme");
     });
 
-    test('tell the currency from the economy module of OpenSim.ini', function () {
-        $module = fn(string $name) => grid_constants('', true, ['OpenSim.ini' => "[Economy]\neconomymodule = $name\n"]);
+    test('tell the currency from the economy module of OpenSim.ini: Gloebit, and what Gloebit says of itself', function () {
+        $module = fn(string $name, string $more = '') => grid_constants('', true, ['OpenSim.ini' => "[Economy]\neconomymodule = $name\n$more"]);
 
-        $gloebit = $module('Gloebit');
-        $money = $module('DTLNSLMoneyModule');
+        $gloebit = $module('Gloebit', "[Gloebit]\nGLBEnvironment = sandbox\n");
 
         expect($gloebit['CURRENCY_PROVIDER'])
             ->toBe('gloebit')
-            ->and($gloebit['CURRENCY_USE_MONEYSERVER'])
+            ->and($gloebit['GLOEBIT_SANDBOX'])
             ->toBeTrue()
-            ->and($money)
-            ->not->toHaveKey('CURRENCY_PROVIDER')
-            ->and($money['CURRENCY_USE_MONEYSERVER'])
-            ->toBeTrue()
+            ->and($module('Gloebit', "[Gloebit]\nGLBEnvironment = production\n")['GLOEBIT_SANDBOX'])
+            ->toBeFalse()
+            // The modules we do not know are the business of the grid: nothing is decided for them
             ->and($module('BetaGridLikeMoneyModule'))
-            ->not->toHaveKey('CURRENCY_USE_MONEYSERVER');
+            ->not->toHaveKeys(['CURRENCY_PROVIDER', 'CURRENCY_USE_MONEYSERVER', 'GLOEBIT_SANDBOX'])
+            ->and($module('DTLNSLMoneyModule'))
+            ->not->toHaveKeys(['CURRENCY_PROVIDER', 'CURRENCY_USE_MONEYSERVER'])
+            ->and(grid_constants())
+            ->not->toHaveKeys(['CURRENCY_RATE', 'CURRENCY_RATE_PER', 'CURRENCY_SCRIPT_KEY', 'CURRENCY_USE_MONEYSERVER']);
     });
-});
 
-describe('The example Helpers.ini', function () {
-    test('is a valid file that sets nothing, every setting being commented out', function () {
-        $ini = OpenSim_Helpers_GridConfig::read_ini(dirname(__DIR__, 2) . '/includes/Helpers.example.ini');
+    test('find the settings of a module in the files a simulator includes', function () {
+        $constants = grid_constants('', true, [
+            'OpenSim.ini' => "[Economy]\neconomymodule = Gloebit\n",
+            'config-include/Gloebit.ini' => "[Gloebit]\nGLBEnvironment = sandbox\n",
+        ]);
 
-        expect($ini)->toBe(['Helpers' => []]);
+        expect($constants['GLOEBIT_SANDBOX'])->toBeTrue();
     });
 });
 
@@ -316,20 +314,19 @@ describe('The databases', function () {
             ->toBe('pw2');
     });
 
-    test('are their own for the search registry and the currency of the helpers, with their own names', function () {
+    test('are their own for the search registry of the helpers, with its own name', function () {
         $constants = grid_constants(
             <<<'INI'
             [Helpers]
             SearchConnectionString = "Data Source=db4;Database=ossearch;User ID=search;Password=pw4;"
-            CurrencyConnectionString = "Data Source=db5;Database=money;User ID=money;Password=pw5;"
             INI
             ,
         );
 
         expect([$constants['SEARCH_DB_HOST'], $constants['SEARCH_DB_NAME'], $constants['SEARCH_DB_USER']])
             ->toBe(['db4', 'ossearch', 'search'])
-            ->and([$constants['CURRENCY_DB_HOST'], $constants['CURRENCY_DB_NAME']])
-            ->toBe(['db5', 'money'])
+            ->and($constants['CURRENCY_DB_NAME'])
+            ->toBe('alpha_robust')
             ->and($constants['OPENSIM_DB_NAME'])
             ->toBe('alpha_robust');
     });
@@ -432,6 +429,19 @@ describe('The routes', function () {
             // The address of the web site of the grid is not what counts
             ->and($served('other.example.net'))
             ->toHaveKey('/helpers/currency.php');
+    });
+
+    test('are the profiles where web_profile_url says, the place of the name left out', function () use ($routes) {
+        expect($routes("[GridInfoService]\nweb_profile_url = \"https://play.example.org/members/[AGENT_NAME]\"\n"))
+            ->toHaveKey('/members')
+            ->not->toHaveKey('/profile')
+            ->and($routes("[GridInfoService]\nweb_profile_url = \"https://play.example.org/profile?name=[AGENT_NAME]\"\n"))
+            ->toHaveKey('/profile')
+            ->and($routes("[GridInfoService]\nweb_profile_url = \"https://other.example.net/profile/[AGENT_NAME]\"\n"))
+            ->not->toHaveKey('/profile')
+            // Nothing said: the default
+            ->and($routes())
+            ->toHaveKey('/profile');
     });
 
     test('follow the pages the login service and the grid info give', function () use ($routes) {

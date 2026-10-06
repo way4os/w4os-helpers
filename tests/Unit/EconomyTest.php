@@ -18,6 +18,8 @@ function economy_run(string $code, array $constants = [])
     $root = dirname(__DIR__, 2);
     $script =
         "require '$root/vendor/autoload.php'; define('NULL_KEY', '00000000-0000-0000-0000-000000000000');" .
+        // No database here: every question is answered by "nothing"
+        "function db_for(\$service = null) { return new class { public \$connected = false; public function prepareAndExecute() { return false; } }; }" .
         "$define require '$root/includes/economy.php'; echo json_encode($code);";
     $process = proc_open([PHP_BINARY, '-d', 'display_errors=0', '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
     $out = (string) stream_get_contents($pipes[1]);
@@ -69,4 +71,33 @@ test('a transaction has a random UUID of version 4', function () {
         ->toMatch('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/')
         ->and($two)
         ->not->toBe($one);
+});
+
+describe('A currency sold elsewhere', function () {
+    $agent = '9d315475-daf9-4e31-a5e6-d787ddfcbef6';
+
+    test('is sent to the page of Gloebit, the sandbox or the real one as Gloebit says', function () use ($agent) {
+        $sold = fn(array $constants) => economy_run("currency_sold_elsewhere('$agent')", $constants);
+
+        expect($sold(['CURRENCY_PROVIDER' => 'gloebit', 'GLOEBIT_SANDBOX' => true])['errorURI'])
+            ->toStartWith('https://sandbox.gloebit.com/purchase?')
+            ->and($sold(['CURRENCY_PROVIDER' => 'gloebit', 'GLOEBIT_SANDBOX' => false])['errorURI'])
+            ->toStartWith('https://www.gloebit.com/purchase?')
+            ->and($sold(['CURRENCY_PROVIDER' => 'gloebit'])['errorMessage'])
+            ->toContain('Gloebit');
+    });
+
+    test('is sent to the terminals of Podex', function () use ($agent) {
+        $sold = economy_run("currency_sold_elsewhere('$agent')", [
+            'CURRENCY_PROVIDER' => 'podex',
+            'PODEX_ERROR_MESSAGE' => 'Use the terminals.',
+            'PODEX_REDIRECT_URL' => 'secondlife://Podex/1/2/3',
+        ]);
+
+        expect($sold['errorMessage'])->toBe('Use the terminals. secondlife://Podex/1/2/3');
+    });
+
+    test('is nothing for the other modules: no decision is taken for them', function () use ($agent) {
+        expect(economy_run("currency_sold_elsewhere('$agent')"))->toBeNull();
+    });
 });

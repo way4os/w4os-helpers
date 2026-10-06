@@ -56,7 +56,8 @@ The historic config is still supported, but might be deprecated in the future: c
   OfflineMessageURL = "https://www.yourgrid.org/helpers/offline.php"
 
 [Economy]
-  ;; Gloebit, or DTLNSLMoneyModule with a money server
+  ;; The modules the helpers know: Gloebit (see its Gloebit.ini, the helpers read [Gloebit] GLBEnvironment) and
+  ;; BetaGridLikeMoneyModule (everything is free). With another one, the currency is yours to handle.
   economymodule = Gloebit
 ```
 
@@ -69,6 +70,8 @@ The historic config is still supported, but might be deprecated in the future: c
   gridname = "Your Grid"
   login = "${Const|BaseURL}:${Const|PublicPort}/"
   welcome = "${Const|WebURL}/welcome"
+  ;; The viewers replace [AGENT_NAME] by Firstname.Lastname; the helpers also take Firstname-Lastname
+  web_profile_url = "${Const|WebURL}/profile/[AGENT_NAME]"
   ;; The viewers add the name of the script: <economy>/currency.php, <economy>/landtool.php
   economy = "${Const|WebURL}/helpers"
 
@@ -96,10 +99,10 @@ The historic config is still supported, but might be deprecated in the future: c
   HypEventsURL = "https://2do.directory/events"
   ;; Whatever this folder holds (templates/, assets/) replaces the files of the helpers
   ThemePath = "theme"
-  ;; LogoURL, MailSender, CurrencyRate, CurrencyRatePer, CurrencyScriptKey, CurrencyProvider...
+  ;; LogoURL, MailSender
 ```
 
-**Addresses.** The helpers answer the addresses the grid gives to its services, those of this site (the host of `WebURL`) only: a service the grid has set up on another site (`SearchURL = "https://2do.directory/helpers/query.php"`) has no ghost on this one. A service the grid says nothing about answers at its default address, `/helpers/<script>.php`. Only `currency.php` and `landtool.php` have a fixed place, under the address of the economy. `/health` lists every address of the grid with its status.
+**Addresses.** The helpers answer the addresses the grid gives to its services, those of this site only (the host, and the port when the address has one, of the page that is served): a service the grid has set up on another site (`SearchURL = "https://2do.directory/helpers/query.php"`) has no ghost on this one. A service the grid says nothing about answers at its default address, `/helpers/<script>.php`. Only `currency.php` and `landtool.php` have a fixed place, under the address of the economy. `/health` lists every address of the grid with its status.
 
 **Databases.** Each query uses the database of its service: the connection string (.NET format) of the section of the service when it has one, else `[DatabaseService]`.
 

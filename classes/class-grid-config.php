@@ -228,8 +228,8 @@ class OpenSim_Helpers_GridConfig
     }
 
     /**
-     * The ini files of a grid the helpers read, in the order of their authority: Robust, OpenSim.ini, the simulators, then
-     * Helpers.ini.
+     * The ini files of a grid the helpers read, in the order of their authority: Robust, OpenSim.ini, the includes, the
+     * simulators, then Helpers.ini.
      *
      * @param  string $dir the folder of the grid
      * @return string[]
@@ -242,7 +242,8 @@ class OpenSim_Helpers_GridConfig
                 $files[] = "$dir/$file";
             }
         }
-        foreach (glob("$dir/sims/*.ini") ?: [] as $file) {
+        // The modules are set in the files a simulator includes ([Gloebit]), and in the ones of the simulators
+        foreach (array_merge(glob("$dir/config-include/*.ini") ?: [], glob("$dir/sims/*.ini") ?: []) as $file) {
             $files[] = $file;
         }
         $files[] = "$dir/" . self::HELPERS_FILE;
@@ -377,6 +378,8 @@ class OpenSim_Helpers_GridConfig
     public static function path_of($url)
     {
         $path = (string) (parse_url((string) $url, PHP_URL_PATH) ?? '');
+        // web_profile_url gives the place of the name of the avatar: /profile/[AGENT_NAME] is the route /profile
+        $path = (string) preg_replace('#/?\[AGENT_NAME\].*$#i', '', $path);
 
         return '/' . trim($path, '/');
     }
@@ -532,14 +535,11 @@ class OpenSim_Helpers_GridConfig
             'OPENSIM_GRID_LOGO_URL' => $helpers['LogoURL'] ?? null,
             'OPENSIM_MAIL_SENDER' => $helpers['MailSender'] ?? null,
             'HYPEVENTS_URL' => isset($helpers['HypEventsURL']) ? rtrim($helpers['HypEventsURL'], '/') : null,
-            // The currency: what the economy module says, Helpers.ini says what the module does not
-            'CURRENCY_PROVIDER' => $helpers['CurrencyProvider'] ?? (strtolower($module) === 'gloebit' ? 'gloebit' : null),
-            'CURRENCY_USE_MONEYSERVER' => isset($helpers['CurrencyUseMoneyServer'])
-                ? self::flag($helpers['CurrencyUseMoneyServer'])
-                : ($module === '' || strtolower($module) === 'betagridlikemoneymodule' ? null : true),
-            'CURRENCY_SCRIPT_KEY' => $helpers['CurrencyScriptKey'] ?? null,
-            'CURRENCY_RATE' => $helpers['CurrencyRate'] ?? null,
-            'CURRENCY_RATE_PER' => $helpers['CurrencyRatePer'] ?? null,
+            // The currency is what the economy module of the grid says: the modules we know are Gloebit and
+            // BetaGridLikeMoneyModule (everything is free), a grid with another one handles its currency by hand
+            'CURRENCY_PROVIDER' => strtolower($module) === 'gloebit' ? 'gloebit' : null,
+            // Gloebit tells whether it is the sandbox or the real one
+            'GLOEBIT_SANDBOX' => $get('Gloebit', 'GLBEnvironment') === null ? null : strtolower($get('Gloebit', 'GLBEnvironment')) === 'sandbox',
             'CURRENCY_HELPER_URL' =>
                 $settings['web_url'] === '' ? null : $settings['web_url'] . ($economy === null ? $base : self::path_of($economy)) . '/currency.php',
         ];
@@ -556,7 +556,7 @@ class OpenSim_Helpers_GridConfig
             'ROBUST' => $default,
             'OPENSIM' => $default,
             'SEARCH' => isset($helpers['SearchConnectionString']) ? self::connection($helpers['SearchConnectionString']) : $default,
-            'CURRENCY' => isset($helpers['CurrencyConnectionString']) ? self::connection($helpers['CurrencyConnectionString']) : $default,
+            'CURRENCY' => $default,
             'OFFLINE' => self::connection_for($settings, 'OfflineIMService'),
         ];
         foreach ($databases as $prefix => $connection) {

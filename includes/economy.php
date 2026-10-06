@@ -407,6 +407,39 @@ function currency_get_balance($agentID, $secureID = null)
     return (int) $cash;
 }
 
+/**
+ * Where a user is sent to get currency when the grid sells it elsewhere: the message and the address the viewer shows. The
+ * modules the helpers know are Gloebit (the user finishes the purchase on its web site) and Podex (in-world terminals);
+ * with any other, or none, nothing is said.
+ *
+ * @param  string $agentID
+ * @return array{errorMessage:string,errorURI:?string}|null null when the currency is not sold elsewhere
+ */
+function currency_sold_elsewhere($agentID)
+{
+    switch (CURRENCY_PROVIDER) {
+        case 'podex':
+            return [
+                'errorMessage' => PODEX_ERROR_MESSAGE . ' ' . PODEX_REDIRECT_URL,
+                'errorURI' => null,
+            ];
+
+        case 'gloebit':
+            $baseurl = defined('GLOEBIT_SANDBOX') && GLOEBIT_SANDBOX ? 'https://sandbox.gloebit.com/purchase' : 'https://www.gloebit.com/purchase';
+            $server_info = opensim_get_server_info($agentID);
+            $informurl = !empty($server_info['serverIP'])
+                ? "http://{$server_info['serverIP']}:{$server_info['serverHttpPort']}/gloebit/buy_complete?agentId={$agentID}"
+                : '';
+
+            return [
+                'errorMessage' => 'Click OK to finish the transaction on Gloebit website.',
+                'errorURI' => "{$baseurl}?reset&r=&inform=$informurl",
+            ];
+    }
+
+    return null;
+}
+
 function currency_get_confirm_value($ipAddress)
 {
     // TODO:

@@ -128,6 +128,16 @@ function currency_xmlrpc_buy($method_name, $params, $app_data)
         return '';
     }
 
+    // A currency sold elsewhere (Gloebit, Podex) is not added by this script
+    $elsewhere = currency_sold_elsewhere($agentid);
+    if ($elsewhere !== null) {
+        $response_xml = xmlrpc_encode(['success' => false] + $elsewhere);
+        header('Content-type: text/xml');
+        echo $response_xml;
+
+        return '';
+    }
+
     $ret = false;
     $cost = currency_virtual_to_real($amount);
     $transactionPermit = currency_process_transaction($agentid, $cost, $ipAddress);
@@ -142,35 +152,10 @@ function currency_xmlrpc_buy($method_name, $params, $app_data)
     if ($ret) {
         $response_xml = xmlrpc_encode(['success' => true]);
     } else {
-        switch (CURRENCY_PROVIDER) {
-            case 'podex':
-                $errorURI = null; // opensim_format_tp(PODEX_REDIRECT_URL, TPLINK_HOP);
-                $errorMessage = PODEX_ERROR_MESSAGE . ' ' . PODEX_REDIRECT_URL;
-                break;
-
-            case 'gloebit':
-                if (defined('GLOEBIT_SANDBOX') && GLOEBIT_SANDBOX) {
-                    $baseurl = 'https://sandbox.gloebit.com/purchase';
-                } else {
-                    $baseurl = 'https://www.gloebit.com/purchase';
-                }
-                $server_info = opensim_get_server_info($agentid);
-                $serverip = $server_info['serverIP'];
-                $httpport = $server_info['serverHttpPort'];
-
-                $informurl = "http://{$serverip}:{$httpport}/gloebit/buy_complete?agentId={$agentid}";
-                $errorURI = "{$baseurl}?reset&r=&inform=$informurl";
-                $errorMessage = 'Click OK to finish the transaction on Gloebit website.';
-                break;
-
-            default:
-                $errorMessage = 'Unable to process the transaction. The gateway denied your charge. Open help page?';
-                $errorURI = defined('W4OS_GRID_INFO') && !empty(W4OS_GRID_INFO['help']) ? W4OS_GRID_INFO['help'] : CURRENCY_HELPER_URL;
-        }
         $response_xml = xmlrpc_encode([
             'success' => false,
-            'errorMessage' => $errorMessage,
-            'errorURI' => $errorURI,
+            'errorMessage' => 'Unable to process the transaction. The gateway denied your charge. Open help page?',
+            'errorURI' => defined('W4OS_GRID_INFO') && !empty(W4OS_GRID_INFO['help']) ? W4OS_GRID_INFO['help'] : CURRENCY_HELPER_URL,
         ]);
     }
 
