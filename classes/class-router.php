@@ -10,12 +10,13 @@
  * What answers, by kind:
  * - the scripts are the API (query.php, register.php, currency.php...), at the root of the helpers under their well known
  *   names, and the pages that keep theirs (guide.php, directory_info.php, in pages/);
- * - the pages are Twig templates of templates/pages (`@home`, `@splash`);
+ * - the pages are all made by the same template, with a main content by page (`@home`, `@splash`, see OpenSim_Helpers_View);
  * - the blocks are pieces of pages, served alone as fragments to embed (`<prefix>/blocks/grid-status`);
- * - the static files of the helpers (css, js, pictures) are in static/, served at `<prefix>/static/...`.
+ * - the files of the pages (css, js, images, fonts) are in assets/, served at `<prefix>/assets/...`.
  *
  * The routes of the operator are the constant OPENSIM_ROUTES: URL path => script (`query.php`) or page (`@home`,
- * `@splash`). The defaults are `/` for the home page and `/welcome` for the splash page.
+ * `@splash`, `@profile`, `@health`). The defaults are `/` for the home page, `/welcome` for the splash page, `/profile` for
+ * the profiles (and `/profile/<first>.<last>`, `/profile/<first>-<last>`, `/@<first>.<last>`) and `/health` for the health page.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
@@ -40,8 +41,8 @@ class OpenSim_Helpers_Router
         'directory_info.php' => 'pages/directory_info.php',
     ];
 
-    /** The pages, rendered from the Twig templates of the same name. */
-    const PAGES = ['home', 'splash'];
+    /** The pages: the slug of what each shows (see OpenSim_Helpers_View::main). */
+    const PAGES = ['home', 'splash', 'profile', 'health'];
 
     const MIME = [
         'svg' => 'image/svg+xml',
@@ -53,6 +54,10 @@ class OpenSim_Helpers_Router
         'ico' => 'image/x-icon',
         'css' => 'text/css',
         'js' => 'text/javascript',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+        'otf' => 'font/otf',
     ];
 
     /**
@@ -63,7 +68,7 @@ class OpenSim_Helpers_Router
      */
     public static function routes($own = [])
     {
-        $routes = ['/' => '@home', '/welcome' => '@splash'];
+        $routes = ['/' => '@home', '/welcome' => '@splash', '/profile' => '@profile', '/health' => '@health'];
         foreach ($own as $path => $target) {
             $routes[self::normalize($path)] = $target;
         }
@@ -82,7 +87,8 @@ class OpenSim_Helpers_Router
      *
      * @param  string               $path
      * @param  array<string,string> $own the routes of the operator
-     * @return array{0:string,1:string}|null [kind, what]: script (name), page (name), block (name), static (path under static/)
+     * @return array{0:string,1:string,2?:array<string,string>}|null [kind, what, arguments]: script (name), page (slug),
+     *                                          block (name), asset (path under assets/); a profile gives its `name`
      */
     public static function match($path, $own = [])
     {
@@ -102,9 +108,19 @@ class OpenSim_Helpers_Router
 
             return null;
         }
-        // The static files and the blocks, under any prefix
-        if (preg_match('#^(?:/.*)?/static/(.+)$#', $path, $m)) {
-            return ['static', $m[1]];
+        // A profile: <profile>/<first>.<last>, <profile>/<first>-<last>, and /@<first>.<last> (a name of another grid has @grid)
+        $name = '([A-Za-z0-9_]+)[.-]([A-Za-z0-9_]+)(@[A-Za-z0-9._:-]+)?';
+        foreach ($routes as $route => $target) {
+            if ($target === '@profile' && preg_match('#^' . preg_quote($route === '/' ? '' : $route, '#') . "/$name$#", $path, $m)) {
+                return ['page', 'profile', ['name' => "$m[1].$m[2]" . ($m[3] ?? '')]];
+            }
+        }
+        if (preg_match("#^/@$name$#", $path, $m)) {
+            return ['page', 'profile', ['name' => "$m[1].$m[2]" . ($m[3] ?? '')]];
+        }
+        // The assets and the blocks, under any prefix
+        if (preg_match('#^(?:/.*)?/assets/(.+)$#', $path, $m)) {
+            return ['asset', $m[1]];
         }
         if (preg_match('#^(?:/.*)?/blocks/([a-z0-9-]+)$#', $path, $m) && OpenSim_Helpers_Blocks::exists($m[1])) {
             return ['block', $m[1]];
@@ -153,19 +169,35 @@ class OpenSim_Helpers_Router
             return null;
         }
         [$kind, $what] = $found;
+        // What the address says (the name in a profile) is what a query would say
+        $_GET = ($found[2] ?? []) + $_GET;
         $root = dirname(__DIR__);
         switch ($kind) {
             case 'page':
+                // The data of what the page shows, for what makes its own page or watches it
+                if (($_GET['format'] ?? '') === 'json' && OpenSim_Helpers_Blocks::exists($what)) {
+                    self::answer_block($what);
+
+                    return null;
+                }
+                $html = OpenSim_Helpers_View::page($what);
+                if ($html === null) {
+                    http_response_code(404);
+                    header('Content-Type: text/plain; charset=utf-8');
+                    echo "Not found\n";
+
+                    return null;
+                }
                 header('Content-Type: text/html; charset=utf-8');
-                echo OpenSim_Helpers_View::render("pages/$what.twig", OpenSim_Helpers_View::context());
+                echo $html;
 
                 return null;
             case 'block':
                 self::answer_block($what);
 
                 return null;
-            case 'static':
-                $file = "$root/static/$what";
+            case 'asset':
+                $file = "$root/assets/$what";
                 $type = self::MIME[strtolower(pathinfo($file, PATHINFO_EXTENSION))] ?? null;
                 if ($type === null || !is_file($file)) {
                     http_response_code(404);

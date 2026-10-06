@@ -45,26 +45,24 @@ foreach ($query ? $query->fetchAll(PDO::FETCH_ASSOC) : [] as $row) {
     $total['parcels'] += (int) $row['parcels'];
 }
 
-header('Content-Type: text/html; charset=utf-8');
-echo OpenSim_Helpers_View::render(
-    'pages/directory.twig',
-    OpenSim_Helpers_View::context() + [
-        'title' => _('Directory Info'),
-        'grids' => $grids,
-        'total' => $total,
-        'summary' => sprintf(
-            '<strong>%s</strong>, %s, %s',
-            sprintf(ngettext('%d grid', '%d grids', $total['grids']), $total['grids']),
-            sprintf(ngettext('%d region', '%d regions', $total['regions']), $total['regions']),
-            sprintf(ngettext('%d parcel', '%d parcels', $total['parcels']), $total['parcels']),
-        ),
-        'detail' => array_map(
-            fn($grid) => sprintf(
-                '(%s, %s)',
-                sprintf(ngettext('%d region', '%d regions', $grid['regions']), $grid['regions']),
-                sprintf(ngettext('%d parcel', '%d parcels', $grid['parcels']), $grid['parcels']),
-            ),
-            $grids,
-        ),
-    ],
+$summary = sprintf(
+    '<strong>%s</strong>, %s, %s',
+    sprintf(ngettext('%d grid', '%d grids', $total['grids']), $total['grids']),
+    sprintf(ngettext('%d region', '%d regions', $total['regions']), $total['regions']),
+    sprintf(ngettext('%d parcel', '%d parcels', $total['parcels']), $total['parcels']),
 );
+header('Content-Type: text/html; charset=utf-8');
+echo OpenSim_Helpers_View::page('directory', [
+    'title' => _('Directory Info'),
+    'grids' => $grids,
+    'total' => $total,
+    'summary' => $summary,
+    'detail' => array_map(
+        fn($grid) => sprintf(
+            '(%s, %s)',
+            sprintf(ngettext('%d region', '%d regions', $grid['regions']), $grid['regions']),
+            sprintf(ngettext('%d parcel', '%d parcels', $grid['parcels']), $grid['parcels']),
+        ),
+        $grids,
+    ),
+]);

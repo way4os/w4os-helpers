@@ -1,8 +1,0 @@
-{% extends 'base.twig' %}
-{# The welcome page the viewer shows before the login (the home page of the grid, without its menu in a viewer). #}
-{% block content %}
-{% if not viewer %}<h1 class="grid-name">{{ grid_name }}</h1>{% endif %}
-{{ render_block('grid-info', { title: null }) }}
-{{ render_block('grid-status', { title: null }) }}
-{{ render_block('popular-places') }}
-{% endblock %}

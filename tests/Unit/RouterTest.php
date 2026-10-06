@@ -45,19 +45,38 @@ describe('Router', function () {
             ->toBe(['page', 'splash']);
     });
 
-    test('serves the static files and the blocks under any prefix, nothing outside them', function () {
-        expect(OpenSim_Helpers_Router::match('/static/logos/logo.svg'))
-            ->toBe(['static', 'logos/logo.svg'])
-            ->and(OpenSim_Helpers_Router::match('/helpers/static/css/page.css'))
-            ->toBe(['static', 'css/page.css'])
-            ->and(OpenSim_Helpers_Router::match('/static/../includes/config.php'))
+    test('serves the assets and the blocks under any prefix, nothing outside them', function () {
+        expect(OpenSim_Helpers_Router::match('/assets/images/logos/logo.svg'))
+            ->toBe(['asset', 'images/logos/logo.svg'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/assets/css/page.css'))
+            ->toBe(['asset', 'css/page.css'])
+            ->and(OpenSim_Helpers_Router::match('/assets/../includes/config.php'))
             ->toBeNull()
             ->and(OpenSim_Helpers_Router::match('/helpers/blocks/grid-status'))
             ->toBe(['block', 'grid-status'])
             ->and(OpenSim_Helpers_Router::match('/blocks/nothing'))
-            ->toBeNull()
-            ->and(OpenSim_Helpers_Router::match('/assets/logos/logo.svg'))
             ->toBeNull();
+    });
+
+    test('serves a profile by the name of the avatar, in the three forms', function () {
+        expect(OpenSim_Helpers_Router::match('/profile/jane.doe'))
+            ->toBe(['page', 'profile', ['name' => 'jane.doe']])
+            ->and(OpenSim_Helpers_Router::match('/profile/Jane-Doe/'))
+            ->toBe(['page', 'profile', ['name' => 'Jane.Doe']])
+            ->and(OpenSim_Helpers_Router::match('/@jane.doe'))
+            ->toBe(['page', 'profile', ['name' => 'jane.doe']])
+            ->and(OpenSim_Helpers_Router::match('/@jane.doe@grid.example:8002'))
+            ->toBe(['page', 'profile', ['name' => 'jane.doe@grid.example:8002']])
+            ->and(OpenSim_Helpers_Router::match('/profile'))
+            ->toBe(['page', 'profile'])
+            ->and(OpenSim_Helpers_Router::match('/members/jane.doe', ['/members' => '@profile']))
+            ->toBe(['page', 'profile', ['name' => 'jane.doe']])
+            ->and(OpenSim_Helpers_Router::match('/profile/jane/doe'))
+            ->toBeNull();
+    });
+
+    test('serves the health page', function () {
+        expect(OpenSim_Helpers_Router::match('/health'))->toBe(['page', 'health']);
     });
 
     test('knows no other URL', function () {

@@ -1,8 +1,8 @@
 <?php
 /**
  * Blocks: the pieces of content a page is made of (grid info, grid status, popular places...). A block gives its data, a
- * template of templates/blocks shows it. A page includes it with `render_block('grid-status')`, a site that embeds the
- * grid reads it as a fragment at <helpers>/blocks/<name> (HTML, or `?format=json` for the data alone).
+ * template-block-<name>.twig shows it. A template uses it as a variable, `{{ grid_status }}`; a site that embeds the grid reads
+ * it as a fragment at <helpers>/blocks/<name> (HTML, or `?format=json` for the data alone).
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
@@ -10,6 +10,8 @@
 require_once __DIR__ . '/class-cache.php';
 require_once __DIR__ . '/blocks/class-block-grid-info.php';
 require_once __DIR__ . '/blocks/class-block-grid-status.php';
+require_once __DIR__ . '/blocks/class-block-motd.php';
+require_once __DIR__ . '/blocks/class-block-health.php';
 
 class OpenSim_Helpers_Blocks
 {
@@ -17,6 +19,8 @@ class OpenSim_Helpers_Blocks
     const BLOCKS = [
         'grid-info' => 'OpenSim_Helpers_Block_GridInfo',
         'grid-status' => 'OpenSim_Helpers_Block_GridStatus',
+        'motd' => 'OpenSim_Helpers_Block_Motd',
+        'health' => 'OpenSim_Helpers_Block_Health',
     ];
 
     /** The levels a title can have. */
@@ -60,10 +64,10 @@ class OpenSim_Helpers_Blocks
     public static function render($name, $args = [], $dirs = null)
     {
         $data = self::data($name, $args);
-        if ($data === null || (empty($data['rows']) && empty($data['items']) && empty($data['text']))) {
+        if ($data === null || (empty($data['rows']) && empty($data['groups']) && empty($data['items']) && empty($data['text']))) {
             return '';
         }
 
-        return OpenSim_Helpers_View::render("blocks/$name.twig", $data, $dirs);
+        return OpenSim_Helpers_View::render("template-block-$name.twig", $data, $dirs);
     }
 }

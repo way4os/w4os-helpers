@@ -243,7 +243,7 @@ class OpenSim_Guide
     private function place_thumbnail()
     {
         // Replace this with the actual URL for the thumbnail placeholder
-        return OpenSim_Helpers_View::static_url('img/no-img.jpg');
+        return OpenSim_Helpers_View::assets_url('images/no-img.jpg');
     }
 
     private function place_traffic()
@@ -297,7 +297,7 @@ class OpenSim_Guide
 
         $content .=
             '<link rel="stylesheet" type="text/css" href="' .
-            OpenSim_Helpers_View::static_url('css/guide.css') .
+            OpenSim_Helpers_View::assets_url('css/guide.css') .
             '?' .
             time() .
             '">' .
@@ -308,7 +308,7 @@ class OpenSim_Guide
     private function html_suffix()
     {
         $content = '</div>';
-        $content .= '<script src="' . OpenSim_Helpers_View::static_url('js/guide.js') . '?' . time() . '"></script>';
+        $content .= '<script src="' . OpenSim_Helpers_View::assets_url('js/guide.js') . '?' . time() . '"></script>';
         if ($this->fullHTML) {
             $content .= '</body></html>';
         }

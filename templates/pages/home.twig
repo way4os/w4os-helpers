@@ -1,8 +1,0 @@
-{% extends 'base.twig' %}
-{# The home page: the blocks it shows, in this order. Copy it to the templates of the grid to show others. #}
-{% block content %}
-{% if not viewer %}<h1 class="grid-name">{{ grid_name }}</h1>{% endif %}
-{{ render_block('grid-info', { title: null }) }}
-{{ render_block('grid-status', { title: null }) }}
-{{ render_block('popular-places') }}
-{% endblock %}

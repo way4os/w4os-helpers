@@ -11,6 +11,7 @@ require_once dirname(__DIR__, 2) . '/classes/class-blocks.php';
 
 defined('OPENSIM_GRID_NAME') || define('OPENSIM_GRID_NAME', 'Alpha <b>World');
 defined('OPENSIM_LOGIN_URI') || define('OPENSIM_LOGIN_URI', 'http://127.0.0.1:9');
+defined('OPENSIM_MOTD') || define('OPENSIM_MOTD', 'Hello <USERNAME>\\nSecond line');
 
 /** A database that answers a number for each query, by what the query is about. */
 function counting_db(array $answers): object
@@ -165,6 +166,18 @@ describe('Block grid-status', function () {
             ->toBeFalse()
             ->and(OpenSim_Helpers_Block_GridStatus::online(''))
             ->toBeNull();
+    });
+});
+
+describe('Block motd', function () {
+    test('gives the message of the grid, with a name for the avatar a page does not know, and the new lines', function () {
+        $data = OpenSim_Helpers_Blocks::data('motd');
+
+        expect($data['text'])->toBe("Hello traveler\nSecond line")->and($data['title'])->toBe('Message of the day');
+    });
+
+    test('is shown as a paragraph with its new lines', function () {
+        expect(OpenSim_Helpers_Blocks::render('motd'))->toContain('Hello traveler<br />')->toContain('Second line');
     });
 });
 

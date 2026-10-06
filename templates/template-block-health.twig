@@ -1,0 +1,16 @@
+{% extends 'template-block.twig' %}
+{% block body %}
+    {% for group in groups %}
+        <h3 class="health-group">{{ group.title }}</h3>
+        <table class="block-table health-table">
+            {% for row in group.rows %}
+                <tr class="health-{{ row.level }}">
+                    <th scope="row">{{ row.label }}</th>
+                    <td class="health-url">{% if row.url %}<code>{{ row.url }}</code>{% elseif row.detail %}<code>{{ row.detail }}</code>{% endif %}</td>
+                    <td class="health-status"><span class="status status-{{ row.level }}">{{ row.status }}</span>{% if row.ms is not null %} <small>{{ row.ms }} ms</small>{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+    <p class="health-when"><small>{{ when }}</small></p>
+{% endblock %}

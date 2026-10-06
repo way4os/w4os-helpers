@@ -32,6 +32,8 @@ class OpenSim_Helpers_GridConfig
         'motd' => 'motd.php',
         'home' => '@home',
         'welcome' => '@splash',
+        'profile' => '@profile',
+        'health' => '@health',
         'landtool' => 'landtool.php',
         'parser' => 'parser.php',
         'eventsparser' => 'eventsparser.php',
@@ -299,6 +301,7 @@ class OpenSim_Helpers_GridConfig
             'databases' => $databases,
             'base_path' => $base,
             'urls' => $helpers['Urls'] ?? [],
+            'robust' => $robust,
         ];
     }
 

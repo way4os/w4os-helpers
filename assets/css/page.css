@@ -6,8 +6,16 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
 a { color: var(--accent); }
-main { max-width: 42rem; margin: 0 auto; padding: 1.5rem 1rem; }
-body.viewer main { padding: .75rem; max-width: none; }
+/* Left to right: what the grid is, the main content, what is new. On a narrow window the main content comes first. */
+.layout { display: grid; gap: 1.25rem; max-width: 80rem; margin: 0 auto; padding: 1.25rem 1rem; }
+.layout.with-sidebars { grid-template-columns: minmax(0, 16rem) minmax(0, 1fr) minmax(0, 16rem); }
+.layout.content-only { max-width: 48rem; }
+main { min-width: 0; }
+body.viewer .layout { padding: .75rem; max-width: none; }
+@media (max-width: 52rem) {
+    .layout.with-sidebars { grid-template-columns: minmax(0, 1fr); }
+    .layout.with-sidebars main { order: -1; }
+}
 .skip { position: absolute; left: -999px; }
 .skip:focus { left: .5rem; top: .5rem; background: var(--card); padding: .25rem .5rem; }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem 1rem; background: var(--card); border-bottom: 1px solid var(--line); }
@@ -15,9 +23,19 @@ body.viewer main { padding: .75rem; max-width: none; }
 .topbar .logo { max-height: 2.5rem; max-width: 8rem; }
 .topbar nav a { margin-left: 1rem; text-decoration: none; }
 footer { margin-top: 2rem; padding: 1rem; text-align: center; color: var(--muted); font-size: .875rem; border-top: 1px solid var(--line); }
-h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; text-align: center; }
+h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 .block { background: var(--card); border: 1px solid var(--line); border-radius: .5rem; padding: 1rem 1.25rem; margin: 1rem 0; }
 .block-title { margin: 0 0 .5rem; }
+.block:first-child { margin-top: 0; }
 .block-table { width: 100%; border-collapse: collapse; }
-.block-table th { text-align: left; font-weight: 500; color: var(--muted); padding: .2rem 1rem .2rem 0; width: 50%; }
+.block-table th { text-align: left; font-weight: 500; color: var(--muted); padding: .2rem 1rem .2rem 0; }
 .block-table td { padding: .2rem 0; }
+.health-group { margin: 1.25rem 0 .25rem; font-size: 1rem; }
+.health-table td { padding-right: .75rem; }
+.health-url code { font-size: .8125rem; word-break: break-all; }
+.health-status { white-space: nowrap; text-align: right; }
+.status { display: inline-block; min-width: 3rem; padding: 0 .5rem; border-radius: .25rem; text-align: center; font-size: .8125rem; }
+.status-ok { background: #2e7d32; color: #fff; }
+.status-warn { background: #b26a00; color: #fff; }
+.status-error { background: #b3261e; color: #fff; }
+.status-none { background: var(--line); color: var(--muted); }

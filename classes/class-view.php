@@ -42,10 +42,10 @@ class OpenSim_Helpers_View
         return '/' . trim((string) $path, '/') === '/' ? '' : '/' . trim((string) $path, '/');
     }
 
-    /** The URL of a static file of the helpers (css, js, pictures): <path>/static/<file>. */
-    public static function static_url($file)
+    /** The URL of a file of the assets of the helpers (css, js, images, fonts): <path>/assets/<file>. */
+    public static function assets_url($file)
     {
-        return self::base_path() . '/static/' . ltrim((string) $file, '/');
+        return self::base_path() . '/assets/' . ltrim((string) $file, '/');
     }
 
     /** The URL of a block, as a fragment to embed: <path>/blocks/<name>. */
@@ -70,17 +70,19 @@ class OpenSim_Helpers_View
     }
 
     /**
-     * What every page has: the grid, the logo, the menu, who asks.
+     * What every page has: the grid, the logo, the menu, who asks, and which columns it shows. A browser has the top bar, the
+     * footer and the sidebars; a viewer has the content alone, with the sidebars on the splash page only.
      *
+     * @param  string|null $slug the page (home, splash, guide...)
      * @return array<string,mixed>
      */
-    public static function context()
+    public static function context($slug = null)
     {
         $logo = defined('OPENSIM_GRID_LOGO_URL') ? OPENSIM_GRID_LOGO_URL : null;
         if (empty($logo)) {
             foreach (['svg', 'png'] as $ext) {
-                if (is_file(dirname(__DIR__) . "/static/logos/logo.$ext")) {
-                    $logo = self::static_url("logos/logo.$ext");
+                if (is_file(dirname(__DIR__) . "/assets/images/logos/logo.$ext")) {
+                    $logo = self::assets_url("images/logos/logo.$ext");
                     break;
                 }
             }
@@ -90,16 +92,19 @@ class OpenSim_Helpers_View
         $menu = [['label' => $labels['home'], 'url' => '/']];
         $guide = array_search('guide.php', $routes, true);
         $menu[] = ['label' => $labels['guide'], 'url' => $guide !== false ? $guide : self::base_path() . '/guide.php'];
+        $viewer = self::is_viewer();
 
         return [
             'grid_name' => defined('OPENSIM_GRID_NAME') ? OPENSIM_GRID_NAME : 'OpenSimulator grid',
             'login_uri' => defined('OPENSIM_LOGIN_URI') ? OPENSIM_LOGIN_URI : null,
             'login_host' => defined('OPENSIM_LOGIN_URI') ? preg_replace('#^https?://#', '', OPENSIM_LOGIN_URI) : null,
             'logo_url' => $logo,
-            'viewer' => self::is_viewer(),
+            'viewer' => $viewer,
+            'sidebars' => !$viewer || $slug === 'splash',
+            'slug' => $slug,
             'menu' => $menu,
             'labels' => $labels,
-            'static_url' => self::static_url(''),
+            'assets_url' => self::assets_url(''),
         ];
     }
 
@@ -119,8 +124,22 @@ class OpenSim_Helpers_View
         return $dirs;
     }
 
+    /** Whether a template exists in one of the folders. */
+    public static function has_template($name, $dirs = null)
+    {
+        foreach ($dirs ?? self::template_dirs() as $dir) {
+            if (is_file("$dir/$name")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
-     * Render a template (`pages/home.twig`, `blocks/grid-info.twig`).
+     * Render a template (`template.twig`, `template-content-home.twig`). The blocks it shows are plain variables:
+     * `{{ grid_info }}`, `{{ grid_status }}`, `{{ motd }}`... (the name of the block, dashes as underscores); only the ones
+     * it uses are made. `render_block('grid-status', { title: 'Status' })` is there for what needs more.
      *
      * @param  string               $template
      * @param  array<string,mixed>  $context
@@ -131,7 +150,6 @@ class OpenSim_Helpers_View
     {
         $loader = new \Twig\Loader\FilesystemLoader(array_values(array_filter($dirs ?? self::template_dirs(), 'is_dir')));
         $twig = new \Twig\Environment($loader, ['autoescape' => 'html']);
-        // The pages show blocks where they want them: {{ render_block('grid-status', { title: 'Status' }) }}
         $twig->addFunction(
             new \Twig\TwigFunction(
                 'render_block',
@@ -140,6 +158,57 @@ class OpenSim_Helpers_View
             ),
         );
 
+        // The blocks the template uses as variables
+        preg_match_all('/\{\{-?\s*([a-z][a-z0-9_]*)\s*(?:\|[^}]*)?-?\}\}/', $loader->getSourceContext($template)->getCode(), $found);
+        foreach (array_unique($found[1]) as $variable) {
+            $name = str_replace('_', '-', $variable);
+            if (!isset($context[$variable]) && OpenSim_Helpers_Blocks::exists($name)) {
+                $context[$variable] = new \Twig\Markup(OpenSim_Helpers_Blocks::render($name, [], $dirs), 'UTF-8');
+            }
+        }
+
         return $twig->render($template, $context);
+    }
+
+    /**
+     * The main content of a page: the template of the grid for that page (`template-content-<slug>.twig`) if there is one,
+     * else the block of the same name (the guide, the search...), else nothing.
+     *
+     * @param  string               $slug
+     * @param  array<string,mixed>  $context
+     * @param  string[]|null        $dirs
+     * @param  array<string,mixed>  $args what the block takes (the query)
+     * @return string|null null when the page has no content
+     */
+    public static function main($slug, $context, $dirs = null, $args = [])
+    {
+        if (self::has_template("template-content-$slug.twig", $dirs)) {
+            return self::render("template-content-$slug.twig", $context, $dirs);
+        }
+        if (OpenSim_Helpers_Blocks::exists($slug)) {
+            return OpenSim_Helpers_Blocks::render($slug, $args + ['title' => null], $dirs);
+        }
+
+        return null;
+    }
+
+    /**
+     * A page: the layout (`template.twig`) around the main content of the slug. Null when there is nothing to show for it.
+     *
+     * @param  string               $slug
+     * @param  array<string,mixed>  $extra what the page adds to the context
+     * @param  string[]|null        $dirs
+     * @return string|null
+     */
+    public static function page($slug, $extra = [], $dirs = null)
+    {
+        $context = $extra + self::context($slug);
+        $main = self::main($slug, $context, $dirs, $_GET);
+        if ($main === null) {
+            return null;
+        }
+        $context['main'] = new \Twig\Markup($main, 'UTF-8');
+
+        return self::render('template.twig', $context, $dirs);
     }
 }

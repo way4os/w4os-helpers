@@ -2,9 +2,12 @@
 
 ### Unreleased
 
-- new: blocks (grid info, grid status) in the home and splash pages, and alone at `<prefix>/blocks/<name>`
-- new: the pages show the content alone to a viewer, with the top bar and the footer in a browser
-- update: the static files are in `static/` (`<prefix>/static/`), the scripts of pages in `pages/`
+- new: one layout for every page, with the main content of the page between a left sidebar and a right one
+- new: blocks (grid info, grid status, message of the day) are variables of the templates (`{{ grid_info }}`), and alone at `<prefix>/blocks/<name>`
+- new: the pages show the content alone to a viewer (the splash page has its sidebars), a browser has the top bar and the footer too
+- new: `/health` lists the addresses of the grid and the services of the helpers, with their status (`?format=json` for a monitor)
+- new: `/profile/<first>.<last>`, `/profile/<first>-<last>` and `/@<first>.<last>` are routed to the profile page
+- update: the files of the pages are in `assets/` (`<prefix>/assets/`: `css`, `js`, `images`), the scripts of pages in `pages/`
 - update: `directory_info.php` is a page of the grid layout, one query per grid
 - removed: the page system of the former wizard (`init.php`, `class-grid.php`, `class-page.php`, `class-form.php`...), nothing used it
 - fix: `directory_info.php` failed on its second visit (an empty cache was read back as text)

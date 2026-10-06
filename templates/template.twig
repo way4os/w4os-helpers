@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}{{ grid_name }}{% endblock %}</title>
+        {% block style %}<link rel="stylesheet" href="{{ assets_url }}css/page.css">{% endblock %}
+    </head>
+    {# One layout for every page, left to right: what the grid is, the main content, what is new. A viewer shows the content
+       alone, except on the splash page; a browser has the top bar and the footer too. #}
+    <body class="{{ viewer ? 'viewer' : 'browser' }} page-{{ slug }}">
+        {% if not viewer %}
+            <a class="skip" href="#main">{{ labels.skip }}</a>
+            <header class="topbar">
+                <a class="brand" href="/">
+                    {% if logo_url %}<img class="logo" src="{{ logo_url }}" alt="">{% endif %}
+                    <span>{{ grid_name }}</span>
+                </a>
+                <nav>
+                    {% for item in menu %}<a href="{{ item.url }}">{{ item.label }}</a>{% endfor %}
+                </nav>
+            </header>
+        {% endif %}
+        <div class="layout {{ sidebars ? 'with-sidebars' : 'content-only' }}">
+            {% if sidebars %}
+                <aside class="sidebar sidebar-left">
+                    {{ grid_info }}
+                    {{ grid_status }}
+                </aside>
+            {% endif %}
+            <main id="main">
+                {{ main }}
+            </main>
+            {% if sidebars %}
+                <aside class="sidebar sidebar-right">
+                    {{ motd }}
+                    {{ news }}
+                </aside>
+            {% endif %}
+        </div>
+        {% if not viewer %}
+            <footer>
+                <span>{{ grid_name }}</span> · <span>{{ labels.powered_by }}</span>
+            </footer>
+        {% endif %}
+    </body>
+</html>
