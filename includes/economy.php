@@ -30,6 +30,18 @@ if (defined('CURRENCY_DB_HOST')) {
     $CurrencyDB = &$OpenSimDB;
 }
 
+/** A random UUID (version 4), the identifier of a transaction. */
+if (!function_exists('make_random_guid')) {
+    function make_random_guid()
+    {
+        $bytes = random_bytes(16);
+        $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+        $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4));
+    }
+}
+
 function noserver_save_transaction($sourceId, $destId, $amount, $type, $flags, $desc, $prminvent, $nxtowner, $ip)
 {
     global $CurrencyDB;

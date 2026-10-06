@@ -143,8 +143,7 @@ function buy_land($method_name, $params, $app_data)
                 $res = currency_add_money($agentid, $amount, $sessionid);
 
                 if (!empty($res['success'])) {
-                    $amount += currency_get_balance($agentid);
-                    currency_move_money($agentid, null, $amount, 5002, 0, 'Land Purchase', 0, 0, $ipAddress);
+                    // The land is paid afterwards, by the region (regionMoveMoney): the avatar only gets the currency it needs
                     currency_update_simulator_balance($agentid, -1, $sessionid);
                     $response_xml = xmlrpc_encode(['success' => true]);
                 } else {
