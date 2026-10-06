@@ -4,7 +4,7 @@
 
 - fix: `directory_info.php` failed on its second visit (an empty cache was read back as text)
 - fix: `eventsparser.php` failed on the first event (`opensim_latin1_only()` did not exist)
-- new: `guide_source` in `helpers.ini` gives the destinations of the guide
+- new: `guide_source` in `helpers.ini` gives the destinations of the guide (a file of the grid folder, a path or a URL)
 - fix: `guide.php` shows nothing behind the router, and its pages show what the file holds as text
 - fix: `textgen.php` reads `size` (the font size was never read), `inpage`, and says when it has no Imagick
 - fix: `directory_info.php` and the locale warned on a request without `Accept-Language` or without grids

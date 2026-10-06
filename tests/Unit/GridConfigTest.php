@@ -153,6 +153,23 @@ describe('Grid config', function () {
         );
     });
 
+    test('looks for the file of the guide in the folder of the grid, unless it is a path or a URL', function () {
+        $guide = function (string $source) {
+            [$conf, $grid] = grid_config_tree("[Helpers]\nguide_source = \"$source\"\n");
+            $settings = OpenSim_Helpers_GridConfig::settings(null, $conf);
+
+            return [OpenSim_Helpers_GridConfig::constants($settings)['OPENSIM_GUIDE_SOURCE'], $grid];
+        };
+
+        [$relative, $grid] = $guide('destinations.txt');
+        expect($relative)
+            ->toBe("$grid/destinations.txt")
+            ->and($guide('/srv/guide/places.txt')[0])
+            ->toBe('/srv/guide/places.txt')
+            ->and($guide('https://example.org/places.txt')[0])
+            ->toBe('https://example.org/places.txt');
+    });
+
     test('gives the message of the day of helpers.ini', function () {
         [$conf] = grid_config_tree("[Helpers]\nmotd = \"Hello\\nthere\"\n");
 
