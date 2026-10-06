@@ -405,6 +405,35 @@ describe('The routes', function () {
         expect($elsewhere)->not->toHaveKeys(['/helpers/currency.php', '/currency/currency.php']);
     });
 
+    test('are the ones of the host of the page served, whatever the web address of the grid says', function () use ($routes) {
+        $files = ['sims/one.ini' => "[Search]\nSearchURL = \"https://play.example.org/v3/query\"\n[DataSnapshot]\nDATA_SRV_Alpha = \"http://play.example.org:8090/register.php\"\n"];
+        $served = function (string $host, ?string $port = null) use ($routes, $files) {
+            $before = [$_SERVER['HTTP_HOST'] ?? null, $_SERVER['SERVER_PORT'] ?? null];
+            $_SERVER['HTTP_HOST'] = $host;
+            $port === null ? null : ($_SERVER['SERVER_PORT'] = $port);
+            $table = $routes('', $files);
+            [$_SERVER['HTTP_HOST'], $_SERVER['SERVER_PORT']] = $before;
+            unset($_SERVER['HTTP_HOST'], $_SERVER['SERVER_PORT']);
+
+            return $table;
+        };
+
+        // On the host of the addresses, and on its port when an address gives one
+        expect($served('play.example.org', '443'))
+            ->toHaveKey('/v3/query')
+            ->not->toHaveKey('/register.php')
+            ->and($served('play.example.org:8090'))
+            ->toHaveKey('/register.php')
+            ->and($served('PLAY.example.org:8090'))
+            ->toHaveKey('/v3/query')
+            // Another host serving the same files (another site, a test server): nothing of what the grid sent to play.example.org
+            ->and($served('127.0.0.1:8090'))
+            ->not->toHaveKeys(['/v3/query', '/register.php', '/helpers/query.php', '/helpers/register.php'])
+            // The address of the web site of the grid is not what counts
+            ->and($served('other.example.net'))
+            ->toHaveKey('/helpers/currency.php');
+    });
+
     test('follow the pages the login service and the grid info give', function () use ($routes) {
         $table = $routes("[LoginService]\nDestinationGuide = \"https://play.example.org/guide\"\nMessageUrl = \"https://other.example.org/motd.php\"\n[GridInfoService]\nwelcome = \"https://play.example.org/splash\"\n");
 

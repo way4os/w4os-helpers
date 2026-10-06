@@ -382,19 +382,50 @@ class OpenSim_Helpers_GridConfig
     }
 
     /**
-     * Whether an address is served by this site: its host is the one of the site (an address with no host is a path of the
-     * site). A service the grid sends elsewhere (a third party, another site of the grid) is not served here.
+     * The host (and the port, when there is one) of the web page that is being served: what the web server says
+     * (HTTP_HOST, else SERVER_NAME); without a request (a command, a test) the host of the web address of the grid.
+     *
+     * @param  array $settings what settings() gave
+     * @return array{host:string,port:?int}
      */
-    private static function is_local($url, $site_host)
+    public static function site($settings)
+    {
+        $authority = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
+        if ($authority === '') {
+            return ['host' => self::host_of($settings['web_url'] ?? ''), 'port' => null];
+        }
+        $parts = parse_url('//' . $authority) ?: [];
+        $port = $parts['port'] ?? (isset($_SERVER['HTTP_HOST']) && !str_contains($authority, ':') ? ($_SERVER['SERVER_PORT'] ?? null) : null);
+
+        return ['host' => strtolower((string) ($parts['host'] ?? $authority)), 'port' => $port === null ? null : (int) $port];
+    }
+
+    /**
+     * Whether an address is served by this site: its host (and its port, when it gives one) are the ones of the page that is
+     * being served. An address with no host is a path of the site. A service the grid sends elsewhere (a third party, another
+     * site of the grid) is not served here. The address of a simulator, or of the grid that asks, has nothing to do with it.
+     *
+     * @param  string                          $url
+     * @param  array{host:string,port:?int}    $site
+     */
+    private static function is_local($url, $site)
     {
         $host = self::host_of($url);
+        if ($host === '') {
+            return true;
+        }
+        if ($host !== $site['host']) {
+            return false;
+        }
+        $port = parse_url((string) $url, PHP_URL_PORT);
 
-        return $host === '' || $host === $site_host;
+        return $port === null || $site['port'] === null || (int) $port === $site['port'];
     }
 
     /**
      * The paths the helpers answer and what answers each, from the addresses the grid gives to its services in the official
-     * settings, those with this site's host name only: a service the grid has set up elsewhere has no ghost on this site.
+     * settings, those that are on the host of the page served only (see site()): a service the grid has set up elsewhere has
+     * no ghost on this site.
      * A service the grid says nothing about is served at its default path, under the one of the economy (`/helpers`).
      *
      * @param  array $settings what settings() gave
@@ -403,7 +434,7 @@ class OpenSim_Helpers_GridConfig
     public static function routes($settings)
     {
         $sources = $settings['sources'];
-        $site = self::host_of($settings['web_url']);
+        $site = self::site($settings);
         $get = fn($section, $key) => self::value($sources, $section, $key);
         $routes = ['/' => '@home', '/health' => '@health'];
 
@@ -450,9 +481,8 @@ class OpenSim_Helpers_GridConfig
     {
         $sources = $settings['sources'];
         $economy = self::value($sources, 'GridInfoService', 'economy') ?? self::value($sources, 'Economy', 'economy');
-        $site = self::host_of($settings['web_url']);
 
-        return $economy !== null && self::is_local($economy, $site) ? self::path_of($economy) : '/helpers';
+        return $economy !== null && self::is_local($economy, self::site($settings)) ? self::path_of($economy) : '/helpers';
     }
 
     /**
