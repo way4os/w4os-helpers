@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix: `eventsparser.php` failed on the first event (`opensim_latin1_only()` did not exist)
 - new: `guide_source` in `helpers.ini` gives the destinations of the guide
 - fix: `guide.php` shows nothing behind the router, and its pages show what the file holds as text
 - fix: `textgen.php` reads `size` (the font size was never read), `inpage`, and says when it has no Imagick

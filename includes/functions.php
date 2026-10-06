@@ -18,6 +18,17 @@ if (!function_exists('xmlrpc_encode')) {
 }
 
 /**
+ * Replace the characters ISO-8859-1 cannot represent by "?" (the search tables of OpenSimulator are in Latin-1).
+ *
+ * @param  string $text The text to clean.
+ * @return string
+ */
+function opensim_latin1_only($text)
+{
+    return mb_convert_encoding(mb_convert_encoding((string) $text, 'ISO-8859-1', 'UTF-8'), 'UTF-8', 'ISO-8859-1');
+}
+
+/**
  * Verify if given string is an UUID.
  * In theory, we would check want v4-compliant uuids
  * (xxxxxxxx-xxxx-4xxx-[89AB]xxx-xxxxxxxxxxxx) but OpenSimulator seems to have
