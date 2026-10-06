@@ -2,10 +2,10 @@
 
 ### Unreleased
 
-- update: the currency is what the economy module says (Gloebit, BetaGridLikeMoneyModule), `[Gloebit] GLBEnvironment` sets the sandbox; no `Currency*` in `Helpers.ini`
+- update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting
+- update: the Gloebit sandbox is `[Gloebit] GLBEnvironment`; the rate is 4 for 1000 unless the module's addon says
 - update: an address of the grid is served when its host (and its port, if it gives one) are the ones of the page served
 - update: the profile address is `web_profile_url` of the grid info (`[AGENT_NAME]`), also `Firstname-Lastname`
-- fix: Gloebit and Podex never add currency, the viewer is sent to their page
 - fix: the home page shows the destination guide, the block is `destination_guide`
 - update: one source of truth, the settings are read from Robust.ini, OpenSim.ini and the simulators' ini, in their format (README)
 - update: `Helpers.ini`, same format, holds the settings that have no official place, in `[Helpers]`, and a web host's reduced copy

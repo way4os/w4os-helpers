@@ -16,13 +16,15 @@ if (CURRENCY_PROVIDER != 'gloebit') {
     die();
 }
 /**
- * Set to true to activate sandbox mode, during initial installation and tests.
- * Set to false once ready to go live.
+ * The sandbox of Gloebit, or the real one: what the module says in its own settings, [Gloebit] GLBEnvironment
+ * (`sandbox` or `production`) of the ini files of the grid. The sandbox is for the installation and the tests.
  *
  * @var boolean
  */
 if (!defined('GLOEBIT_SANDBOX')) {
-    define('GLOEBIT_SANDBOX', false);
+    $gloebit = class_exists('OpenSim_Helpers_GridConfig') ? OpenSim_Helpers_GridConfig::section('Gloebit') : [];
+    define('GLOEBIT_SANDBOX', strtolower($gloebit['GLBEnvironment'] ?? '') === 'sandbox');
+    unset($gloebit);
 }
 
 /**

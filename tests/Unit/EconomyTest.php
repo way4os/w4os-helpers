@@ -73,31 +73,32 @@ test('a transaction has a random UUID of version 4', function () {
         ->not->toBe($one);
 });
 
-describe('A currency sold elsewhere', function () {
+describe('A purchase that cannot be done here', function () {
     $agent = '9d315475-daf9-4e31-a5e6-d787ddfcbef6';
+    $help = ['CURRENCY_HELPER_URL' => 'https://play.example.org/helpers/currency.php'];
 
-    test('is sent to the page of Gloebit, the sandbox or the real one as Gloebit says', function () use ($agent) {
-        $sold = fn(array $constants) => economy_run("currency_sold_elsewhere('$agent')", $constants);
+    test('sends to the page of Gloebit, the sandbox or the real one as Gloebit says', function () use ($agent, $help) {
+        $refusal = fn(array $constants) => economy_run("currency_refusal('$agent')", $constants + $help);
 
-        expect($sold(['CURRENCY_PROVIDER' => 'gloebit', 'GLOEBIT_SANDBOX' => true])['errorURI'])
+        expect($refusal(['CURRENCY_PROVIDER' => 'gloebit', 'GLOEBIT_SANDBOX' => true])['errorURI'])
             ->toStartWith('https://sandbox.gloebit.com/purchase?')
-            ->and($sold(['CURRENCY_PROVIDER' => 'gloebit', 'GLOEBIT_SANDBOX' => false])['errorURI'])
+            ->and($refusal(['CURRENCY_PROVIDER' => 'gloebit', 'GLOEBIT_SANDBOX' => false])['errorURI'])
             ->toStartWith('https://www.gloebit.com/purchase?')
-            ->and($sold(['CURRENCY_PROVIDER' => 'gloebit'])['errorMessage'])
+            ->and($refusal(['CURRENCY_PROVIDER' => 'gloebit'])['errorMessage'])
             ->toContain('Gloebit');
     });
 
-    test('is sent to the terminals of Podex', function () use ($agent) {
-        $sold = economy_run("currency_sold_elsewhere('$agent')", [
+    test('sends to the terminals of Podex', function () use ($agent, $help) {
+        $refusal = economy_run("currency_refusal('$agent')", $help + [
             'CURRENCY_PROVIDER' => 'podex',
             'PODEX_ERROR_MESSAGE' => 'Use the terminals.',
             'PODEX_REDIRECT_URL' => 'secondlife://Podex/1/2/3',
         ]);
 
-        expect($sold['errorMessage'])->toBe('Use the terminals. secondlife://Podex/1/2/3');
+        expect($refusal['errorMessage'])->toBe('Use the terminals. secondlife://Podex/1/2/3');
     });
 
-    test('is nothing for the other modules: no decision is taken for them', function () use ($agent) {
-        expect(economy_run("currency_sold_elsewhere('$agent')"))->toBeNull();
+    test('opens the help page of the helpers for any other module', function () use ($agent, $help) {
+        expect(economy_run("currency_refusal('$agent')", $help + ['CURRENCY_PROVIDER' => null])['errorURI'])->toBe('https://play.example.org/helpers/currency.php');
     });
 });

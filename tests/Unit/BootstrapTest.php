@@ -95,7 +95,7 @@ describe('Bootstrap with includes/config.php', function () {
             ->and($c['CURRENCY_PROVIDER'])
             ->toBeNull()
             ->and($c['CURRENCY_RATE'])
-            ->toBe(10)
+            ->toBe(4)
             ->and($c['CURRENCY_RATE_PER'])
             ->toBe(1000);
     });

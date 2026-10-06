@@ -132,11 +132,7 @@ function buy_land($method_name, $params, $app_data)
             if (!$cost) {
                 $cost = currency_virtual_to_real($amount);
             }
-            // A currency sold elsewhere (Gloebit, Podex) is not added by this script
-            $elsewhere = currency_sold_elsewhere($agentid);
-            if ($elsewhere !== null) {
-                $response_xml = xmlrpc_encode(['success' => false] + $elsewhere);
-            } elseif (!currency_process_transaction($agentid, $cost, $ipAddress)) {
+            if (!currency_process_transaction($agentid, $cost, $ipAddress)) {
                 $response_xml = xmlrpc_encode([
                     'success' => false,
                     'errorMessage' =>

@@ -408,14 +408,14 @@ function currency_get_balance($agentID, $secureID = null)
 }
 
 /**
- * Where a user is sent to get currency when the grid sells it elsewhere: the message and the address the viewer shows. The
- * modules the helpers know are Gloebit (the user finishes the purchase on its web site) and Podex (in-world terminals);
- * with any other, or none, nothing is said.
+ * What the viewer is told when a purchase of currency cannot be done here: the message and the address it shows. The
+ * module of the currency of the grid decides: Gloebit has the user finish the transaction on its web site, Podex sends
+ * to its terminals in world, any other gets the help page of the helpers.
  *
  * @param  string $agentID
- * @return array{errorMessage:string,errorURI:?string}|null null when the currency is not sold elsewhere
+ * @return array{errorMessage:string,errorURI:?string}
  */
-function currency_sold_elsewhere($agentID)
+function currency_refusal($agentID)
 {
     switch (CURRENCY_PROVIDER) {
         case 'podex':
@@ -437,7 +437,10 @@ function currency_sold_elsewhere($agentID)
             ];
     }
 
-    return null;
+    return [
+        'errorMessage' => 'Unable to process the transaction. The gateway denied your charge. Open help page?',
+        'errorURI' => defined('W4OS_GRID_INFO') && !empty(W4OS_GRID_INFO['help']) ? W4OS_GRID_INFO['help'] : CURRENCY_HELPER_URL,
+    ];
 }
 
 function currency_get_confirm_value($ipAddress)

@@ -21,6 +21,9 @@
 
 class OpenSim_Helpers_GridConfig
 {
+    /** @var array|null what settings() gave for the grid served, for the addons of the modules (see section()) */
+    private static $current = null;
+
     const DEFAULT_CONF = '/etc/opensim/opensim.conf';
     const DEFAULT_ETC = '/etc/opensim';
 
@@ -57,9 +60,27 @@ class OpenSim_Helpers_GridConfig
                 return "$file is not readable by the web server user (every ini file of the grid belongs to the group of the web server, mode 640: chgrp www-data)";
             }
         }
+        self::$current = $settings;
         self::define_constants($settings);
 
         return null;
+    }
+
+    /**
+     * A section of the config of the grid, whatever the file: what a module says of itself ([Gloebit]), for the addon that
+     * knows the module. The first file that has a key wins, as everywhere.
+     *
+     * @param  string $name
+     * @return array<string,string> empty when there is no such section, or no grid config
+     */
+    public static function section($name)
+    {
+        $section = [];
+        foreach (self::$current['sources'] ?? [] as $ini) {
+            $section += $ini[$name] ?? [];
+        }
+
+        return $section;
     }
 
     /**
@@ -516,7 +537,9 @@ class OpenSim_Helpers_GridConfig
         $get = fn($section, $key) => self::value($sources, $section, $key);
         $helpers = $settings['helpers'];
         $economy = $get('GridInfoService', 'economy') ?? $get('Economy', 'economy');
-        $module = (string) $get('Economy', 'economymodule');
+        $module = strtolower((string) $get('Economy', 'economymodule'));
+        // The module the helpers know has an addon of its name
+        $provider = preg_match('/^[a-z0-9_-]+$/', $module) && is_file(dirname(__DIR__) . "/addons/$module.php") ? $module : null;
         $base = self::base_path($settings);
 
         $constants = [
@@ -535,11 +558,13 @@ class OpenSim_Helpers_GridConfig
             'OPENSIM_GRID_LOGO_URL' => $helpers['LogoURL'] ?? null,
             'OPENSIM_MAIL_SENDER' => $helpers['MailSender'] ?? null,
             'HYPEVENTS_URL' => isset($helpers['HypEventsURL']) ? rtrim($helpers['HypEventsURL'], '/') : null,
-            // The currency is what the economy module of the grid says: the modules we know are Gloebit and
-            // BetaGridLikeMoneyModule (everything is free), a grid with another one handles its currency by hand
-            'CURRENCY_PROVIDER' => strtolower($module) === 'gloebit' ? 'gloebit' : null,
-            // Gloebit tells whether it is the sandbox or the real one
-            'GLOEBIT_SANDBOX' => $get('Gloebit', 'GLBEnvironment') === null ? null : strtolower($get('Gloebit', 'GLBEnvironment')) === 'sandbox',
+            // The currency is what the economy module of the grid says. BetaGridLikeMoneyModule (the default of OpenSim) makes
+            // everything free and needs no helper. With any other module, the helpers estimate the cost, relay the transfers and
+            // the balance to the module and send the user to its page; the ones that have an addon (addons/gloebit.php) also
+            // know its rates and settings
+            'CURRENCY_PROVIDER' => $provider,
+            'CURRENCY_USE_MONEYSERVER' => $module === '' || $module === 'betagridlikemoneymodule' ? null : true,
+            'OPENSIM_USE_UTC_TIME' => isset($helpers['UseUTCTime']) ? self::flag($helpers['UseUTCTime']) : null,
             'CURRENCY_HELPER_URL' =>
                 $settings['web_url'] === '' ? null : $settings['web_url'] . ($economy === null ? $base : self::path_of($economy)) . '/currency.php',
         ];

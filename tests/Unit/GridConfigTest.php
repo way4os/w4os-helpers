@@ -240,33 +240,54 @@ describe('The settings', function () {
         expect(OpenSim_Helpers_GridConfig::constants(OpenSim_Helpers_GridConfig::settings(null, $conf))['OPENSIM_THEME_PATH'])->toBe("$grid/theme");
     });
 
-    test('tell the currency from the economy module of OpenSim.ini: Gloebit, and what Gloebit says of itself', function () {
-        $module = fn(string $name, string $more = '') => grid_constants('', true, ['OpenSim.ini' => "[Economy]\neconomymodule = $name\n$more"]);
+    test('tell the currency from the economy module of OpenSim.ini: the helpers relay to any module but the beta one', function () {
+        $module = fn(string $name) => grid_constants('', true, ['OpenSim.ini' => "[Economy]\neconomymodule = $name\n"]);
 
-        $gloebit = $module('Gloebit', "[Gloebit]\nGLBEnvironment = sandbox\n");
-
-        expect($gloebit['CURRENCY_PROVIDER'])
-            ->toBe('gloebit')
-            ->and($gloebit['GLOEBIT_SANDBOX'])
-            ->toBeTrue()
-            ->and($module('Gloebit', "[Gloebit]\nGLBEnvironment = production\n")['GLOEBIT_SANDBOX'])
-            ->toBeFalse()
-            // The modules we do not know are the business of the grid: nothing is decided for them
-            ->and($module('BetaGridLikeMoneyModule'))
-            ->not->toHaveKeys(['CURRENCY_PROVIDER', 'CURRENCY_USE_MONEYSERVER', 'GLOEBIT_SANDBOX'])
+        // Gloebit has an addon (its rates, its sandbox), the other modules the grid may use are relayed as well
+        expect($module('Gloebit'))
+            ->toMatchArray(['CURRENCY_PROVIDER' => 'gloebit', 'CURRENCY_USE_MONEYSERVER' => true])
             ->and($module('DTLNSLMoneyModule'))
+            ->toMatchArray(['CURRENCY_USE_MONEYSERVER' => true])
+            ->not->toHaveKey('CURRENCY_PROVIDER')
+            // The beta module, and the grids without module, make everything free: no currency to handle
+            ->and($module('BetaGridLikeMoneyModule'))
             ->not->toHaveKeys(['CURRENCY_PROVIDER', 'CURRENCY_USE_MONEYSERVER'])
             ->and(grid_constants())
-            ->not->toHaveKeys(['CURRENCY_RATE', 'CURRENCY_RATE_PER', 'CURRENCY_SCRIPT_KEY', 'CURRENCY_USE_MONEYSERVER']);
+            ->not->toHaveKeys(['CURRENCY_PROVIDER', 'CURRENCY_USE_MONEYSERVER'])
+            // The rates and the key are not settings of the grid: the module (its addon) and the helpers have their own
+            ->and(grid_constants())
+            ->not->toHaveKeys(['CURRENCY_RATE', 'CURRENCY_RATE_PER', 'CURRENCY_SCRIPT_KEY', 'GLOEBIT_SANDBOX']);
     });
 
-    test('find the settings of a module in the files a simulator includes', function () {
-        $constants = grid_constants('', true, [
-            'OpenSim.ini' => "[Economy]\neconomymodule = Gloebit\n",
-            'config-include/Gloebit.ini' => "[Gloebit]\nGLBEnvironment = sandbox\n",
-        ]);
+    test('keep UTC time unless Helpers.ini says otherwise', function () {
+        expect(grid_constants("[Helpers]\nUseUTCTime = false\n")['OPENSIM_USE_UTC_TIME'])->toBeFalse();
+    });
+});
 
-        expect($constants['GLOEBIT_SANDBOX'])->toBeTrue();
+describe('The addon of a module', function () {
+    /** Load the Gloebit addon against the config of a test grid, in its own process: it defines constants. */
+    function gloebit_addon(string $ini): array
+    {
+        [$conf] = grid_config_tree('', true, ['OpenSim.ini' => "[Economy]\neconomymodule = Gloebit\n", 'config-include/Gloebit.ini' => $ini]);
+        $root = dirname(__DIR__, 2);
+        $script =
+            "putenv('OPENSIM_CONF=$conf'); require '$root/classes/class-grid-config.php'; OpenSim_Helpers_GridConfig::load();" .
+            "define('CURRENCY_PROVIDER', 'gloebit'); require '$root/addons/gloebit.php';" .
+            'echo json_encode([GLOEBIT_SANDBOX, GLOEBIT_CONVERSION_THRESHOLD]);';
+        $process = proc_open([PHP_BINARY, '-d', 'display_errors=0', '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        $out = (string) stream_get_contents($pipes[1]);
+        proc_close($process);
+
+        return json_decode($out, true) ?? [];
+    }
+
+    test('Gloebit is the sandbox or the real one as its own settings say, in the files a simulator includes', function () {
+        expect(gloebit_addon("[Gloebit]\nGLBEnvironment = sandbox\n")[0])
+            ->toBeTrue()
+            ->and(gloebit_addon("[Gloebit]\nGLBEnvironment = production\n")[0])
+            ->toBeFalse()
+            ->and(gloebit_addon("[Gloebit]\n")[0])
+            ->toBeFalse();
     });
 });
 

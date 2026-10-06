@@ -40,8 +40,6 @@ $defaults = [
     'CURRENCY_PROVIDER' => null,
     'CURRENCY_USE_MONEYSERVER' => false,
     'CURRENCY_SCRIPT_KEY' => null,
-    'CURRENCY_RATE' => 10, // in real currency...
-    'CURRENCY_RATE_PER' => 1000, // ... for this amount of virtual currency
     'CURRENCY_HELPER_URL' => null,
     'CURRENCY_MONEY_TBL' => 'balances',
     'CURRENCY_TRANSACTION_TBL' => 'transactions',
@@ -91,3 +89,8 @@ if (is_file($currency_addon)) {
     require_once $currency_addon;
 }
 unset($currency_addon);
+
+// The rate is the one of the module (its addon says it: Gloebit has fixed packs), else about the one of Second Life: 4 in real
+// currency for 1000 of the virtual one
+defined('CURRENCY_RATE') || define('CURRENCY_RATE', 4);
+defined('CURRENCY_RATE_PER') || define('CURRENCY_RATE_PER', 1000);

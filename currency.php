@@ -128,16 +128,6 @@ function currency_xmlrpc_buy($method_name, $params, $app_data)
         return '';
     }
 
-    // A currency sold elsewhere (Gloebit, Podex) is not added by this script
-    $elsewhere = currency_sold_elsewhere($agentid);
-    if ($elsewhere !== null) {
-        $response_xml = xmlrpc_encode(['success' => false] + $elsewhere);
-        header('Content-type: text/xml');
-        echo $response_xml;
-
-        return '';
-    }
-
     $ret = false;
     $cost = currency_virtual_to_real($amount);
     $transactionPermit = currency_process_transaction($agentid, $cost, $ipAddress);
@@ -152,11 +142,8 @@ function currency_xmlrpc_buy($method_name, $params, $app_data)
     if ($ret) {
         $response_xml = xmlrpc_encode(['success' => true]);
     } else {
-        $response_xml = xmlrpc_encode([
-            'success' => false,
-            'errorMessage' => 'Unable to process the transaction. The gateway denied your charge. Open help page?',
-            'errorURI' => defined('W4OS_GRID_INFO') && !empty(W4OS_GRID_INFO['help']) ? W4OS_GRID_INFO['help'] : CURRENCY_HELPER_URL,
-        ]);
+        // The module of the currency says what to do when the purchase cannot be done here
+        $response_xml = xmlrpc_encode(['success' => false] + currency_refusal($agentid));
     }
 
     header('Content-type: text/xml');
