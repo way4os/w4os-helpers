@@ -122,7 +122,13 @@ function buy_land($method_name, $params, $app_data)
     $ret = opensim_check_secure_session($agentid, null, $sessionid);
 
     if ($ret) {
-        if ($amount >= 0) {
+        if (!is_numeric($amount) || $amount < 0) {
+            $response_xml = xmlrpc_encode([
+                'success' => false,
+                'errorMessage' => "\n\nInvalid amount",
+                'errorURI' => '' . CURRENCY_HELPER_URL . '',
+            ]);
+        } else {
             if (!$cost) {
                 $cost = currency_virtual_to_real($amount);
             }
@@ -133,24 +139,21 @@ function buy_land($method_name, $params, $app_data)
                         "\n\nThe gateway has declined your transaction. Please update your payment method AND try again later.",
                     'errorURI' => '' . CURRENCY_HELPER_URL . '',
                 ]);
-            }
-            $enough_money = false;
-            $res = currency_add_money($agentid, $amount, $sessionid);
-            if ($res['success']) {
-                $enough_money = true;
-            }
-
-            if ($enough_money) {
-                $amount += currency_get_balance($agentid);
-                currency_move_money($agentid, null, $amount, 5002, 0, 'Land Purchase', 0, 0, $ipAddress);
-                currency_update_simulator_balance($agentid, -1, $sessionid);
-                $response_xml = xmlrpc_encode(['success' => true]);
             } else {
-                $response_xml = xmlrpc_encode([
-                    'success' => false,
-                    'errorMessage' => "\n\nYou do not have sufficient funds for this purchase",
-                    'errorURI' => '' . CURRENCY_HELPER_URL . '',
-                ]);
+                $res = currency_add_money($agentid, $amount, $sessionid);
+
+                if (!empty($res['success'])) {
+                    $amount += currency_get_balance($agentid);
+                    currency_move_money($agentid, null, $amount, 5002, 0, 'Land Purchase', 0, 0, $ipAddress);
+                    currency_update_simulator_balance($agentid, -1, $sessionid);
+                    $response_xml = xmlrpc_encode(['success' => true]);
+                } else {
+                    $response_xml = xmlrpc_encode([
+                        'success' => false,
+                        'errorMessage' => "\n\nYou do not have sufficient funds for this purchase",
+                        'errorURI' => '' . CURRENCY_HELPER_URL . '',
+                    ]);
+                }
             }
         }
     } else {

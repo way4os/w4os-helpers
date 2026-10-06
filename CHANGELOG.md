@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+- fix: `currency.php` failed without `currency_rate` in `helpers.ini` (10 for 1000 now), and when a purchase was refused
+- fix: Gloebit offers the pack that covers the amount, the balance is given only with the secure session
+- fix: `landtool.php` answers a negative amount, and a declined transaction, instead of nothing
 - fix: `offline.php/SaveMessage/` and `/RetrieveMessages/` were a 404 behind the router: no offline message
 - fix: a simulator that cannot be reached is asked again later, more and more late, not at every run
 - fix: a parcel without picture or group got the ones of the parcel before it in the search tables

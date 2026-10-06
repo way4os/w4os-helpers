@@ -93,7 +93,11 @@ describe('Bootstrap with includes/config.php', function () {
             ->and($c['OPENSIM_USE_UTC_TIME'])
             ->toBeTrue()
             ->and($c['CURRENCY_PROVIDER'])
-            ->toBeNull();
+            ->toBeNull()
+            ->and($c['CURRENCY_RATE'])
+            ->toBe(10)
+            ->and($c['CURRENCY_RATE_PER'])
+            ->toBe(1000);
     });
 
     test('keeps what the config defines', function () {

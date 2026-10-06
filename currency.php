@@ -47,9 +47,12 @@ function currency_xmlrpc_quote($method_name, $params, $app_data)
         switch (CURRENCY_PROVIDER) {
             case 'gloebit':
                 $cost = 1; // default cost if no table;
+                $realamount = $amount;
                 $conversion_table = GLOEBIT_CONVERSION_TABLE;
                 foreach ($conversion_table as $key => $value) {
+                    // The pack that covers the amount (the biggest one if none does)
                     $cost = $value;
+                    $realamount = $key;
                     if (GLOEBIT_CONVERSION_THRESHOLD > 0) {
                         $threshold = GLOEBIT_CONVERSION_THRESHOLD;
                     } else {
@@ -146,7 +149,7 @@ function currency_xmlrpc_buy($method_name, $params, $app_data)
                 break;
 
             case 'gloebit':
-                if (defined(GLOEBIT_SANDBOX) && GLOEBIT_SANDBOX) {
+                if (defined('GLOEBIT_SANDBOX') && GLOEBIT_SANDBOX) {
                     $baseurl = 'https://sandbox.gloebit.com/purchase';
                 } else {
                     $baseurl = 'https://www.gloebit.com/purchase';
@@ -162,7 +165,7 @@ function currency_xmlrpc_buy($method_name, $params, $app_data)
 
             default:
                 $errorMessage = 'Unable to process the transaction. The gateway denied your charge. Open help page?';
-                $errorURI = empty(W4OS_GRID_INFO['help']) ? CURRENCY_HELPER_URL : W4OS_GRID_INFO['help'];
+                $errorURI = defined('W4OS_GRID_INFO') && !empty(W4OS_GRID_INFO['help']) ? W4OS_GRID_INFO['help'] : CURRENCY_HELPER_URL;
         }
         $response_xml = xmlrpc_encode([
             'success' => false,
@@ -187,7 +190,8 @@ function currency_xmlrpc_balance($method_name, $params, $app_data)
     $agentid = $req['agentId'];
     $sessionid = $req['secureSessionId'];
 
-    $balance = currency_get_balance($agentid, $sessionid);
+    // The funds of an avatar are for the one who has its secure session (the simulator where it is)
+    $balance = opensim_check_secure_session($agentid, null, $sessionid) ? currency_get_balance($agentid, $sessionid) : -1;
 
     if ($balance >= 0) {
         $response_xml = xmlrpc_encode([

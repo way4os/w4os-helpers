@@ -418,7 +418,8 @@ function currency_process_transaction($avatarID, $cost, $ipAddress)
 
 function currency_virtual_to_real($amount)
 {
-    $cost = (int) ((CURRENCY_RATE / CURRENCY_RATE_PER) * 100 * $amount);
+    $per = (float) CURRENCY_RATE_PER;
+    $cost = $per > 0 ? (int) ((CURRENCY_RATE / $per) * 100 * $amount) : 0;
 
     return $cost;
 }
