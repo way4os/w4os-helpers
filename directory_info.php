@@ -1,10 +1,9 @@
 <?php
 /**
- * OpenSimulator Helpers installationn script
+ * directory_info.php
  *
- * This script will scan Robust configuration file to get your grid settings and generate the helpers configuration file.
- *
- * It is only needed to run this tool once, after that you delete this install.php file.
+ * A page with the content of the search directory: the grids that registered parcels, with their numbers of regions and
+ * parcels.
  *
  * @package		magicoli/opensim-helpers
  **/
@@ -53,6 +52,7 @@ foreach ($registered_parcels as $host) {
 osdb_cache_set('grids_info', $grids_info, 86400);
 
 $grid_count = count($stats);
+$stats_display = '';
 $allregionscount = 0;
 $allparcelscount = 0;
 foreach ($stats as $gatekeeperURL => $data) {
@@ -63,8 +63,8 @@ foreach ($stats as $gatekeeperURL => $data) {
     $gridname = $grids_info[$gatekeeperURL]['gridname'] ?? $gatekeeperURL;
     $stats_display .= sprintf(
         '<a href="?gatekeeperURL=%s">%s</a> (%d regions, %d parcels) &nbsp;&nbsp;',
-        $gatekeeperURL,
-        $gridname,
+        htmlspecialchars($gatekeeperURL, ENT_QUOTES, 'UTF-8'),
+        htmlspecialchars($gridname, ENT_QUOTES, 'UTF-8'),
         $regionCount,
         $parcelCount,
     );

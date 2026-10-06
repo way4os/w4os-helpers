@@ -206,6 +206,8 @@ class OpenSim_Helpers_Router
 
                 return null;
             default:
+                // The scripts that can also be included (guide.php) know they are the answer
+                defined('OPENSIM_ROUTED') || define('OPENSIM_ROUTED', true);
                 // The scripts expect their own folder as the working one
                 chdir($root);
                 $_SERVER['SCRIPT_NAME'] = '/' . $what;

@@ -617,7 +617,7 @@ function set_helpers_locale($locale = null, $domain = 'messages')
     if (isset($_GET['l'])) {
         $locale = $_GET['l'];
     }
-    $languages = array_filter(array_merge([$locale], explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'])));
+    $languages = array_filter(array_merge([$locale], explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')));
 
     // $results = putenv("LC_ALL=$locale");
     // if (!$results) {

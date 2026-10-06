@@ -33,12 +33,19 @@
  * @version 2.0
  **/
 
-$fontsize = isset($_REQUEST['fontsize']) ? $_REQUEST['size'] : 120;
+if (!class_exists('Imagick')) {
+    http_response_code(501);
+    header('Content-Type: text/plain; charset=utf-8');
+    exit("Not available: this server has no Imagick (php-imagick)\n");
+}
+
+// The size of the font: `size`, as in the examples, or `fontsize`
+$fontsize = (int) ($_REQUEST['size'] ?? ($_REQUEST['fontsize'] ?? 120));
+$fontsize = $fontsize > 0 ? min($fontsize, 1000) : 120;
 $textcolor = isset($_REQUEST['color']) ? $_REQUEST['color'] : 'white';
 $backgroundcolor = isset($_REQUEST['background']) ? $_REQUEST['background'] : 'black';
 $font = isset($_REQUEST['font']) ? $_REQUEST['font'] : 'Impact';
-$download = isset($_REQUEST['inpage']) ? false : true;
-$download = isset($_REQUEST['download']) ? true : false;
+$download = isset($_REQUEST['download']) && !isset($_REQUEST['inpage']);
 $string = isset($_REQUEST['string']) ? urldecode(preg_replace(":\\\':", '\'', $_REQUEST['string'])) : $font;
 
 $finalwidth = 1024;
@@ -85,7 +92,8 @@ $imagick->resizeImage($finalwidth, $finalheight, Imagick::FILTER_LANCZOS, 1);
 
 header('Content-type: image/png');
 if ($download) {
-    header("Content-Disposition: attachment; filename=\"{$string}.png\"");
+    $filename = trim(preg_replace('/[^\w\- .]+/u', '', $string));
+    header('Content-Disposition: attachment; filename="' . ($filename === '' ? 'text' : mb_substr($filename, 0, 60)) . '.png"');
 }
 
 echo $imagick;

@@ -162,10 +162,10 @@ class OpenSim_Guide
                     '<img class="thumbnail" src="' .
                     $this->place_thumbnail() .
                     '" alt="' .
-                    $categoryTitle .
+                    $this->e($categoryTitle) .
                     '">' .
                     '<div class="name">' .
-                    $categoryTitle .
+                    $this->e($categoryTitle) .
                     '</div>' .
                     // Translators: %s will be replaced with the number of destinations
                     '<div class="data">' .
@@ -182,7 +182,7 @@ class OpenSim_Guide
     public function destinations_list($categoryTitle)
     {
         // Build header
-        $content = '<div class=header><h2>' . $categoryTitle . '</h2>';
+        $content = '<div class=header><h2>' . $this->e($categoryTitle) . '</h2>';
         if (count($this->destinations) > 1) {
             $content .= '<a href="' . $this->build_url() . '" class="back">' . _('Back to categories') . '</a>';
         }
@@ -196,16 +196,16 @@ class OpenSim_Guide
             $people = $this->place_people();
             $content .=
                 '<a href="' .
-                opensim_format_tp($destination['url'], TPLINK_HG) .
+                $this->e(opensim_format_tp($destination['url'], TPLINK_HG)) .
                 '">' .
                 '<div class="item">' .
                 '<img class="thumbnail" src="' .
                 $this->place_thumbnail() .
                 '" alt="' .
-                $destination['name'] .
+                $this->e($destination['name']) .
                 '">' .
                 '<div class="name">' .
-                $destination['name'] .
+                $this->e($destination['name']) .
                 '</div>' .
                 '<div class="data">';
             if ($people > 0) {
@@ -219,6 +219,12 @@ class OpenSim_Guide
         $content .= '</div>';
 
         return $content;
+    }
+
+    /** Text for an HTML page: what a guide file holds is not markup. */
+    private function e($text)
+    {
+        return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
     }
 
     private function no_result()
@@ -254,6 +260,9 @@ class OpenSim_Guide
 
     private function is_main_script()
     {
+        if (defined('OPENSIM_ROUTED')) {
+            return true; // Answering the request, through index.php
+        }
         if (defined('OPENSIM_GUIDE_SOURCE')) {
             return false;
         }

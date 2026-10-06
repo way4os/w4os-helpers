@@ -357,6 +357,7 @@ class OpenSim_Helpers_GridConfig
             'OPENSIM_USE_UTC_TIME' => isset($o['use_utc_time']) ? self::flag($o['use_utc_time']) : null,
             'OPENSIM_MAIL_SENDER' => $o['mail_sender'] ?? null,
             'OPENSIM_MOTD' => $o['motd'] ?? null,
+            'OPENSIM_GUIDE_SOURCE' => $o['guide_source'] ?? null,
             'OPENSIM_GRID_LOGO_URL' => $o['grid_logo_url'] ?? null,
             'HYPEVENTS_URL' => isset($o['events_url']) ? rtrim($o['events_url'], '/') : null,
             'CURRENCY_USE_MONEYSERVER' => isset($o['currency_use_moneyserver'])

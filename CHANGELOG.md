@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+- new: `guide_source` in `helpers.ini` gives the destinations of the guide
+- fix: `guide.php` shows nothing behind the router, and its pages show what the file holds as text
+- fix: `textgen.php` reads `size` (the font size was never read), `inpage`, and says when it has no Imagick
+- fix: `directory_info.php` and the locale warned on a request without `Accept-Language` or without grids
 - fix: with a money server, every transfer failed (an invalid lock, two functions that did not exist)
 - fix: buying currency for a land no longer takes the whole balance
 - fix: `currency.php` failed without `currency_rate` (10 for 1000 now) and on a refused purchase
