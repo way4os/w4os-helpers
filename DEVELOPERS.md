@@ -7,7 +7,7 @@
 The helpers are the most shared scripts of the community: whoever wrote the original `query.php`, or uses a modified one, must understand a change without reading ten files. No framework architecture. Each script starts with one `require_once 'includes/bootstrap.php'`, a short file that loads the libraries, then the settings, then the database and the functions. The settings come from one of two places, the first that exists:
 
 1. `includes/config.php`, constants (see `config.example.php`): the historic way, kept for the installs that have it and for the applications that embed the helpers (they provide their own);
-2. the config of the grid, `/etc/opensim/grids/<grid>/helpers.ini` and the Robust config next to it (`classes/class-grid-config.php`, see `includes/helpers.example.ini`): the recommended way. Only these files are read, nothing is mixed with constants. `OPENSIM_GRID` names the grid when there are several.
+2. the config of the grid, in the format and the places of OpenSimulator (`classes/class-grid-config.php`, see the README): Robust.ini, OpenSim.ini and the simulators' ini, then `Helpers.ini` for what has no official place (`includes/Helpers.example.ini`): the recommended way. Only these files are read, nothing is mixed with constants. `OPENSIM_GRID` names the grid when there are several.
 
 A constant the settings leave out takes the default of `bootstrap.php` (a service database is the main one), so a new constant does not break an existing config. The helpers answer 503 and say why in the log when there is no config, or no database in it.
 

@@ -32,7 +32,7 @@ function own_templates(array $files): array
     $own = sys_get_temp_dir() . '/tpl-' . bin2hex(random_bytes(4));
     mkdir($own, 0o755, true);
     foreach ($files as $name => $content) {
-        @mkdir(dirname("$own/$name"), 0o755, true);
+        is_dir(dirname("$own/$name")) || mkdir(dirname("$own/$name"), 0o755, true);
         file_put_contents("$own/$name", $content);
     }
 

@@ -19,15 +19,13 @@ class OpenSim_Helpers_Block_GridStatus
      */
     public static function data($args = [])
     {
-        global $OpenSimDB;
         $hypergrid = !array_key_exists('hypergrid', $args) || filter_var($args['hypergrid'], FILTER_VALIDATE_BOOLEAN);
         $login = defined('OPENSIM_LOGIN_URI') ? OPENSIM_LOGIN_URI : null;
-        $db = $OpenSimDB ?? null;
         $key = 'grid-status-' . md5((string) $login . (defined('OPENSIM_DB_NAME') ? OPENSIM_DB_NAME : ''));
         $numbers = OpenSim_Helpers_Cache::remember(
             $key,
             self::TTL,
-            fn() => ['online' => self::online($login), 'counts' => self::counts($db, time())],
+            fn() => ['online' => self::online($login), 'counts' => self::counts(function_exists('db_for') ? 'db_for' : fn() => null, time())],
         );
 
         return ['title' => _('Grid Status'), 'rows' => self::rows($numbers, $hypergrid)];
@@ -83,39 +81,67 @@ class OpenSim_Helpers_Block_GridStatus
     }
 
     /**
-     * The numbers of the database of Robust, null without one.
+     * The numbers of the databases of Robust, each from the database of its own service (the accounts in the one of
+     * UserAccountService, the last logins in GridUserService, who is in world in PresenceService, the regions in
+     * GridService): Robust's unless the service has its own. Two services on one database are counted with one query, on
+     * two databases a count asks the one for the identifiers and the other for who they are.
      *
-     * @param  object|null $db the database (OSPDO)
-     * @param  int         $now
-     * @return array<string,int|float>|null
+     * @param  callable $db_for gives the database of a service (db_for)
+     * @param  int      $now
+     * @return array<string,int|float>|null null when there is no database to ask
      */
-    public static function counts($db, $now)
+    public static function counts($db_for, $now)
     {
-        if (!$db || empty($db->connected)) {
-            return null;
+        $accounts = $db_for('UserAccountService');
+        $users = $db_for('GridUserService');
+        $presence = $db_for('PresenceService');
+        $grid = $db_for('GridService');
+        foreach ([$accounts, $users, $presence, $grid] as $db) {
+            if (!$db || empty($db->connected)) {
+                return null;
+            }
         }
         $month = $now - 30 * 86400;
         $zero = self::NULL_KEY;
-        $one = function ($sql, $params = []) use ($db) {
+        $one = function ($db, $sql, $params = []) {
             $statement = $db->prepareAndExecute($sql, $params);
 
             return $statement ? $statement->fetchColumn() : 0;
         };
+        // How many of the users are accounts: one query when both are in one database, else by groups of identifiers
+        $accounts_among = function ($db, $sql, $params, $ids_sql) use ($accounts, $one) {
+            if ($db === $accounts) {
+                return $one($accounts, $sql, $params);
+            }
+            $statement = $db->prepareAndExecute($ids_sql, $params);
+            $ids = $statement ? $statement->fetchAll(PDO::FETCH_COLUMN) : [];
+            $count = 0;
+            foreach (array_chunk($ids, 500) as $group) {
+                $marks = implode(',', array_fill(0, count($group), '?'));
+                $count += (int) $one($accounts, "SELECT COUNT(*) FROM UserAccounts WHERE PrincipalID IN ($marks)", $group);
+            }
+
+            return $count;
+        };
 
         return [
-            'members' => $one('SELECT COUNT(*) FROM UserAccounts WHERE active = 1'),
-            'active_members' => $one(
+            'members' => $one($accounts, 'SELECT COUNT(*) FROM UserAccounts WHERE active = 1'),
+            'active_members' => $accounts_among(
+                $users,
                 'SELECT COUNT(*) FROM GridUser g, UserAccounts u WHERE u.PrincipalID = g.UserID AND CAST(g.Login AS SIGNED) > :month',
                 ['month' => $month],
+                'SELECT UserID FROM GridUser WHERE CAST(Login AS SIGNED) > :month',
             ),
-            'members_in_world' => $one(
+            'members_in_world' => $accounts_among(
+                $presence,
                 'SELECT COUNT(*) FROM Presence p, UserAccounts u WHERE p.RegionID != :zero AND p.UserID = u.PrincipalID',
                 ['zero' => $zero],
+                'SELECT UserID FROM Presence WHERE RegionID != :zero',
             ),
-            'active_users' => $one('SELECT COUNT(*) FROM GridUser WHERE CAST(Login AS SIGNED) > :month', ['month' => $month]),
-            'total_users' => $one('SELECT COUNT(*) FROM Presence WHERE RegionID != :zero', ['zero' => $zero]),
-            'regions' => $one('SELECT COUNT(*) FROM regions'),
-            'area' => $one('SELECT ROUND(SUM(sizeX * sizeY / 1000000), 2) FROM regions') ?: 0,
+            'active_users' => $one($users, 'SELECT COUNT(*) FROM GridUser WHERE CAST(Login AS SIGNED) > :month', ['month' => $month]),
+            'total_users' => $one($presence, 'SELECT COUNT(*) FROM Presence WHERE RegionID != :zero', ['zero' => $zero]),
+            'regions' => $one($grid, 'SELECT COUNT(*) FROM regions'),
+            'area' => $one($grid, 'SELECT ROUND(SUM(sizeX * sizeY / 1000000), 2) FROM regions') ?: 0,
         ];
     }
 }

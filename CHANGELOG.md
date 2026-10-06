@@ -2,6 +2,11 @@
 
 ### Unreleased
 
+- update: one source of truth, the settings are read from Robust.ini, OpenSim.ini and the simulators' ini, in their format (README)
+- update: `Helpers.ini`, same format, holds the settings that have no official place, in `[Helpers]`, and a web host's reduced copy
+- update: each query uses the database of its service (accounts, grid users, presence, regions, offline messages, profiles)
+- update: the routes are the addresses the grid gives to its services, on this site only: no ghost service for one set elsewhere
+- removed: `helpers.ini` with its own copy of the grid name, the addresses and the database, `[Urls]`, `[robust_db]`
 - new: one layout for every page, with the main content of the page between a left sidebar and a right one
 - new: blocks (grid info, grid status, message of the day) are variables of the templates (`{{ grid_info }}`), and alone at `<prefix>/blocks/<name>`
 - new: the pages show the content alone to a viewer (the splash page has its sidebars), a browser has the top bar and the footer too

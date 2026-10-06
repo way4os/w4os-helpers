@@ -2,13 +2,18 @@
 /**
  * The settings of the helpers from the config of a grid, when there is no includes/config.php.
  *
- * The grids of a machine are in /etc/opensim/grids/<grid>/: the Robust config of the grid and its helpers.ini, which
- * says what Robust does not (see includes/helpers.example.ini). The helpers need no Robust config at all when
- * helpers.ini gives them the grid and its database. Read only, nothing is created.
+ * One source of truth, one format. The grids of a machine are in /etc/opensim/grids/<grid>/ and the helpers read what
+ * OpenSimulator reads, as it writes it: the Robust config (Robust.HG.ini or Robust.ini), OpenSim.ini and the ini of the
+ * simulators (sims/*.ini), the connection strings in the format of .NET. A value that has its place there (the name of the
+ * grid, its addresses, the message of the day, the databases) is read from there and nowhere else.
+ *
+ * Helpers.ini, in the same format, holds what has no official place, in a section [Helpers] (the source of the guide, the
+ * search database, the theme...), and may hold any other setting: a web host that has no OpenSimulator on it has a reduced
+ * copy of the sections it needs. What the other files say wins over Helpers.ini, which only fills what they leave out.
  *
  * Which grid: the one named by OPENSIM_GRID (constant, environment or web server variable, the virtual host of a grid
  * sets it), else the only grid there is. The files are the only source: what they do not say, bootstrap.php has a
- * default for.
+ * default for. Read only, nothing is created.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
@@ -19,27 +24,8 @@ class OpenSim_Helpers_GridConfig
     const DEFAULT_CONF = '/etc/opensim/opensim.conf';
     const DEFAULT_ETC = '/etc/opensim';
 
-    /**
-     * The services of the helpers and the script that answers each, the way helpers.ini names them
-     * ([Urls] search = "/search" serves query.php there).
-     */
-    const SERVICES = [
-        'search' => 'query.php',
-        'register' => 'register.php',
-        'offline' => 'offline.php',
-        'currency' => 'currency.php',
-        'guide' => 'guide.php',
-        'motd' => 'motd.php',
-        'home' => '@home',
-        'welcome' => '@splash',
-        'profile' => '@profile',
-        'health' => '@health',
-        'landtool' => 'landtool.php',
-        'parser' => 'parser.php',
-        'eventsparser' => 'eventsparser.php',
-        'textgen' => 'textgen.php',
-        'directory_info' => 'directory_info.php',
-    ];
+    /** The file of what has no official place. */
+    const HELPERS_FILE = 'Helpers.ini';
 
     /**
      * Define the constants of the grid.
@@ -53,7 +39,7 @@ class OpenSim_Helpers_GridConfig
         $etc = self::etc_root($profile);
         $nick = self::requested_nick();
         if (!$grids) {
-            return "no includes/config.php, and no grid in $etc/grids (see includes/helpers.example.ini)";
+            return "no includes/config.php, and no grid in $etc/grids (see README.md)";
         }
         if ($nick !== '' && !isset($grids[$nick])) {
             return "grid $nick not found in $etc/grids (" . implode(', ', array_keys($grids)) . ')';
@@ -65,10 +51,11 @@ class OpenSim_Helpers_GridConfig
         }
 
         $settings = self::settings($nick);
-        // helpers.ini holds the password of the database: without it the helpers would try the placeholder of the Robust config
-        $ini = $settings['dir'] . '/helpers.ini';
-        if (is_file($ini) && !is_readable($ini)) {
-            return "$ini is not readable by the web server user (it belongs to the group of the web server, mode 640: chgrp www-data)";
+        // The files hold the passwords of the databases: unreadable for the web server, the helpers would use the placeholders
+        foreach (self::files($settings['dir']) as $file) {
+            if (is_file($file) && !is_readable($file)) {
+                return "$file is not readable by the web server user (every ini file of the grid belongs to the group of the web server, mode 640: chgrp www-data)";
+            }
         }
         self::define_constants($settings);
 
@@ -92,12 +79,14 @@ class OpenSim_Helpers_GridConfig
 
     /**
      * Read an ini file the way OpenSimulator writes them: sections, `key = value`, quotes around a
-     * value optional, `;` and `#` comments. `${Const|Name}` is replaced by the value of [Const].
+     * value optional, `;` and `#` comments. `${Const|Name}` is replaced by the value of [Const], the one of the file first,
+     * else the one of the constants given (those of the Robust config, for the files of the simulators).
      *
-     * @param  string $path
+     * @param  string                              $path
+     * @param  array<string,string>                $constants
      * @return array<string,array<string,string>> section => key => value, empty when unreadable
      */
-    public static function read_ini($path)
+    public static function read_ini($path, $constants = [])
     {
         $lines = is_readable($path) ? file($path, FILE_IGNORE_NEW_LINES) : false;
         if ($lines === false) {
@@ -126,18 +115,19 @@ class OpenSim_Helpers_GridConfig
             $ini[$section][trim($m[1])] = $value;
         }
 
-        return self::expand($ini);
+        return self::expand($ini, $constants);
     }
 
     /**
      * Replace `${Const|Name}` by the value of Name in [Const], itself expanded (a few levels).
      *
      * @param  array<string,array<string,string>> $ini
+     * @param  array<string,string>               $others the constants of another file, used for the ones this one has not
      * @return array<string,array<string,string>>
      */
-    private static function expand($ini)
+    private static function expand($ini, $others = [])
     {
-        $const = $ini['Const'] ?? [];
+        $const = ($ini['Const'] ?? []) + $others;
         $replace = function ($value) use (&$const) {
             for ($i = 0; $i < 5 && strpos($value, '${Const|') !== false; $i++) {
                 $value = preg_replace_callback('/\$\{Const\|([^}]+)\}/', fn($m) => $const[$m[1]] ?? $m[0], $value);
@@ -184,7 +174,7 @@ class OpenSim_Helpers_GridConfig
 
     /**
      * The grids of the profile: the folders of EtcRoot/grids/ (/etc/opensim/grids/ without opensim.conf) with a
-     * Robust config or a helpers.ini.
+     * Robust config or a Helpers.ini.
      *
      * @param  array<string,string> $profile
      * @return array<string,string> nick => folder
@@ -194,7 +184,7 @@ class OpenSim_Helpers_GridConfig
         $etc = self::etc_root($profile);
         $grids = [];
         foreach (glob("$etc/grids/*", GLOB_ONLYDIR) ?: [] as $dir) {
-            foreach (['Robust.HG.ini', 'Robust.ini', 'helpers.ini'] as $file) {
+            foreach (['Robust.HG.ini', 'Robust.ini', self::HELPERS_FILE] as $file) {
                 if (is_file("$dir/$file")) {
                     $grids[basename($dir)] = $dir;
                     break;
@@ -237,13 +227,93 @@ class OpenSim_Helpers_GridConfig
     }
 
     /**
-     * What the helpers of a grid need, from its Robust config and its helpers.ini.
+     * The ini files of a grid the helpers read, in the order of their authority: Robust, OpenSim.ini, the simulators, then
+     * Helpers.ini.
      *
-     * helpers.ini can carry everything the helpers need (grid_name, login_uri, web_url, [robust_db]), so the
-     * web server user does not have to read the Robust config, which holds more than the helpers need.
+     * @param  string $dir the folder of the grid
+     * @return string[]
+     */
+    public static function files($dir)
+    {
+        $files = [];
+        foreach (['Robust.HG.ini', 'Robust.ini', 'OpenSim.ini'] as $file) {
+            if (is_file("$dir/$file")) {
+                $files[] = "$dir/$file";
+            }
+        }
+        foreach (glob("$dir/sims/*.ini") ?: [] as $file) {
+            $files[] = $file;
+        }
+        $files[] = "$dir/" . self::HELPERS_FILE;
+
+        return $files;
+    }
+
+    /**
+     * What the files of a grid say, file by file, in the order of their authority.
      *
-     * The databases are the one of Robust unless helpers.ini gives another ([search_db], [currency_db],
-     * [offline_db], [opensim_db] with hostname, prefix (the database), user, password).
+     * @param  string $dir
+     * @return array<string,array<string,array<string,string>>> file => section => key => value
+     */
+    public static function sources($dir)
+    {
+        $sources = [];
+        $constants = [];
+        foreach (self::files($dir) as $file) {
+            $ini = self::read_ini($file, $constants);
+            if (str_contains(basename($file), 'Robust')) {
+                // The constants of Robust serve the files that follow (the web address)
+                $constants = $ini['Const'] ?? [];
+            }
+            $sources[$file] = $ini;
+        }
+
+        return $sources;
+    }
+
+    /**
+     * The value of a setting: the first file that has it. Helpers.ini is the last one.
+     *
+     * @param  array  $sources what sources() gave
+     * @param  string $section
+     * @param  string $key
+     * @return string|null
+     */
+    public static function value($sources, $section, $key)
+    {
+        foreach ($sources as $ini) {
+            if (isset($ini[$section][$key]) && $ini[$section][$key] !== '') {
+                return $ini[$section][$key];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Every value of the settings of a section whose key matches, in every file (DATA_SRV_* of [DataSnapshot]).
+     *
+     * @param  array  $sources
+     * @param  string $section
+     * @param  string $pattern a regular expression for the keys
+     * @return string[]
+     */
+    public static function values($sources, $section, $pattern)
+    {
+        $values = [];
+        foreach ($sources as $ini) {
+            foreach ($ini[$section] ?? [] as $key => $value) {
+                if ($value !== '' && preg_match($pattern, $key)) {
+                    $values[] = $value;
+                }
+            }
+        }
+
+        return array_values(array_unique($values));
+    }
+
+    /**
+     * What the helpers need, from the config of a grid.
      *
      * @param  string|null $nick
      * @param  string|null $conf
@@ -259,84 +329,145 @@ class OpenSim_Helpers_GridConfig
         }
 
         $dir = $grids[$nick];
-        $robust_file = null;
-        foreach (['Robust.HG.ini', 'Robust.ini'] as $file) {
-            if (is_file("$dir/$file")) {
-                $robust_file = "$dir/$file";
-                break;
-            }
+        $sources = self::sources($dir);
+        $get = fn($section, $key) => self::value($sources, $section, $key);
+        $helpers = [];
+        foreach ($sources as $ini) {
+            $helpers += $ini['Helpers'] ?? [];
         }
-        $robust = $robust_file === null ? [] : self::read_ini($robust_file);
-        $helpers = self::read_ini("$dir/helpers.ini");
-        $options = $helpers['Helpers'] ?? [];
-        $weburl = rtrim($options['web_url'] ?? ($robust['Const']['WebURL'] ?? ''), '/');
-
-        $database = self::connection($robust['DatabaseService']['ConnectionString'] ?? '');
-        foreach (['hostname', 'prefix', 'user', 'password'] as $key) {
-            $database[$key] = $helpers['robust_db'][$key] ?? $database[$key];
-        }
-        $databases = ['robust_db' => $database];
-        foreach (['opensim_db', 'search_db', 'currency_db', 'offline_db'] as $name) {
-            $given = $helpers[$name] ?? [];
-            $databases[$name] = [
-                'hostname' => $given['hostname'] ?? $database['hostname'],
-                'prefix' => $given['prefix'] ?? $database['prefix'],
-                'user' => $given['user'] ?? $database['user'],
-                'password' => $given['password'] ?? $database['password'],
-            ];
-        }
-
-        $base = '/' . trim($options['path'] ?? 'helpers', '/');
 
         return [
             'nick' => $nick,
             'dir' => $dir,
             'profile' => $profile,
-            'hypergrid' => $robust_file !== null && str_contains(basename($robust_file), '.HG.'),
-            'grid_name' => $options['grid_name'] ?? ($robust['GridInfoService']['gridname'] ?? ucfirst($nick)),
-            'login_uri' => $options['login_uri'] ?? self::login_uri($robust),
-            'web_url' => $weburl,
-            'mail_sender' => $options['mail_sender'] ?? null,
-            'options' => $options,
-            'databases' => $databases,
-            'base_path' => $base,
-            'urls' => $helpers['Urls'] ?? [],
-            'robust' => $robust,
+            'hypergrid' => isset($sources["$dir/Robust.HG.ini"]),
+            'sources' => $sources,
+            'grid_name' => $get('GridInfoService', 'gridname') ?? ucfirst($nick),
+            'login_uri' => rtrim((string) ($get('GridInfoService', 'login') ?? self::login_uri($sources)), '/'),
+            'web_url' => rtrim((string) ($get('Const', 'WebURL') ?? ''), '/'),
+            'helpers' => $helpers,
         ];
     }
 
     /**
-     * The public path of a service of the helpers: the one helpers.ini gives in [Urls], else the
-     * script under the base path (`/helpers/query.php`).
+     * The URL of a setting that is an address.
      *
-     * @param  array  $settings what settings() gave
-     * @param  string $service  the name of the service (search) or its script (query.php)
-     * @return string
+     * @return string|null
      */
-    public static function script_path($settings, $service)
+    private static function login_uri($sources)
     {
-        $script = self::SERVICES[$service] ?? $service;
-        $name = array_search($script, self::SERVICES, true);
+        $uri = self::value($sources, 'Hypergrid', 'GatekeeperURI');
+        if ($uri === null) {
+            $base = self::value($sources, 'Const', 'BaseURL');
+            $port = self::value($sources, 'Const', 'PublicPort');
+            $uri = $base !== null && $port !== null ? "$base:$port" : null;
+        }
 
-        return ($name !== false ? $settings['urls'][$name] ?? null : null) ?? $settings['base_path'] . '/' . $script;
+        return $uri;
+    }
+
+    /** The host name of an address, lowercase, without its port. */
+    public static function host_of($url)
+    {
+        return strtolower((string) (parse_url((string) $url, PHP_URL_HOST) ?? ''));
+    }
+
+    /** The path of an address, without the slash that ends it (`/` for the root). */
+    public static function path_of($url)
+    {
+        $path = (string) (parse_url((string) $url, PHP_URL_PATH) ?? '');
+
+        return '/' . trim($path, '/');
     }
 
     /**
-     * The routes of the services the grid gives a path of their own to ([Urls] of helpers.ini): path => script or page.
+     * Whether an address is served by this site: its host is the one of the site (an address with no host is a path of the
+     * site). A service the grid sends elsewhere (a third party, another site of the grid) is not served here.
+     */
+    private static function is_local($url, $site_host)
+    {
+        $host = self::host_of($url);
+
+        return $host === '' || $host === $site_host;
+    }
+
+    /**
+     * The paths the helpers answer and what answers each, from the addresses the grid gives to its services in the official
+     * settings, those with this site's host name only: a service the grid has set up elsewhere has no ghost on this site.
+     * A service the grid says nothing about is served at its default path, under the one of the economy (`/helpers`).
      *
      * @param  array $settings what settings() gave
-     * @return array<string,string>
+     * @return array<string,string> path => script (`query.php`) or page (`@home`)
      */
     public static function routes($settings)
     {
-        $routes = [];
-        foreach ($settings['urls'] as $service => $path) {
-            if (isset(self::SERVICES[$service]) && trim($path) !== '') {
-                $routes['/' . trim($path, '/')] = self::SERVICES[$service];
-            }
+        $sources = $settings['sources'];
+        $site = self::host_of($settings['web_url']);
+        $get = fn($section, $key) => self::value($sources, $section, $key);
+        $routes = ['/' => '@home', '/health' => '@health'];
+
+        // The economy: the viewers add the name of the script to the address the grid gives
+        $economy = $get('GridInfoService', 'economy') ?? $get('Economy', 'economy');
+        $base = $economy !== null && self::is_local($economy, $site) ? self::path_of($economy) : '/helpers';
+        $base = $base === '/' ? '' : $base;
+        if ($economy === null || self::is_local($economy, $site)) {
+            $routes["$base/currency.php"] = 'currency.php';
+            $routes["$base/landtool.php"] = 'landtool.php';
         }
 
+        // The other services: the addresses the grid gives, or the default one
+        $add = function (array $urls, $target, $default) use (&$routes, $site) {
+            if (!$urls) {
+                $routes[$default] = $target;
+
+                return;
+            }
+            foreach ($urls as $url) {
+                if (self::is_local($url, $site)) {
+                    $routes[self::path_of($url)] = $target;
+                }
+            }
+        };
+        $one = fn($section, $key) => ($value = $get($section, $key)) === null ? [] : [$value];
+        $add($one('GridInfoService', 'welcome'), '@splash', '/welcome');
+        $add($one('LoginService', 'DestinationGuide'), '@guide', "$base/guide.php");
+        $add($one('LoginService', 'MessageUrl'), 'motd.php', "$base/motd.php");
+        $add($one('GridInfoService', 'web_profile_url'), '@profile', '/profile');
+        $add($one('Search', 'SearchURL'), 'query.php', "$base/query.php");
+        $add(self::values($sources, 'DataSnapshot', '/^DATA_SRV_/'), 'register.php', "$base/register.php");
+        $add($one('Messaging', 'OfflineMessageURL'), 'offline.php', "$base/offline.php");
+        foreach (['textgen.php', 'parser.php', 'eventsparser.php'] as $script) {
+            $routes["$base/$script"] = $script;
+        }
+        $routes["$base/directory_info.php"] = '@directory_info';
+
         return $routes;
+    }
+
+    /** The path the helpers are served under: the one of the economy of the grid (`/helpers` by default). */
+    public static function base_path($settings)
+    {
+        $sources = $settings['sources'];
+        $economy = self::value($sources, 'GridInfoService', 'economy') ?? self::value($sources, 'Economy', 'economy');
+        $site = self::host_of($settings['web_url']);
+
+        return $economy !== null && self::is_local($economy, $site) ? self::path_of($economy) : '/helpers';
+    }
+
+    /**
+     * The database of a service, the way OpenSimulator chooses it: the connection string of the section of the service when
+     * it has one, else the one of [DatabaseService]. Only the Robust config and Helpers.ini have services.
+     *
+     * @param  array  $settings what settings() gave
+     * @param  string $service  the section (UserAccountService, GridUserService, OfflineIMService...)
+     * @return array{hostname:?string,prefix:?string,user:?string,password:?string}
+     */
+    public static function connection_for($settings, $service)
+    {
+        $sources = $settings['sources'];
+        $string = self::value($sources, $service, 'ConnectionString') ?? self::value($sources, 'DatabaseService', 'ConnectionString');
+
+        return self::connection((string) $string);
     }
 
     /**
@@ -347,64 +478,78 @@ class OpenSim_Helpers_GridConfig
      */
     public static function constants($settings)
     {
-        $o = $settings['options'];
-        $db = $settings['databases'];
+        $sources = $settings['sources'];
+        $get = fn($section, $key) => self::value($sources, $section, $key);
+        $helpers = $settings['helpers'];
+        $economy = $get('GridInfoService', 'economy') ?? $get('Economy', 'economy');
+        $module = (string) $get('Economy', 'economymodule');
+        $base = self::base_path($settings);
+
         $constants = [
             'OPENSIM_GRID_NAME' => $settings['grid_name'],
             'OPENSIM_LOGIN_URI' => $settings['login_uri'],
             'ROBUST_DB' => true,
             'OPENSIM_DB' => true,
             'OPENSIM_ROUTES' => self::routes($settings),
-            'OPENSIM_HELPERS_PATH' => $settings['base_path'],
+            'OPENSIM_HELPERS_PATH' => $base,
             // Whatever the theme folder of the grid holds replaces the templates and the assets of the helpers
-            'OPENSIM_THEME_PATH' => $o['theme_path'] ?? ($settings['dir'] ?? '') . '/theme',
+            'OPENSIM_THEME_PATH' => self::in_grid_folder($helpers['ThemePath'] ?? 'theme', $settings['dir']),
         ];
         $given = [
-            'OPENSIM_USE_UTC_TIME' => isset($o['use_utc_time']) ? self::flag($o['use_utc_time']) : null,
-            'OPENSIM_MAIL_SENDER' => $o['mail_sender'] ?? null,
-            'OPENSIM_MOTD' => $o['motd'] ?? null,
-            'OPENSIM_GUIDE_SOURCE' => self::in_grid_folder($o['guide_source'] ?? null, $settings['dir'] ?? null),
-            'OPENSIM_GRID_LOGO_URL' => $o['grid_logo_url'] ?? null,
-            'HYPEVENTS_URL' => isset($o['events_url']) ? rtrim($o['events_url'], '/') : null,
-            'CURRENCY_USE_MONEYSERVER' => isset($o['currency_use_moneyserver'])
-                ? self::flag($o['currency_use_moneyserver'])
-                : null,
-            'CURRENCY_SCRIPT_KEY' => $o['currency_script_key'] ?? null,
-            'CURRENCY_RATE' => $o['currency_rate'] ?? null,
-            'CURRENCY_RATE_PER' => $o['currency_rate_per'] ?? null,
-            'CURRENCY_PROVIDER' => $o['currency_provider'] ?? null,
+            'OPENSIM_MOTD' => $get('LoginService', 'WelcomeMessage'),
+            'OPENSIM_GUIDE_SOURCE' => self::in_grid_folder($helpers['GuideSource'] ?? null, $settings['dir']),
+            'OPENSIM_GRID_LOGO_URL' => $helpers['LogoURL'] ?? null,
+            'OPENSIM_MAIL_SENDER' => $helpers['MailSender'] ?? null,
+            'HYPEVENTS_URL' => isset($helpers['HypEventsURL']) ? rtrim($helpers['HypEventsURL'], '/') : null,
+            // The currency: what the economy module says, Helpers.ini says what the module does not
+            'CURRENCY_PROVIDER' => $helpers['CurrencyProvider'] ?? (strtolower($module) === 'gloebit' ? 'gloebit' : null),
+            'CURRENCY_USE_MONEYSERVER' => isset($helpers['CurrencyUseMoneyServer'])
+                ? self::flag($helpers['CurrencyUseMoneyServer'])
+                : ($module === '' || strtolower($module) === 'betagridlikemoneymodule' ? null : true),
+            'CURRENCY_SCRIPT_KEY' => $helpers['CurrencyScriptKey'] ?? null,
+            'CURRENCY_RATE' => $helpers['CurrencyRate'] ?? null,
+            'CURRENCY_RATE_PER' => $helpers['CurrencyRatePer'] ?? null,
             'CURRENCY_HELPER_URL' =>
-                $o['currency_helper_url'] ??
-                ($settings['web_url'] === ''
-                    ? null
-                    : $settings['web_url'] . self::script_path($settings, 'currency.php')),
+                $settings['web_url'] === '' ? null : $settings['web_url'] . ($economy === null ? $base : self::path_of($economy)) . '/currency.php',
         ];
         foreach ($given as $name => $value) {
             if ($value !== null) {
                 $constants[$name] = $value;
             }
         }
-        foreach (
-            [
-                'ROBUST' => 'robust_db',
-                'OPENSIM' => 'opensim_db',
-                'SEARCH' => 'search_db',
-                'CURRENCY' => 'currency_db',
-                'OFFLINE' => 'offline_db',
-            ]
-            as $prefix => $name
-        ) {
-            $constants["{$prefix}_DB_HOST"] = $db[$name]['hostname'];
-            $constants["{$prefix}_DB_NAME"] = $db[$name]['prefix'];
-            $constants["{$prefix}_DB_USER"] = $db[$name]['user'];
-            $constants["{$prefix}_DB_PASS"] = $db[$name]['password'];
+
+        // The databases: Robust's, each service that has its own, and the ones of the helpers (the search registry, the
+        // currency) which are Robust's unless Helpers.ini gives them another
+        $default = self::connection_for($settings, 'DatabaseService');
+        $databases = [
+            'ROBUST' => $default,
+            'OPENSIM' => $default,
+            'SEARCH' => isset($helpers['SearchConnectionString']) ? self::connection($helpers['SearchConnectionString']) : $default,
+            'CURRENCY' => isset($helpers['CurrencyConnectionString']) ? self::connection($helpers['CurrencyConnectionString']) : $default,
+            'OFFLINE' => self::connection_for($settings, 'OfflineIMService'),
+        ];
+        foreach ($databases as $prefix => $connection) {
+            $constants["{$prefix}_DB_HOST"] = $connection['hostname'];
+            $constants["{$prefix}_DB_NAME"] = $connection['prefix'];
+            $constants["{$prefix}_DB_USER"] = $connection['user'];
+            $constants["{$prefix}_DB_PASS"] = $connection['password'];
         }
+        // Each service that has a database of its own: UserAccountService, GridUserService, PresenceService, GridService...
+        $services = [];
+        foreach ($sources as $ini) {
+            foreach ($ini as $section => $values) {
+                if (isset($values['ConnectionString']) && $values['ConnectionString'] !== '' && $section !== 'DatabaseService') {
+                    $services[$section] ??= self::connection($values['ConnectionString']);
+                }
+            }
+        }
+        $constants['OPENSIM_DB_SERVICES'] = $services;
 
         return $constants;
     }
 
     /**
-     * A file name of helpers.ini is relative to the folder of the grid (where helpers.ini is); a URL or an absolute path
+     * A file name of Helpers.ini is relative to the folder of the grid (where Helpers.ini is); a URL or an absolute path
      * is kept.
      *
      * @param  string|null $source
@@ -459,17 +604,6 @@ class OpenSim_Helpers_GridConfig
             'user' => $values['user id'] ?? ($values['uid'] ?? null),
             'password' => $values['password'] ?? ($values['pwd'] ?? null),
         ];
-    }
-
-    /** The address viewers log in to: the gatekeeper of a Hypergrid grid, else its public address. */
-    private static function login_uri($robust)
-    {
-        $uri = $robust['Hypergrid']['GatekeeperURI'] ?? '';
-        if ($uri === '' && isset($robust['Const']['BaseURL'], $robust['Const']['PublicPort'])) {
-            $uri = $robust['Const']['BaseURL'] . ':' . $robust['Const']['PublicPort'];
-        }
-
-        return $uri === '' ? null : $uri;
     }
 
     private static function flag($value)

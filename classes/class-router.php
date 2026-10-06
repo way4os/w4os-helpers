@@ -14,9 +14,11 @@
  * - the blocks are pieces of pages, served alone as fragments to embed (`<prefix>/blocks/grid-status`);
  * - the files of the pages (css, js, images, fonts) are in assets/, served at `<prefix>/assets/...`.
  *
- * The routes of the operator are the constant OPENSIM_ROUTES: URL path => script (`query.php`) or page (`@home`,
- * `@splash`, `@profile`, `@health`). The defaults are `/` for the home page, `/welcome` for the splash page, `/profile` for
- * the profiles (and `/profile/<first>.<last>`, `/profile/<first>-<last>`, `/@<first>.<last>`) and `/health` for the health page.
+ * The routes are the constant OPENSIM_ROUTES, made from the addresses the grid gives to its services in its official
+ * settings (see OpenSim_Helpers_GridConfig::routes): URL path => script (`query.php`) or page (`@home`, `@splash`,
+ * `@profile`, `@health`, `@guide`). A route answers its sub-paths too (`/guide/<topic>/`, `offline.php/SaveMessage/`), what
+ * follows it is given as PATH_INFO. Without config, the defaults are the paths under `/helpers` (see defaults()). A profile is
+ * also `<profile>/<first>.<last>`, `<profile>/<first>-<last>` and `/@<first>.<last>`.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
@@ -65,16 +67,20 @@ class OpenSim_Helpers_Router
     ];
 
     /**
-     * The routes: the defaults, then those of the operator.
+     * The routes of a site that has no config to say otherwise: every service at its default path under the helpers.
      *
-     * @param  array<string,string> $own
-     * @return array<string,string>
+     * @param  string $base the path of the helpers
+     * @return array<string,string> path => script or page
      */
-    public static function routes($own = [])
+    public static function defaults($base = '/helpers')
     {
+        $base = rtrim($base, '/');
         $routes = ['/' => '@home', '/welcome' => '@splash', '/profile' => '@profile', '/health' => '@health'];
-        foreach ($own as $path => $target) {
-            $routes[self::normalize($path)] = $target;
+        foreach (array_keys(self::SCRIPTS) as $script) {
+            $routes["$base/$script"] = $script;
+        }
+        foreach (self::ALIASES as $script => $page) {
+            $routes["$base/$script"] = "@$page";
         }
 
         return $routes;
@@ -87,34 +93,45 @@ class OpenSim_Helpers_Router
     }
 
     /**
-     * What answers a path.
+     * The route that answers a path: the longest one the path is, or is under (`/helpers/offline.php/SaveMessage/` is under
+     * `/helpers/offline.php`); the root only answers the root.
      *
      * @param  string               $path
-     * @param  array<string,string> $own the routes of the operator
+     * @param  array<string,string> $routes
+     * @return string|null the path of the route
+     */
+    public static function route_of($path, $routes)
+    {
+        $path = self::normalize(rawurldecode((string) $path));
+        $found = null;
+        foreach ($routes as $route => $target) {
+            $route = self::normalize($route);
+            if ($path === $route || ($route !== '/' && str_starts_with($path, $route . '/'))) {
+                if ($found === null || strlen($route) > strlen($found)) {
+                    $found = $route;
+                }
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * What answers a path.
+     *
+     * @param  string                    $path
+     * @param  array<string,string>|null $routes the routes of the site, the defaults without any
      * @return array{0:string,1:string,2?:array<string,string>}|null [kind, what, arguments]: script (name), page (slug),
      *                                          block (name), asset (path under assets/); a profile gives its `name`
      */
-    public static function match($path, $own = [])
+    public static function match($path, $routes = null)
     {
+        $routes ??= self::defaults();
         $path = self::normalize(rawurldecode((string) $path));
         if (strpos($path, '..') !== false) {
             return null;
         }
-        $routes = self::routes($own);
-        if (isset($routes[$path])) {
-            $target = $routes[$path];
-            if ($target[0] === '@' && in_array(substr($target, 1), self::PAGES, true)) {
-                return ['page', substr($target, 1)];
-            }
-            if (isset(self::SCRIPTS[$target])) {
-                return ['script', $target];
-            }
-            if (isset(self::ALIASES[$target])) {
-                return ['page', self::ALIASES[$target]];
-            }
-
-            return null;
-        }
+        $routes = array_combine(array_map([self::class, 'normalize'], array_keys($routes)), $routes);
         // A profile: <profile>/<first>.<last>, <profile>/<first>-<last>, and /@<first>.<last> (a name of another grid has @grid)
         $name = '([A-Za-z0-9_]+)[.-]([A-Za-z0-9_]+)(@[A-Za-z0-9._:-]+)?';
         foreach ($routes as $route => $target) {
@@ -122,41 +139,51 @@ class OpenSim_Helpers_Router
                 return ['page', 'profile', ['name' => "$m[1].$m[2]" . ($m[3] ?? '')]];
             }
         }
-        if (preg_match("#^/@$name$#", $path, $m)) {
+        if (in_array('@profile', $routes, true) && preg_match("#^/@$name$#", $path, $m)) {
             return ['page', 'profile', ['name' => "$m[1].$m[2]" . ($m[3] ?? '')]];
         }
         // The assets and the blocks, under any prefix
         if (preg_match('#^(?:/.*)?/assets/(.+)$#', $path, $m)) {
             return ['asset', $m[1]];
         }
-        if (preg_match('#^(?:/.*)?/blocks/([a-z0-9-]+)$#', $path, $m) && OpenSim_Helpers_Blocks::exists($m[1])) {
+        if (preg_match('#^(?:/.*)?/blocks/([a-z0-9_-]+)$#', $path, $m) && OpenSim_Helpers_Blocks::exists($m[1])) {
             return ['block', $m[1]];
         }
-        // A script by its name, under any prefix, with or without what OpenSimulator adds to it (offline.php/SaveMessage/)
-        foreach (explode('/', $path) as $segment) {
-            if (isset(self::SCRIPTS[$segment])) {
-                return ['script', $segment];
-            }
-            if (isset(self::ALIASES[$segment])) {
-                return ['page', self::ALIASES[$segment]];
-            }
+        $route = self::route_of($path, $routes);
+        if ($route === null) {
+            return null;
+        }
+        $target = $routes[$route];
+        if ($target[0] === '@' && in_array(substr($target, 1), self::PAGES, true)) {
+            return ['page', substr($target, 1)];
+        }
+        if (isset(self::SCRIPTS[$target])) {
+            return ['script', $target];
+        }
+        if (isset(self::ALIASES[$target])) {
+            return ['page', self::ALIASES[$target]];
         }
 
         return null;
     }
 
     /**
-     * What follows a script in a URL, as the web server gives it in PATH_INFO: /helpers/offline.php/SaveMessage/ gives
-     * /SaveMessage/, empty when nothing follows.
+     * What follows the route of a script in a URL, as the web server gives it in PATH_INFO: /helpers/offline.php/SaveMessage/
+     * gives /SaveMessage/, empty when nothing follows.
      *
-     * @param  string $path The path of the request, as it was asked (the slashes at its end count).
+     * @param  string                    $path The path of the request, as it was asked (the slashes at its end count).
+     * @param  array<string,string>|null $routes
      * @return string
      */
-    public static function pathInfo($path)
+    public static function pathInfo($path, $routes = null)
     {
-        $scripts = implode('|', array_map(fn($script) => preg_quote($script, '#'), array_keys(self::SCRIPTS + self::ALIASES)));
+        $path = rawurldecode((string) $path);
+        $route = self::route_of($path, $routes ?? self::defaults());
+        if ($route === null || $route === '/' || strlen($path) <= strlen($route)) {
+            return '';
+        }
 
-        return preg_match("#/(?:$scripts)(/.*)$#", rawurldecode((string) $path), $found) ? $found[1] : '';
+        return substr($path, strlen($route));
     }
 
     /**
@@ -168,9 +195,9 @@ class OpenSim_Helpers_Router
      */
     public static function run()
     {
-        $own = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
+        $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : self::defaults(defined('OPENSIM_HELPERS_PATH') ? OPENSIM_HELPERS_PATH : '/helpers');
         $requested = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-        $found = self::match($requested, $own);
+        $found = self::match($requested, $routes);
         if ($found === null) {
             http_response_code(404);
             header('Content-Type: text/plain; charset=utf-8');
@@ -229,7 +256,7 @@ class OpenSim_Helpers_Router
                 $_SERVER['SCRIPT_FILENAME'] = "$root/" . self::SCRIPTS[$what];
                 $_SERVER['PHP_SELF'] = '/' . $what;
                 // As the web server gives what follows the script (offline.php/SaveMessage/), which offline.php reads
-                if (($info = self::pathInfo($requested)) !== '') {
+                if (($info = self::pathInfo($requested, $routes)) !== '') {
                     $_SERVER['PATH_INFO'] = $info;
                 }
 

@@ -34,16 +34,72 @@ On Debian and Ubuntu: `sudo apt install php-cli php-curl php-intl php-mbstring p
 
 The `xmlrpc_*` functions, needed by OpenSimulator for the search, the currencies and the land exchanges, are not an extension to install: `includes/xmlrpc-polyfill.php` provides them on top of `phpxmlrpc/phpxmlrpc`.
 
-## URLs
+## Installation
 
-`index.php` is the single entry: a web server that sends it every URL it has no file for serves the helpers at any URL. The scripts answer under any prefix (`/helpers/query.php`), the services at the paths set by `[Urls]` in `helpers.ini` (or `OPENSIM_ROUTES` in `config.php`): `/search` for `query.php`, `/guide` for `guide.php`..., and two pages, `/` (home) and `/welcome` (the splash page of the viewer), are rendered from the Twig templates of `templates/twig/pages`. `OPENSIM_TEMPLATES_DIR` gives a folder of templates that replace them. The logo is `assets/logos/logo.svg` or `.png`, or `OPENSIM_GRID_LOGO_URL`.
+The helpers read their settings from the grid config files, by default `/etc/opensim/grids/<grid>/Robust(.HG).ini` and `/etc/opensim/grids/<grid>/OpenSim.ini` (and the `sims/*.ini` of its simulators), in the format of OpenSimulator. They can be grouped with the same section structure in `/etc/opensim/grids/<grid>/Helpers.ini` instead, for a web host that has no OpenSimulator on it.
 
-## Configuration
+The historic config is still supported, but might be deprecated in the future: constants in `includes/config.php` (copy `includes/config.example.php`). When that file exists, it is the only config read.
 
-The scripts read their settings from the config of the grid, `/etc/opensim/grids/<grid>/helpers.ini` (the folder of the grid, where its Robust config is when the OpenSim kit made it). Copy `includes/helpers.example.ini` there and edit it: the grid (name, login URI, web URL), its database, the currency, the message of the day. The web server user must be able to read it (mode 640, group `www-data`), it holds the password of the database. With several grids on a machine, the web server gives the nick of the one to serve in `OPENSIM_GRID`.
+**One source of truth.** A setting that has its place in OpenSim.ini or Robust.ini is read from there and nowhere else: do not copy it. `Helpers.ini` may hold any setting, in the same sections, but it only fills what the other files leave out (it is the file of a web host without OpenSimulator, and of the few settings that have no official place, in `[Helpers]`). All those files may hold passwords: mode 640, group of the web server.
 
-What the file leaves out takes a default, only a database is required: without one the helpers answer 503 and say why in the web server log.
+```ini
+;; In OpenSim.ini (or the ini of a simulator): what the simulators call
+[Search]
+  Module = OpenSimSearch
+  SearchURL = "https://www.yourgrid.org/helpers/query.php"
 
-The historic config still works: constants in `includes/config.php` (copy `includes/config.example.php`). When that file exists, it is the only config read.
+[DataSnapshot]
+  DATA_SRV_YourGrid = "https://www.yourgrid.org/helpers/register.php"
+  ;; Another directory too: DATA_SRV_2do = "https://2do.directory/helpers/register.php"
 
-An application that embeds the helpers (a WordPress plugin, a management tool) provides its own `includes/config.php`, which defines the same constants from the settings it manages. Nothing else is needed: the helpers work with any `config.php` that defines them.
+[Messaging]
+  OfflineMessageURL = "https://www.yourgrid.org/helpers/offline.php"
+
+[Economy]
+  ;; Gloebit, or DTLNSLMoneyModule with a money server
+  economymodule = Gloebit
+```
+
+```ini
+;; In Robust.ini (Robust.HG.ini): what the viewers get
+[Const]
+  WebURL = "https://www.yourgrid.org"
+
+[GridInfoService]
+  gridname = "Your Grid"
+  login = "${Const|BaseURL}:${Const|PublicPort}/"
+  welcome = "${Const|WebURL}/welcome"
+  ;; The viewers add the name of the script: <economy>/currency.php, <economy>/landtool.php
+  economy = "${Const|WebURL}/helpers"
+
+[LoginService]
+  WelcomeMessage = "Welcome to Your Grid, <USERNAME>!"
+  MessageUrl = "${Const|WebURL}/helpers/motd.php"
+  DestinationGuide = "${Const|WebURL}/helpers/guide.php"
+
+[DatabaseService]
+  ConnectionString = "Data Source=localhost;Database=robust;User ID=opensim;Password=*****;Old Guids=true;"
+
+;; A service that has a database of its own has it here too, the helpers choose as OpenSimulator does
+; [UserAccountService]
+;   ConnectionString = "Data Source=localhost;Database=accounts;User ID=opensim;Password=*****;"
+```
+
+```ini
+;; In Helpers.ini: what has no official place
+[Helpers]
+  ;; The destinations of the guide: a file (in the folder of the grid) or a URL, "Name|Region URL" lines,
+  ;; a name alone starts a category
+  GuideSource = "destinations.txt"
+  ;; The registry of the search is Robust's database unless it has its own
+  SearchConnectionString = "Data Source=localhost;Database=ossearch;User ID=opensim;Password=*****;"
+  HypEventsURL = "https://2do.directory/events"
+  ;; Whatever this folder holds (templates/, assets/) replaces the files of the helpers
+  ThemePath = "theme"
+  ;; LogoURL, MailSender, CurrencyRate, CurrencyRatePer, CurrencyScriptKey, CurrencyProvider...
+```
+
+**Addresses.** The helpers answer the addresses the grid gives to its services, those of this site (the host of `WebURL`) only: a service the grid has set up on another site (`SearchURL = "https://2do.directory/helpers/query.php"`) has no ghost on this one. A service the grid says nothing about answers at its default address, `/helpers/<script>.php`. Only `currency.php` and `landtool.php` have a fixed place, under the address of the economy. `/health` lists every address of the grid with its status.
+
+**Databases.** Each query uses the database of its service: the connection string (.NET format) of the section of the service when it has one, else `[DatabaseService]`.
+

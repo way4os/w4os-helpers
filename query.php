@@ -435,8 +435,9 @@ function dir_events_query($method_name, $params, $app_data)
 xmlrpc_server_register_method($xmlrpc_server, 'dir_classified_query', 'dir_classified_query');
 function dir_classified_query($method_name, $params, $app_data)
 {
-    global $OpenSimDB;
-    if (!tableExists($OpenSimDB, ['classifieds'])) {
+    // The classifieds are in the database of the profiles (UserProfilesService), Robust's unless it has its own
+    $ProfilesDB = db_for('UserProfilesService');
+    if (!tableExists($ProfilesDB, ['classifieds'])) {
         osXmlResponse(false);
         die();
     }
@@ -492,7 +493,7 @@ function dir_classified_query($method_name, $params, $app_data)
     $query_start = max(0, (int) $query_start);
 
     $sql = "SELECT * FROM classifieds $where ORDER BY priceforlisting DESC LIMIT $query_start,101";
-    $query = $OpenSimDB->prepareAndExecute($sql, $sqldata);
+    $query = $ProfilesDB->prepareAndExecute($sql, $sqldata);
 
     $data = [];
     while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
@@ -597,8 +598,9 @@ function event_info_query($method_name, $params, $app_data)
 xmlrpc_server_register_method($xmlrpc_server, 'classifieds_info_query', 'classifieds_info_query');
 function classifieds_info_query($method_name, $params, $app_data)
 {
-    global $OpenSimDB;
-    if (!tableExists($OpenSimDB, ['classifieds'])) {
+    // The classifieds are in the database of the profiles (UserProfilesService), Robust's unless it has its own
+    $ProfilesDB = db_for('UserProfilesService');
+    if (!tableExists($ProfilesDB, ['classifieds'])) {
         osXmlResponse(false);
         die();
     }
@@ -607,7 +609,7 @@ function classifieds_info_query($method_name, $params, $app_data)
 
     $classifiedID = $req['classifiedID'];
 
-    $query = $OpenSimDB->prepare('SELECT * FROM classifieds WHERE classifieduuid = ?');
+    $query = $ProfilesDB->prepare('SELECT * FROM classifieds WHERE classifieduuid = ?');
     $result = $query->execute([$classifiedID]);
 
     $data = [];

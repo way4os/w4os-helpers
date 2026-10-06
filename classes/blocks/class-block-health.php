@@ -23,16 +23,6 @@ class OpenSim_Helpers_Block_Health
     /** The addresses Robust gives at login ([LoginService]). */
     const LOGIN_SERVICE = ['DestinationGuide' => 'Destination guide', 'MessageUrl' => 'Message of the day', 'SearchURL' => 'Search'];
 
-    /** The services of the helpers, by what they are asked: the script and how an answer is provoked. */
-    const SERVICES = [
-        'query.php' => ['Search (query)', 'xmlrpc'],
-        'register.php' => ['Registration of the simulators', 'get'],
-        'offline.php' => ['Offline messages', 'get'],
-        'motd.php' => ['Message of the day', 'get'],
-        'guide.php' => ['Destination guide', 'get'],
-        'textgen.php' => ['Text to image', 'get'],
-    ];
-
     /**
      * @param  array<string,mixed> $args
      * @return array<string,mixed>
@@ -46,23 +36,32 @@ class OpenSim_Helpers_Block_Health
     }
 
     /**
-     * What there is to see now: the addresses and the state of the install, as groups of rows.
+     * What there is to see now: the addresses and the state of the install, as groups of rows. The addresses are the ones the
+     * official settings give (grid info and login service of Robust, search, registration and offline messages of the
+     * simulators), each followed by what it answers; one the grid does not give is shown empty, so nothing is forgotten.
      *
      * @return list<array{title:string,rows:list<array<string,mixed>>}>
      */
     public static function look()
     {
         $settings = class_exists('OpenSim_Helpers_GridConfig') ? OpenSim_Helpers_GridConfig::settings() : null;
+        $sources = $settings['sources'] ?? [];
+        $get = fn($section, $key) => (string) OpenSim_Helpers_GridConfig::value($sources, $section, $key);
         $login = defined('OPENSIM_LOGIN_URI') ? OPENSIM_LOGIN_URI : ($settings['login_uri'] ?? null);
-        $robust = $settings['robust'] ?? [];
         $web = rtrim((string) ($settings['web_url'] ?? ''), '/');
         $live = $login ? OpenSim_Helpers_GridInfo::fetch($login) : [];
+        $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
+        $default = function ($script) use ($routes, $web) {
+            $path = array_search($script, $routes, true);
+
+            return $path === false || $web === '' ? '' : $web . $path;
+        };
 
         $groups = [];
         // What the viewers read at the login address (/get_grid_info), else what the config of Robust says
         $rows = [];
         foreach (self::GRID_INFO as $name) {
-            $value = (string) ($name === 'login' ? $login : $live[$name] ?? ($robust['GridInfoService'][$name] ?? ''));
+            $value = $name === 'login' ? (string) $login : (string) ($live[$name] ?? $get('GridInfoService', $name));
             $row = ['label' => $name, 'url' => $value, 'method' => 'get'];
             // The addresses of the grid itself answer at /get_grid_info, what the viewers ask first
             if (in_array($name, ['login', 'gatekeeper', 'uas'], true) && $value !== '') {
@@ -74,24 +73,30 @@ class OpenSim_Helpers_Block_Health
 
         $rows = [];
         foreach (self::LOGIN_SERVICE as $name => $label) {
-            $rows[] = ['label' => $label . " ($name)", 'url' => (string) ($robust['LoginService'][$name] ?? ''), 'method' => 'get'];
+            $rows[] = ['label' => $label . " ($name)", 'url' => $get('LoginService', $name), 'method' => 'get'];
         }
         $groups[] = ['title' => _('Login service (what Robust tells at login)'), 'rows' => $rows];
 
+        // What the simulators call (OpenSim.ini): the search, the registration on a directory, the offline messages
+        $rows = [['label' => 'SearchURL', 'url' => $get('Search', 'SearchURL') ?: $default('query.php'), 'method' => 'xmlrpc']];
+        $registers = OpenSim_Helpers_GridConfig::values($sources, 'DataSnapshot', '/^DATA_SRV_/');
+        foreach ($registers ?: [$default('register.php')] as $url) {
+            $rows[] = ['label' => 'DATA_SRV', 'url' => (string) $url, 'method' => 'get'];
+        }
+        $rows[] = ['label' => 'OfflineMessageURL', 'url' => $get('Messaging', 'OfflineMessageURL') ?: $default('offline.php'), 'method' => 'get'];
+        $groups[] = ['title' => _('Simulators (what they call)'), 'rows' => $rows];
+
         // The economy: the viewers add the name of the script to the address the grid gives
         $rows = [];
-        $economy = (string) ($live['economy'] ?? ($robust['GridInfoService']['economy'] ?? ''));
+        $economy = (string) ($live['economy'] ?? $get('GridInfoService', 'economy'));
         foreach (['currency.php', 'landtool.php'] as $script) {
-            $rows[] = ['label' => $script, 'url' => $economy === '' ? '' : rtrim($economy, '/') . "/$script", 'method' => 'xmlrpc'];
+            $rows[] = ['label' => $script, 'url' => $economy === '' ? $default($script) : rtrim($economy, '/') . "/$script", 'method' => 'xmlrpc'];
         }
-        foreach (self::SERVICES as $script => [$label, $method]) {
-            $path = $settings ? OpenSim_Helpers_GridConfig::script_path($settings, $script) : null;
-            $rows[] = ['label' => $label, 'url' => $path && $web !== '' ? $web . $path : '', 'method' => $method];
-        }
+        $rows[] = ['label' => 'textgen.php', 'url' => $default('textgen.php'), 'method' => 'get'];
         $groups[] = ['title' => _('Helpers'), 'rows' => $rows];
 
         $groups = self::answers($groups);
-        $groups[] = ['title' => _('System'), 'rows' => self::system()];
+        $groups[] = ['title' => _('System'), 'rows' => self::system($settings)];
 
         return $groups;
     }
@@ -179,7 +184,7 @@ class OpenSim_Helpers_Block_Health
      *
      * @return list<array<string,mixed>>
      */
-    public static function system()
+    public static function system($settings = null)
     {
         global $OpenSimDB;
         $ok = fn($label, $good, $detail = '') => [
@@ -197,9 +202,15 @@ class OpenSim_Helpers_Block_Health
             $ok(_('Imagick (text to image, web assets)'), class_exists('Imagick')),
             $ok(_('Gettext (translations)'), function_exists('gettext')),
         ];
+        // The ini files the helpers read, and the ones the web server user cannot
+        foreach ($settings ? OpenSim_Helpers_GridConfig::files($settings['dir']) : [] as $file) {
+            if (is_file($file)) {
+                $rows[] = $ok(basename($file), is_readable($file), $file);
+            }
+        }
         $rows[] =
             $guide === ''
-                ? ['label' => _('Destination guide source'), 'url' => '', 'level' => 'none', 'status' => _('not defined'), 'detail' => 'guide_source', 'ms' => null]
+                ? ['label' => _('Destination guide source'), 'url' => '', 'level' => 'none', 'status' => _('not defined'), 'detail' => 'GuideSource', 'ms' => null]
                 : $ok(_('Destination guide source'), preg_match('#^https?://#', $guide) || is_readable($guide), $guide);
 
         return $rows;

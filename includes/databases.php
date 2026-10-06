@@ -118,3 +118,43 @@ if (defined('OPENSIM_DB') && OPENSIM_DB === true) {
         OPENSIM_DB_PASS,
     );
 }
+
+/**
+ * The database of a service of OpenSimulator (UserAccountService, GridUserService, PresenceService, GridService,
+ * UserProfilesService...), chosen the way OpenSimulator chooses it: the one the service has of its own in the config
+ * (OPENSIM_DB_SERVICES), else the one of Robust. Each is opened once.
+ *
+ * @param  string|null $service the section of the service in the Robust config
+ * @return OSPDO|null
+ */
+function db_for($service = null)
+{
+    static $handles = [];
+    global $OpenSimDB;
+    $own = $service !== null && defined('OPENSIM_DB_SERVICES') ? OPENSIM_DB_SERVICES[$service] ?? null : null;
+    if (empty($own['hostname']) || empty($own['prefix'])) {
+        return $OpenSimDB ?? null;
+    }
+    $key = md5(serialize($own));
+    if (!isset($handles[$key])) {
+        $handles[$key] = new OSPDO(
+            'mysql:host=' . $own['hostname'] . ';dbname=' . $own['prefix'],
+            $own['user'] ?? null,
+            $own['password'] ?? null,
+        );
+    }
+
+    return $handles[$key];
+}
+
+// The offline messages are those of the OfflineIMService of Robust: its database, Robust's unless it has its own
+if (defined('OFFLINE_DB_HOST') && defined('OFFLINE_DB_NAME') && defined('OFFLINE_DB_USER') && defined('OFFLINE_DB_PASS')) {
+    $OfflineDB =
+        defined('OPENSIM_DB_HOST') &&
+        OFFLINE_DB_HOST === OPENSIM_DB_HOST &&
+        OFFLINE_DB_NAME === OPENSIM_DB_NAME &&
+        OFFLINE_DB_USER === OPENSIM_DB_USER &&
+        isset($OpenSimDB)
+            ? $OpenSimDB
+            : new OSPDO('mysql:host=' . OFFLINE_DB_HOST . ';dbname=' . OFFLINE_DB_NAME, OFFLINE_DB_USER, OFFLINE_DB_PASS);
+}

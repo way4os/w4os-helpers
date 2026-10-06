@@ -118,7 +118,7 @@ describe('The guide block', function () {
     test('says there is nothing to show when the file holds no destination, and why to the one who reads the source', function () {
         expect(guide_block("# nothing here\n\n"))
             ->toContain('realm of destinations')
-            ->toContain('<!-- no destination: guide_source');
+            ->toContain('<!-- no destination: GuideSource');
     });
 
     test('links its style and its script from the head of the page, not from its own body', function () {

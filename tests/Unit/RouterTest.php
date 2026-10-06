@@ -14,35 +14,60 @@ describe('Router', function () {
             ->toBe(['page', 'splash']);
     });
 
-    test('serves a script under any prefix', function () {
-        expect(OpenSim_Helpers_Router::match('/helpers/query.php'))
+    test('serves a script at its route, and nowhere else: no ghost service', function () {
+        $routes = ['/helpers/query.php' => 'query.php', '/v3/currency.php' => 'currency.php'];
+
+        expect(OpenSim_Helpers_Router::match('/helpers/query.php', $routes))
             ->toBe(['script', 'query.php'])
-            ->and(OpenSim_Helpers_Router::match('/a/b/currency.php'))
-            ->toBe(['script', 'currency.php']);
+            ->and(OpenSim_Helpers_Router::match('/v3/currency.php', $routes))
+            ->toBe(['script', 'currency.php'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/currency.php', $routes))
+            ->toBeNull()
+            ->and(OpenSim_Helpers_Router::match('/a/b/query.php', $routes))
+            ->toBeNull();
     });
 
-    test('serves a script called with what OpenSimulator adds to it', function () {
-        expect(OpenSim_Helpers_Router::match('/helpers/offline.php/SaveMessage/'))
+    test('serves what is under a route too, and gives what follows it as PATH_INFO', function () {
+        $routes = ['/helpers/offline.php' => 'offline.php', '/guide' => '@guide', '/' => '@home'];
+
+        expect(OpenSim_Helpers_Router::match('/helpers/offline.php/SaveMessage/', $routes))
             ->toBe(['script', 'offline.php'])
-            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/offline.php/SaveMessage/'))
+            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/offline.php/SaveMessage/', $routes))
             ->toBe('/SaveMessage/')
-            ->and(OpenSim_Helpers_Router::pathInfo('/offline.php/RetrieveMessages/'))
+            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/offline.php/RetrieveMessages/', $routes))
             ->toBe('/RetrieveMessages/')
-            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/query.php'))
+            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/offline.php', $routes))
             ->toBe('')
-            ->and(OpenSim_Helpers_Router::pathInfo('/helpers/'))
+            ->and(OpenSim_Helpers_Router::match('/guide/places/', $routes))
+            ->toBe(['page', 'guide'])
+            ->and(OpenSim_Helpers_Router::pathInfo('/guide/places/', $routes))
+            ->toBe('/places/')
+            // The root is the root, not everything
+            ->and(OpenSim_Helpers_Router::match('/nothing', $routes))
+            ->toBeNull()
+            ->and(OpenSim_Helpers_Router::pathInfo('/', $routes))
             ->toBe('');
     });
 
-    test('serves the routes of the operator', function () {
-        $own = ['/search/' => 'query.php', '/hello' => '@splash'];
+    test('serves the longest route', function () {
+        $routes = ['/a' => 'query.php', '/a/b' => 'register.php'];
 
-        expect(OpenSim_Helpers_Router::match('/search', $own))
+        expect(OpenSim_Helpers_Router::match('/a/b/c', $routes))->toBe(['script', 'register.php']);
+    });
+
+    test('serves the routes it is given, the defaults without any', function () {
+        $routes = ['/search/' => 'query.php', '/hello' => '@splash'];
+
+        expect(OpenSim_Helpers_Router::match('/search', $routes))
             ->toBe(['script', 'query.php'])
-            ->and(OpenSim_Helpers_Router::match('/hello', $own))
+            ->and(OpenSim_Helpers_Router::match('/hello', $routes))
             ->toBe(['page', 'splash'])
-            ->and(OpenSim_Helpers_Router::match('/welcome', $own))
-            ->toBe(['page', 'splash']);
+            ->and(OpenSim_Helpers_Router::match('/welcome', $routes))
+            ->toBeNull()
+            ->and(OpenSim_Helpers_Router::match('/welcome'))
+            ->toBe(['page', 'splash'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/query.php'))
+            ->toBe(['script', 'query.php']);
     });
 
     test('serves the assets and the blocks under any prefix, nothing outside them', function () {
@@ -71,8 +96,9 @@ describe('Router', function () {
             ->toBe(['page', 'profile'])
             ->and(OpenSim_Helpers_Router::match('/members/jane.doe', ['/members' => '@profile']))
             ->toBe(['page', 'profile', ['name' => 'jane.doe']])
+            // What is under the route of the profiles is for the profile page
             ->and(OpenSim_Helpers_Router::match('/profile/jane/doe'))
-            ->toBeNull();
+            ->toBe(['page', 'profile']);
     });
 
     test('serves the health page', function () {

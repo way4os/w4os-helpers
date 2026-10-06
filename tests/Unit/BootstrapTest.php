@@ -9,7 +9,7 @@
  * Run the bootstrap with a config.
  *
  * @param string|null $config The content of includes/config.php, null for none.
- * @param array<string,string> $grids The files of the grids, from etc/grids (Alpha/helpers.ini => content).
+ * @param array<string,string> $grids The files of the grids, from etc/grids (Alpha/Helpers.ini => content).
  * @param array<string,string> $env Variables of the environment (OPENSIM_GRID).
  * @param string $before PHP code to run before the bootstrap (to stand for an extension).
  * @return array{out: string, err: string, constants: array<string,mixed>}
@@ -59,8 +59,8 @@ function bootstrap_with(?string $config, array $grids = [], array $env = [], str
 const BOOTSTRAP_MAIN_DB = "define('OPENSIM_DB_HOST', '127.0.0.1'); define('OPENSIM_DB_NAME', 'grid');
     define('OPENSIM_DB_USER', 'u'); define('OPENSIM_DB_PASS', 'p');";
 
-/** A helpers.ini giving a grid and its database. */
-const BOOTSTRAP_HELPERS_INI = "[Helpers]\ngrid_name = \"Alpha World\"\n[robust_db]\nhostname = \"127.0.0.1\"\nprefix = \"alpha\"\nuser = \"u\"\npassword = \"p\"\n";
+/** A Helpers.ini (the format of Robust.ini) giving a grid and its database. */
+const BOOTSTRAP_HELPERS_INI = "[GridInfoService]\ngridname = \"Alpha World\"\n[DatabaseService]\nConnectionString = \"Data Source=127.0.0.1;Database=alpha;User ID=u;Password=p;\"\n";
 
 describe('Bootstrap with includes/config.php', function () {
     test('says so when there is no config at all', function () {
@@ -127,7 +127,7 @@ describe('Bootstrap with includes/config.php', function () {
 
     test('is the config used when it exists, whatever the grids say', function () {
         $c = bootstrap_with(BOOTSTRAP_MAIN_DB . "define('OPENSIM_GRID_NAME', 'From the file');", [
-            'Alpha/helpers.ini' => BOOTSTRAP_HELPERS_INI,
+            'Alpha/Helpers.ini' => BOOTSTRAP_HELPERS_INI,
         ])['constants'];
 
         expect($c['OPENSIM_GRID_NAME'])->toBe('From the file');
@@ -149,7 +149,7 @@ describe('Bootstrap where the xmlrpc extension is', function () {
 
 describe('Bootstrap with the config of a grid', function () {
     test('takes it when there is no includes/config.php', function () {
-        $c = bootstrap_with(null, ['Alpha/helpers.ini' => BOOTSTRAP_HELPERS_INI])['constants'];
+        $c = bootstrap_with(null, ['Alpha/Helpers.ini' => BOOTSTRAP_HELPERS_INI])['constants'];
 
         expect($c['OPENSIM_GRID_NAME'])
             ->toBe('Alpha World')
@@ -163,8 +163,8 @@ describe('Bootstrap with the config of a grid', function () {
 
     test('serves the grid the environment names', function () {
         $grids = [
-            'Alpha/helpers.ini' => BOOTSTRAP_HELPERS_INI,
-            'Beta/helpers.ini' => str_replace('Alpha World', 'Beta World', BOOTSTRAP_HELPERS_INI),
+            'Alpha/Helpers.ini' => BOOTSTRAP_HELPERS_INI,
+            'Beta/Helpers.ini' => str_replace('Alpha World', 'Beta World', BOOTSTRAP_HELPERS_INI),
         ];
 
         $c = bootstrap_with(null, $grids, ['OPENSIM_GRID' => 'Beta'])['constants'];
@@ -174,8 +174,8 @@ describe('Bootstrap with the config of a grid', function () {
 
     test('says so when several grids and none is named', function () {
         $run = bootstrap_with(null, [
-            'Alpha/helpers.ini' => BOOTSTRAP_HELPERS_INI,
-            'Beta/helpers.ini' => BOOTSTRAP_HELPERS_INI,
+            'Alpha/Helpers.ini' => BOOTSTRAP_HELPERS_INI,
+            'Beta/Helpers.ini' => BOOTSTRAP_HELPERS_INI,
         ]);
 
         expect($run['out'])
@@ -187,7 +187,7 @@ describe('Bootstrap with the config of a grid', function () {
     });
 
     test('says so when the grid named is not there', function () {
-        $run = bootstrap_with(null, ['Alpha/helpers.ini' => BOOTSTRAP_HELPERS_INI], ['OPENSIM_GRID' => 'Nowhere']);
+        $run = bootstrap_with(null, ['Alpha/Helpers.ini' => BOOTSTRAP_HELPERS_INI], ['OPENSIM_GRID' => 'Nowhere']);
 
         expect($run['out'])
             ->toBe('Not properly configured')
@@ -197,7 +197,7 @@ describe('Bootstrap with the config of a grid', function () {
     });
 
     test('says so when it gives no database', function () {
-        $run = bootstrap_with(null, ['Alpha/helpers.ini' => "[Helpers]\ngrid_name = \"Alpha\"\n"]);
+        $run = bootstrap_with(null, ['Alpha/Helpers.ini' => "[GridInfoService]\ngridname = \"Alpha\"\n"]);
 
         expect($run['out'])->toBe('Not properly configured')->and($run['err'])->toContain('no database');
     });

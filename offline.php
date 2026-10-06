@@ -19,9 +19,12 @@
 require_once 'includes/bootstrap.php';
 require_once 'includes/databases.php';
 
-if (!isset($OpenSimDB)) {
+// The messages are in the database of the offline messages (Robust's unless OfflineIMService has its own), the mail
+// preferences of the users in the one of their profiles (UserProfilesService)
+if (empty($OfflineDB)) {
     die();
 }
+$ProfilesDB = db_for('UserProfilesService');
 
 $request_xml = file_get_contents('php://input');
 if (empty($request_xml)) {
@@ -44,7 +47,7 @@ switch ($method) {
         }
 
         // Save for in-world delivery
-        $saved = $OpenSimDB->prepareAndExecute(
+        $saved = $OfflineDB->prepareAndExecute(
             'INSERT INTO ' .
                 OFFLINE_MESSAGE_TBL .
                 ' (PrincipalID, FromID, Message)
@@ -59,7 +62,7 @@ switch ($method) {
         dontWait(); // flush output, continue in background
 
         // Save to mail queue if mail forwarding is set
-        $emailinfo = $OpenSimDB->prepareAndExecute(
+        $emailinfo = $ProfilesDB->prepareAndExecute(
             'SELECT imviaemail, email FROM usersettings WHERE useruuid = :useruuid',
             [
                 'useruuid' => $xml->toAgentID,
@@ -171,7 +174,7 @@ switch ($method) {
 
     case '/RetrieveMessages/':
         if (opensim_isuuid($xml->Guid)) {
-            $pendingmessages = $OpenSimDB->prepareAndExecute(
+            $pendingmessages = $OfflineDB->prepareAndExecute(
                 'SELECT ID, Message FROM ' . OFFLINE_MESSAGE_TBL . ' WHERE PrincipalID = :PrincipalID',
                 [
                     'PrincipalID' => $xml->Guid,
@@ -191,7 +194,7 @@ switch ($method) {
                 }
                 echo '</ArrayOfGridInstantMessage>';
                 if (!empty($delivered)) {
-                    $result = $OpenSimDB->prepareAndExecute(
+                    $result = $OfflineDB->prepareAndExecute(
                         'DELETE FROM ' . OFFLINE_MESSAGE_TBL . ' WHERE ID=' . join(' OR ID=', $delivered),
                     );
                 }

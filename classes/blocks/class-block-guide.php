@@ -30,12 +30,12 @@ class OpenSim_Helpers_Block_Guide
             error_log(
                 'opensim-helpers guide: ' .
                     (empty($source)
-                        ? 'no source for the guide, set guide_source in helpers.ini (or OPENSIM_GUIDE_SOURCE in config.php)'
+                        ? 'no source for the guide, set GuideSource in [Helpers] of Helpers.ini (or OPENSIM_GUIDE_SOURCE in config.php)'
                         : 'no destination in the source of the guide, which is not readable or empty: ' . $source),
             );
 
             return $data + [
-                'reason' => 'no destination: guide_source of helpers.ini is not set, not readable or empty',
+                'reason' => 'no destination: GuideSource of Helpers.ini is not set, not readable or empty',
                 'text' => _(
                     'The realm of destinations you seek has eluded our grasp, spirited away by elusive knomes. Rally the grid managers, let them venture forth to curate a grand tapestry of remarkable places for your exploration!',
                 ),

@@ -34,7 +34,7 @@ class OpenSim_Helpers_View
         return (bool) preg_match(self::VIEWER_PATTERN, (string) $agent);
     }
 
-    /** Where the helpers are on the web site: the path of helpers.ini, `/helpers` by default. */
+    /** Where the helpers are on the web site: the path of the economy of the grid, `/helpers` by default. */
     public static function base_path()
     {
         $path = defined('OPENSIM_HELPERS_PATH') ? OPENSIM_HELPERS_PATH : self::DEFAULT_PATH;
@@ -90,7 +90,7 @@ class OpenSim_Helpers_View
         $labels = self::labels();
         $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
         $menu = [['label' => $labels['home'], 'url' => '/']];
-        $guide = array_search('guide.php', $routes, true);
+        $guide = array_search('@guide', $routes, true);
         $menu[] = ['label' => $labels['guide'], 'url' => $guide !== false ? $guide : self::base_path() . '/guide.php'];
         $viewer = self::is_viewer();
 

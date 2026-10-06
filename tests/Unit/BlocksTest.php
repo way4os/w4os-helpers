@@ -32,7 +32,12 @@ function counting_db(array $answers): object
 
                         public function fetchColumn()
                         {
-                            return $this->value;
+                            return is_array($this->value) ? ($this->value[0] ?? false) : $this->value;
+                        }
+
+                        public function fetchAll($mode = null)
+                        {
+                            return (array) $this->value;
                         }
                     };
                 }
@@ -131,7 +136,7 @@ describe('Block grid-status', function () {
             'ROUND(SUM' => '1.5',
             'FROM regions' => 9,
         ]);
-        $counts = OpenSim_Helpers_Block_GridStatus::counts($db, 1_800_000_000);
+        $counts = OpenSim_Helpers_Block_GridStatus::counts(fn($service) => $db, 1_800_000_000);
 
         expect($counts)
             ->toMatchArray([
@@ -147,12 +152,33 @@ describe('Block grid-status', function () {
             ->toBe(['month' => 1_800_000_000 - 30 * 86400]);
     });
 
+    test('asks each service its own database, and joins nothing across two', function () {
+        $answers = ['FROM UserAccounts WHERE active' => 100, 'PrincipalID IN' => 4, 'FROM GridUser WHERE' => 3, 'FROM Presence WHERE' => 2, 'FROM regions' => 5];
+        $dbs = [];
+        foreach (['UserAccountService', 'GridUserService', 'PresenceService', 'GridService'] as $service) {
+            $dbs[$service] = counting_db(['SELECT UserID FROM' => ['u1', 'u2', 'u3']] + $answers);
+        }
+        $counts = OpenSim_Helpers_Block_GridStatus::counts(fn($service) => $dbs[$service], 1_800_000_000);
+
+        // The accounts come from their own database, the logins and the presences from theirs
+        expect($counts['members'])
+            ->toBe(100)
+            ->and($counts['regions'])
+            ->toBe(5)
+            ->and(count($dbs['UserAccountService']->asked))
+            ->toBeGreaterThanOrEqual(1)
+            ->and(array_filter(array_column($dbs['UserAccountService']->asked, 0), fn($sql) => str_contains($sql, 'GridUser')))
+            ->toBe([])
+            ->and(array_filter(array_column($dbs['GridUserService']->asked, 0), fn($sql) => str_contains($sql, 'UserAccounts WHERE active')))
+            ->toBe([]);
+    });
+
     test('counts nothing without a database that answers', function () {
-        expect(OpenSim_Helpers_Block_GridStatus::counts(null, 0))->toBeNull();
+        expect(OpenSim_Helpers_Block_GridStatus::counts(fn($service) => null, 0))->toBeNull();
 
         $down = counting_db([]);
         $down->connected = false;
-        expect(OpenSim_Helpers_Block_GridStatus::counts($down, 0))->toBeNull();
+        expect(OpenSim_Helpers_Block_GridStatus::counts(fn($service) => $down, 0))->toBeNull();
     });
 
     test('is online when something answers at the login address', function () {

@@ -27,6 +27,7 @@ if (defined('CURRENCY_DB_HOST')) {
         CURRENCY_DB_PASS,
     );
 } else {
+    // The economy has its own database when the grid says so (CURRENCY_DB_*), Robust's otherwise
     $CurrencyDB = &$OpenSimDB;
 }
 
@@ -482,14 +483,17 @@ function currency_xmlrpc_call($host, $port, $uri, $request)
  */
 function opensim_get_avatar_session($agentID, &$deprecated = null)
 {
-    global $OpenSimDB;
     if (!opensim_isuuid($agentID)) {
         return null;
     }
 
-    $result = $OpenSimDB->query("SELECT RegionID,SessionID,SecureSessionID FROM Presence WHERE UserID='$agentID'");
-    if ($result) {
-        [$RegionID, $SessionID, $SecureSessionID] = $result->fetch();
+    // Who is where: the database of the presence service
+    $result = db_for('PresenceService')->prepareAndExecute(
+        'SELECT RegionID,SessionID,SecureSessionID FROM Presence WHERE UserID = :user',
+        ['user' => $agentID],
+    );
+    if ($result && ($row = $result->fetch())) {
+        [$RegionID, $SessionID, $SecureSessionID] = $row;
     } else {
         return [];
     }
@@ -504,12 +508,12 @@ function opensim_get_avatar_session($agentID, &$deprecated = null)
 /** What the database of the grid knows of one of its regions (by UUID): name, handle and address. */
 function opensim_get_region_info($regionID, &$deprecated = null)
 {
-    global $OpenSimDB;
     if (!opensim_isuuid($regionID)) {
         return null;
     }
 
-    $result = $OpenSimDB->prepareAndExecute(
+    // The regions: the database of the grid service
+    $result = db_for('GridService')->prepareAndExecute(
         'SELECT regionName, regionHandle, serverIP, serverHttpPort, serverURI FROM regions WHERE uuid = :uuid',
         ['uuid' => $regionID],
     );
@@ -529,34 +533,39 @@ function opensim_get_region_info($regionID, &$deprecated = null)
 
 function opensim_set_current_region($agentID, $regionid, &$deprecated = null)
 {
-    global $OpenSimDB;
-
     if (!opensim_isuuid($agentID) or !opensim_isuuid($regionid)) {
         return false;
     }
 
-    $sql = "UPDATE Presence SET RegionID='$regionid' WHERE UserID='$agentID'";
-    $result = $OpenSimDB->query($sql);
-    if (!$result) {
-        return false;
-    }
-    return true;
+    $result = db_for('PresenceService')->prepareAndExecute('UPDATE Presence SET RegionID = :region WHERE UserID = :user', [
+        'region' => $regionid,
+        'user' => $agentID,
+    ]);
+
+    return (bool) $result;
 }
 
 function opensim_get_server_info($userid, &$deprecated = null)
 {
-    global $OpenSimDB;
     if (!opensim_isuuid($userid)) {
         return [];
     }
 
-    $result = $OpenSimDB->query(
-        "SELECT serverIP,serverHttpPort,serverURI,regionSecret
-    FROM GridUser INNER JOIN regions ON regions.uuid=GridUser.LastRegionID
-    WHERE GridUser.UserID='$userid'",
+    // The last region of the user is in the database of the grid users, the region in the one of the grid service: two
+    // databases that may not be the same, so no join
+    $user = db_for('GridUserService')->prepareAndExecute('SELECT LastRegionID FROM GridUser WHERE UserID = :user', [
+        'user' => $userid,
+    ]);
+    $region = $user ? $user->fetchColumn() : false;
+    if (!$region) {
+        return [];
+    }
+    $result = db_for('GridService')->prepareAndExecute(
+        'SELECT serverIP,serverHttpPort,serverURI,regionSecret FROM regions WHERE uuid = :uuid',
+        ['uuid' => $region],
     );
-    if ($result) {
-        [$serverip, $httpport, $serveruri, $secret] = $result->fetch();
+    if ($result && ($row = $result->fetch())) {
+        [$serverip, $httpport, $serveruri, $secret] = $row;
     } else {
         return [];
     }
@@ -570,36 +579,32 @@ function opensim_get_server_info($userid, &$deprecated = null)
 
 function opensim_check_secure_session($agentID, $regionid, $secure, &$deprecated = null)
 {
-    global $OpenSimDB;
     if (!opensim_isuuid($agentID) or !opensim_isuuid($secure)) {
         return false;
     }
 
-    $sql = "SELECT UserID FROM Presence WHERE UserID='$agentID' AND SecureSessionID='$secure'";
+    $sql = 'SELECT UserID FROM Presence WHERE UserID = :user AND SecureSessionID = :secure';
+    $values = ['user' => $agentID, 'secure' => $secure];
     if (opensim_isuuid($regionid)) {
-        $sql = $sql . " AND RegionID='$regionid'";
+        $sql .= ' AND RegionID = :region';
+        $values['region'] = $regionid;
     }
 
-    $result = $OpenSimDB->query($sql);
-    if (!$result) {
+    $result = db_for('PresenceService')->prepareAndExecute($sql, $values);
+    if (!$result || !($row = $result->fetch())) {
         return false;
     }
 
-    [$UUID] = $result->fetch();
-    if ($UUID != $agentID) {
-        return false;
-    }
-    return true;
+    return $row[0] == $agentID;
 }
 
 function opensim_check_region_secret($regionID, $secret, &$deprecated = null)
 {
-    global $OpenSimDB;
     if (!opensim_isuuid($regionID)) {
         return false;
     }
 
-    $result = $OpenSimDB->prepareAndExecute(
+    $result = db_for('GridService')->prepareAndExecute(
         'SELECT UUID FROM regions WHERE UUID=:uuid AND regionSecret=:regionSecret',
         [
             'uuid' => $regionID,
