@@ -228,3 +228,14 @@ describe('The menu', function () {
     });
 });
 
+describe('The page of the helpers', function () {
+    test('is public and says what it is, without the pages for who manages the grid', function () {
+        $html = OpenSim_Helpers_View::page('helpers');
+
+        expect($html)
+            ->toContain('Alpha &lt;b&gt;World')
+            ->toContain('OpenSimulator helpers')
+            ->not->toContain('health-table');
+    });
+});
+

@@ -597,10 +597,9 @@ class OpenSim_Helpers_GridConfig
             $routes["$base/$script"] = $script;
         }
         $routes["$base/directory_info.php"] = '@directory_info';
-        $routes["$base/health"] = '@health';
         // What answers at the address of the helpers itself, the one the grid gives for them (its economy): not what is under it
         if ($base !== '') {
-            $routes[$base] = '@health!';
+            $routes[$base] = '@helpers!';
         }
 
         return $routes;
@@ -713,22 +712,17 @@ class OpenSim_Helpers_GridConfig
 
     /**
      * The key that ties a quote of currency to its purchase (the confirm value is made with it), the script key of the
-     * MoneyServer: `MoneyScriptAccessKey` of `[MoneyServer]` in its MoneyServer.ini, where it is written and read, whatever
-     * name the helpers give it inside. A grid without one has a key of its own, made of the password of its database (the
-     * helpers read it and nobody else knows it), so that no grid has the public default key.
+     * MoneyServer: `MoneyScriptAccessKey` of `[MoneyServer]` in its MoneyServer.ini, where it is written (by the setup, which
+     * makes it at random: the server needs it too) and read, whatever name the helpers give it inside.
      *
      * @param  array $settings what settings() gave
-     * @return string|null null when there is nothing to make one from (the helpers use their default then)
+     * @return string|null null when the grid has none (the helpers use their default then)
      */
     public static function script_key($settings)
     {
         $given = self::value($settings['sources'], 'MoneyServer', 'MoneyScriptAccessKey');
-        if ($given !== null && trim($given) !== '') {
-            return trim($given);
-        }
-        $password = (string) (self::connection_for($settings, 'DatabaseService')['password'] ?? '');
 
-        return $password === '' ? null : substr(hash_hmac('sha256', 'opensim-helpers script key', $password), 0, 32);
+        return $given !== null && trim($given) !== '' ? trim($given) : null;
     }
 
     /**

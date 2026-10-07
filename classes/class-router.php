@@ -48,7 +48,7 @@ class OpenSim_Helpers_Router
     ];
 
     /** The pages: the slug of what each shows (see OpenSim_Helpers_View::main). */
-    const PAGES = ['home', 'splash', 'profile', 'health', 'destination_guide', 'directory_info'];
+    const PAGES = ['home', 'splash', 'profile', 'health', 'helpers', 'destination_guide', 'directory_info'];
 
     const MIME = [
         'svg' => 'image/svg+xml',
@@ -79,11 +79,10 @@ class OpenSim_Helpers_Router
         foreach (array_keys(self::SCRIPTS) as $script) {
             $routes["$base/$script"] = $script;
         }
-        // The health page is also with the other services, where the person looking for it goes, and it is what answers
-        // at the address of the helpers itself, the one the grid gives for them (its economy)
-        $routes["$base/health"] = '@health';
+        // What answers at the address of the helpers itself, the one the grid gives for them (its economy): a public page.
+        // The health page is for who manages the grid, it has its own address and no other
         if ($base !== '') {
-            $routes[$base] = '@health!';
+            $routes[$base] = '@helpers!';
         }
         foreach (self::ALIASES as $script => $page) {
             $routes["$base/$script"] = "@$page";

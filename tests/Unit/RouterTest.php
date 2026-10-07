@@ -101,18 +101,19 @@ describe('Router', function () {
             ->toBe(['page', 'profile']);
     });
 
-    test('serves the health page, and with the other services too', function () {
+    test('serves the health page at its own address only: it is for who manages the grid', function () {
         expect(OpenSim_Helpers_Router::match('/health'))
             ->toBe(['page', 'health'])
             ->and(OpenSim_Helpers_Router::match('/helpers/health'))
-            ->toBe(['page', 'health']);
+            ->toBeNull();
     });
 
     test('answers at the address of the helpers itself, and not at what is under it that it does not know', function () {
+        // A public page of its own, not the one for who manages the grid
         expect(OpenSim_Helpers_Router::match('/helpers'))
-            ->toBe(['page', 'health'])
+            ->toBe(['page', 'helpers'])
             ->and(OpenSim_Helpers_Router::match('/helpers/'))
-            ->toBe(['page', 'health'])
+            ->toBe(['page', 'helpers'])
             ->and(OpenSim_Helpers_Router::match('/helpers/nothing'))
             ->toBeNull()
             // A site that has them at the root has no such address, the root is the home page

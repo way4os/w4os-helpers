@@ -26,9 +26,6 @@ class OpenSim_Helpers_Block_Health
     /** The addresses of the grid itself, which answer at /get_grid_info. */
     const GRID_ADDRESSES = ['login', 'gatekeeper', 'uas'];
 
-    /** The errors of curl that are a certificate this server does not trust (the address may well answer). */
-    const CERTIFICATE_ERRORS = [51, 58, 59, 60, 77, 83, 90, 91];
-
     /**
      * @param  array<string,mixed> $args
      * @return array<string,mixed>
@@ -58,7 +55,7 @@ class OpenSim_Helpers_Block_Health
         $login = defined('OPENSIM_LOGIN_URI') ? OPENSIM_LOGIN_URI : ($settings['login_uri'] ?? null);
         $live = $login ? OpenSim_Helpers_GridInfo::fetch($login) : [];
         $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
-        $groups = self::answers(self::plan($settings, $login, $live, $routes, defined('OPENSIM_GUIDE_SOURCE') ? (string) OPENSIM_GUIDE_SOURCE : ''));
+        $groups = self::answers(self::plan($settings, $login, $live, $routes, defined('OPENSIM_GUIDE_SOURCE') ? (string) OPENSIM_GUIDE_SOURCE : '', self::owner()));
         $groups[] = ['title' => '[DatabaseService]', 'rows' => [self::database_row()]];
         $groups[] = ['title' => _('PHP extensions'), 'rows' => self::extensions()];
         $files = self::files($settings);
@@ -80,9 +77,10 @@ class OpenSim_Helpers_Block_Health
      * @param  array<string,mixed>  $live     what the grid says at /get_grid_info
      * @param  array<string,string> $routes   the paths the helpers answer
      * @param  string               $guide    the source of the destination guide
+     * @param  string|null          $owner    the name of an avatar of the grid (there is always one, the owner), Firstname.Lastname
      * @return list<array{title:string,rows:list<array<string,mixed>>}>
      */
-    public static function plan($settings, $login, $live, $routes, $guide)
+    public static function plan($settings, $login, $live, $routes, $guide, $owner = null)
     {
         $sources = $settings['sources'] ?? [];
         $get = fn($section, $key) => (string) OpenSim_Helpers_GridConfig::value($sources, $section, $key);
@@ -131,9 +129,20 @@ class OpenSim_Helpers_Block_Health
                 // What answers at these addresses is the grid info, the first thing the viewers ask
                 $row['probe'] = rtrim($value, '/') . '/get_grid_info';
                 $row['note'] = '/get_grid_info';
-            } elseif (str_contains($value, '[')) {
-                // An address with the place of a name in it ([AGENT_NAME]): no avatar to ask for
-                $row['skip'] = _('not asked (has a name to fill in)');
+            } elseif (str_contains($value, '[AGENT_NAME]')) {
+                // An address with the place of a name in it: asked with the name of an avatar, and without any name, two
+                // different things to know (the page of an avatar, the page that is under the address)
+                $with = $row + ['note' => $owner === null ? _('no avatar to ask for') : sprintf(_('with the name of %s'), $owner)];
+                if ($owner === null) {
+                    $with['skip'] = _('not asked (no avatar)');
+                } else {
+                    $with['url'] = str_replace('[AGENT_NAME]', $owner, $value);
+                }
+                $rows[] = $with;
+                $row['url'] = rtrim((string) preg_replace('#\[AGENT_NAME\].*$#', '', $value), '/');
+                $row['note'] = _('without a name');
+                $rows[] = $row;
+                continue;
             }
             $rows[] = $row;
         }
@@ -201,10 +210,11 @@ class OpenSim_Helpers_Block_Health
                 }
             }
         }
-        $results = self::ask($requests, false);
-        $retry = array_filter($requests, fn($row, $id) => $results[$id]['code'] === 0 && in_array($results[$id]['errno'], self::CERTIFICATE_ERRORS, true), ARRAY_FILTER_USE_BOTH);
-        foreach (self::ask($retry, true) as $id => $result) {
-            $results[$id] = $result + ['note' => _('certificate not trusted by this server')];
+        $results = self::ask($requests);
+        foreach ($results as $id => $result) {
+            if ($result['certificate'] !== 0) {
+                $results[$id]['note'] = _('certificate not trusted by this server');
+            }
         }
 
         foreach ($groups as $g => $group) {
@@ -234,10 +244,9 @@ class OpenSim_Helpers_Block_Health
      * Ask a set of addresses at once.
      *
      * @param  array<string,array<string,mixed>> $requests id => row (url, probe, method)
-     * @param  bool                              $insecure do not check the certificates
-     * @return array<string,array{code:int,errno:int,error:string,ms:int}> id => what came back
+     * @return array<string,array{code:int,errno:int,error:string,ms:int,certificate:int}> id => what came back
      */
-    private static function ask($requests, $insecure)
+    private static function ask($requests)
     {
         if (!$requests) {
             return [];
@@ -257,9 +266,9 @@ class OpenSim_Helpers_Block_Health
                 // Only the answer matters, not what follows it
                 CURLOPT_WRITEFUNCTION => static fn($handle, $chunk) => strlen($chunk),
             ]);
-            if ($insecure) {
-                curl_setopt_array($handle, [CURLOPT_SSL_VERIFYPEER => false, CURLOPT_SSL_VERIFYHOST => 0]);
-            }
+            // The certificate is not what is asked: an address with one this server does not trust is asked all the same, and
+            // the page says so
+            curl_setopt_array($handle, [CURLOPT_SSL_VERIFYPEER => false, CURLOPT_SSL_VERIFYHOST => 0]);
             if (($row['method'] ?? 'get') === 'xmlrpc') {
                 curl_setopt_array($handle, [
                     CURLOPT_POST => true,
@@ -290,6 +299,8 @@ class OpenSim_Helpers_Block_Health
                 'errno' => $errno,
                 'error' => curl_error($handle) ?: ($errno ? curl_strerror($errno) : ''),
                 'ms' => (int) round(curl_getinfo($handle, CURLINFO_TOTAL_TIME) * 1000),
+                // How the certificate checks out, 0 when it is valid (or there is none)
+                'certificate' => (int) curl_getinfo($handle, CURLINFO_SSL_VERIFYRESULT),
             ];
             curl_multi_remove_handle($multi, $handle);
         }
@@ -341,6 +352,20 @@ class OpenSim_Helpers_Block_Health
             'detail' => $detail,
             'ms' => null,
         ];
+    }
+
+    /**
+     * The name of an avatar of the grid to ask a profile for: there is always one, its owner, the first account made.
+     *
+     * @return string|null Firstname.Lastname, null when the accounts cannot be read
+     */
+    private static function owner()
+    {
+        $db = function_exists('db_for') ? db_for('UserAccountService') : null;
+        $statement = $db ? $db->prepareAndExecute('SELECT FirstName, LastName FROM UserAccounts ORDER BY Created, FirstName LIMIT 1', []) : false;
+        $row = $statement ? $statement->fetch(PDO::FETCH_NUM) : false;
+
+        return $row ? "$row[0].$row[1]" : null;
     }
 
     /** The database of Robust, the one every query starts from. */

@@ -3,11 +3,10 @@
 ### Unreleased
 
 - new: the top bar has a menu of the pages the site serves (home, destinations, directory, health), the current one marked
-- new: the health page is also at `<helpers>/health`
 - update: the ini files are read with the files they include (`Include-`) and their constants, as the OpenSim executables do
-- update: each grid has its own script key: `MoneyScriptAccessKey` of `[MoneyServer]` in `MoneyServer.ini`, else one made of the database password
-- update: the health page names the sections and the settings as the ini files, shows the addresses as links, the code where the redirections lead, the error code when nothing answers, and every address of `[GridInfoService]`
-- new: the address of the helpers itself (the economy) answers
+- update: the script key is `MoneyScriptAccessKey` of `[MoneyServer]` in `MoneyServer.ini`, and nothing else
+- update: the health page names the sections and the settings as the ini files, shows the addresses as links, the code where the redirections lead, the error code when nothing answers, every address of `[GridInfoService]`, the profile with and without a name, and says when a certificate is not trusted
+- new: the address of the helpers itself (the economy) answers with a public page
 - update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting
 - update: the Gloebit sandbox is `[Gloebit] GLBEnvironment`; the rate is 4 for 1000 unless the module's addon says
 - update: an address of the grid is served when its host (and its port, if it gives one) are the ones of the page served

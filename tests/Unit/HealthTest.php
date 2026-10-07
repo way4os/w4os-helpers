@@ -192,10 +192,10 @@ describe('Block health', function () {
             ->toBe(['GuideSource', 'HypEventsURL']);
     });
 
-    test('asks the grid info for the addresses of the grid, and asks no avatar for the address of a profile', function () use ($settings, $routes, $by) {
+    test('asks the grid info for the addresses of the grid', function () use ($settings, $routes, $by) {
         $rows = $by(
             OpenSim_Helpers_Block_Health::plan(
-                $settings(['GridInfoService' => ['login' => 'http://play.example.org:8002/', 'web_profile_url' => 'https://play.example.org/profile/[AGENT_NAME]']]),
+                $settings(['GridInfoService' => ['login' => 'http://play.example.org:8002/']]),
                 'http://play.example.org:8002/',
                 [],
                 $routes,
@@ -203,10 +203,27 @@ describe('Block health', function () {
             ),
         )['[GridInfoService]'];
 
-        expect($rows['login'])
-            ->toMatchArray(['url' => 'http://play.example.org:8002/', 'probe' => 'http://play.example.org:8002/get_grid_info'])
-            ->and($rows['web_profile_url'])
-            ->toHaveKey('skip');
+        expect($rows['login'])->toMatchArray(['url' => 'http://play.example.org:8002/', 'probe' => 'http://play.example.org:8002/get_grid_info']);
+    });
+
+    test('asks the profile with the name of an avatar of the grid, the owner, and without any name: two things to know', function () use ($settings, $routes) {
+        $info = ['GridInfoService' => ['web_profile_url' => 'https://play.example.org/profile/[AGENT_NAME]']];
+        $rows = OpenSim_Helpers_Block_Health::plan($settings($info), null, [], $routes, '', 'Jane.Doe')[0]['rows'];
+        $profile = array_values(array_filter($rows, fn($row) => $row['label'] === 'web_profile_url'));
+
+        expect($profile)
+            ->toHaveCount(2)
+            ->and($profile[0])
+            ->toMatchArray(['url' => 'https://play.example.org/profile/Jane.Doe', 'note' => 'with the name of Jane.Doe'])
+            ->not->toHaveKey('skip')
+            ->and($profile[1])
+            ->toMatchArray(['url' => 'https://play.example.org/profile', 'note' => 'without a name']);
+
+        // No account to read: the one with a name is not asked, and says why
+        $none = OpenSim_Helpers_Block_Health::plan($settings($info), null, [], $routes, '')[0]['rows'];
+        $none = array_values(array_filter($none, fn($row) => $row['label'] === 'web_profile_url'));
+
+        expect($none[0])->toHaveKey('skip')->and($none[1]['url'])->toBe('https://play.example.org/profile');
     });
 
     test('shows where the helpers expect a service the grid does not give, saying it is a default', function () use ($settings, $routes, $by) {
