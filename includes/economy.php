@@ -443,14 +443,33 @@ function currency_refusal($agentID)
     ];
 }
 
+/**
+ * Whether the grid has the key that ties a quote of currency to its purchase (the script key of the MoneyServer, in its
+ * MoneyServer.ini). There is no default: a key everybody knows protects nothing.
+ */
+function currency_has_key()
+{
+    return defined('CURRENCY_SCRIPT_KEY') && trim((string) CURRENCY_SCRIPT_KEY) !== '';
+}
+
+/**
+ * Money is not served without the key: a bad configuration, said to whoever asks and to the log.
+ */
+function currency_require_key()
+{
+    if (currency_has_key()) {
+        return;
+    }
+    error_log('opensim-helpers: bad configuration, no MoneyScriptAccessKey in [MoneyServer] of MoneyServer.ini: the currency is not served');
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "Bad configuration: the currency is not served without its key (MoneyScriptAccessKey, [MoneyServer] of MoneyServer.ini)\n";
+    exit();
+}
+
 function currency_get_confirm_value($ipAddress)
 {
-    // TODO:
-    // Option to force key to be something else than default
-    $key = empty(CURRENCY_SCRIPT_KEY) ? '1234567883789' : CURRENCY_SCRIPT_KEY;
-    $confirmvalue = md5($key . '_' . $ipAddress);
-
-    return $confirmvalue;
+    return md5(trim((string) CURRENCY_SCRIPT_KEY) . '_' . $ipAddress);
 }
 
 function currency_process_transaction($avatarID, $cost, $ipAddress)

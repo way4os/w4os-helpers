@@ -140,7 +140,8 @@ class OpenSim_Helpers_Block_Health
                 }
                 $rows[] = $with;
                 $row['url'] = rtrim((string) preg_replace('#\[AGENT_NAME\].*$#', '', $value), '/');
-                $row['note'] = _('without a name');
+                $row['note'] = _('without a name: a bad request is the right answer');
+                $row['expect'] = [400];
                 $rows[] = $row;
                 continue;
             }
@@ -189,6 +190,25 @@ class OpenSim_Helpers_Block_Health
         }
         $groups[] = ['title' => '[Helpers]', 'rows' => $rows];
 
+        // The key of the currency, where the MoneyServer has it: never shown, only whether the grid has one. Without it the
+        // currency helpers do not serve, which is an error for a grid that has a currency
+        $module = strtolower($get('Economy', 'economymodule'));
+        $needed = $module !== '' && $module !== 'betagridlikemoneymodule';
+        $has = $settings ? OpenSim_Helpers_GridConfig::script_key($settings) !== null : function_exists('currency_has_key') && currency_has_key();
+        $groups[] = [
+            'title' => '[MoneyServer]',
+            'rows' => [
+                [
+                    'label' => 'MoneyScriptAccessKey',
+                    'url' => '',
+                    'level' => $has ? 'ok' : ($needed ? 'error' : 'none'),
+                    'status' => $has ? _('defined') : _('not defined'),
+                    'detail' => 'MoneyServer.ini',
+                    'ms' => null,
+                ],
+            ],
+        ];
+
         return $groups;
     }
 
@@ -225,11 +245,15 @@ class OpenSim_Helpers_Block_Health
                 } elseif ($result === null) {
                     $verdict = self::verdict(null, '', 0);
                 } else {
-                    $verdict = self::verdict($result['code'], $result['error'], $result['ms'], $result['errno']);
+                    $verdict = self::verdict($result['code'], $result['error'], $result['ms'], $result['errno'], $row['expect'] ?? []);
+                    // It answers, but its certificate is not one this server trusts: a warning, less than an error
+                    if ($verdict['level'] === 'ok' && isset($result['note'])) {
+                        $verdict['level'] = 'warn';
+                    }
                 }
                 // What the row says of itself first, then what was found out
                 $notes = array_filter([$row['note'] ?? null, $result['note'] ?? null]);
-                $row = array_diff_key($row, ['method' => 0, 'probe' => 0, 'skip' => 0, 'note' => 0]) + $verdict;
+                $row = array_diff_key($row, ['method' => 0, 'probe' => 0, 'skip' => 0, 'note' => 0, 'expect' => 0]) + $verdict;
                 if ($notes) {
                     $row['note'] = implode(', ', $notes);
                 }
@@ -310,15 +334,17 @@ class OpenSim_Helpers_Block_Health
     }
 
     /**
-     * What an answer means: 2xx is fine, a 4xx is an address that answers (an API says so to a request that is not its own),
-     * 5xx and no answer are not. An address that does not answer gives the code of the error and what it says.
+     * What an answer means: 2xx is fine, anything else is an error (a 404 is an address that is not there, in red), unless it is
+     * what is expected of this address (a profile asked without a name is a bad request). An address that does not answer gives
+     * the code of the error and what it says.
      *
-     * @param  int|null $code  the HTTP code at the end of the redirections, 0 when nothing answered, null for an address that is not defined
-     * @param  string   $error what curl says when nothing answered
-     * @param  int      $errno the code of that error
+     * @param  int|null  $code   the HTTP code at the end of the redirections, 0 when nothing answered, null for an address that is not defined
+     * @param  string    $error  what curl says when nothing answered
+     * @param  int       $errno  the code of that error
+     * @param  int[]     $expect the codes that are the right answer of this address, besides the 2xx
      * @return array{level:string,status:string,ms:?int,detail?:string}
      */
-    public static function verdict($code, $error, $ms, $errno = 0)
+    public static function verdict($code, $error, $ms, $errno = 0, $expect = [])
     {
         if ($code === null) {
             return ['level' => 'none', 'status' => _('not defined'), 'ms' => null];
@@ -326,7 +352,7 @@ class OpenSim_Helpers_Block_Health
         if ($code === 0) {
             return ['level' => 'error', 'status' => 'cURL ' . _('error') . ' ' . $errno, 'ms' => null, 'detail' => $error];
         }
-        $level = $code < 400 ? 'ok' : ($code < 500 ? 'warn' : 'error');
+        $level = ($code >= 200 && $code < 300) || in_array($code, $expect, true) ? 'ok' : 'error';
 
         return ['level' => $level, 'status' => (string) $code, 'ms' => $ms];
     }

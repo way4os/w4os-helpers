@@ -218,6 +218,14 @@ class OpenSim_Helpers_Router
         $root = dirname(__DIR__);
         switch ($kind) {
             case 'page':
+                // A profile is the one of an avatar: its address without a name asks for nothing
+                if ($what === 'profile' && empty($found[2]['name'])) {
+                    http_response_code(400);
+                    header('Content-Type: text/plain; charset=utf-8');
+                    echo "Bad request: no avatar name\n";
+
+                    return null;
+                }
                 // The data of what the page shows, for what makes its own page or watches it
                 if (($_GET['format'] ?? '') === 'json' && OpenSim_Helpers_Blocks::exists($what)) {
                     self::answer_block($what);

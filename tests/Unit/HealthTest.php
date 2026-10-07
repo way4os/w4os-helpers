@@ -39,14 +39,19 @@ function code_server(): array
 }
 
 describe('An address in the health page', function () {
-    test('is fine for 2xx, answers for 4xx, is not for 5xx, gives the error when nothing answers, and is not defined when empty', function () {
+    test('is fine for 2xx, an error for anything else (a 404 is red) unless it is the answer expected, gives the error code when nothing answers, and is not defined when empty', function () {
         expect(OpenSim_Helpers_Block_Health::verdict(200, '', 12))
             ->toBe(['level' => 'ok', 'status' => '200', 'ms' => 12])
             ->and(OpenSim_Helpers_Block_Health::verdict(404, '', 3))
-            ->toBe(['level' => 'warn', 'status' => '404', 'ms' => 3])
+            ->toBe(['level' => 'error', 'status' => '404', 'ms' => 3])
             ->and(OpenSim_Helpers_Block_Health::verdict(405, '', 3)['level'])
-            ->toBe('warn')
+            ->toBe('error')
             ->and(OpenSim_Helpers_Block_Health::verdict(500, '', 3)['level'])
+            ->toBe('error')
+            // What is expected of an address is not an error (a profile asked without a name is a bad request)
+            ->and(OpenSim_Helpers_Block_Health::verdict(400, '', 3, 0, [400]))
+            ->toBe(['level' => 'ok', 'status' => '400', 'ms' => 3])
+            ->and(OpenSim_Helpers_Block_Health::verdict(404, '', 3, 0, [400])['level'])
             ->toBe('error')
             // No answer is not an answer: the code of the error is, and what it says
             ->and(OpenSim_Helpers_Block_Health::verdict(0, 'Could not resolve host: x', 0, 6))
@@ -66,6 +71,7 @@ describe('An address in the health page', function () {
                     ['label' => 'missing', 'url' => $url('404'), 'method' => 'get'],
                     ['label' => 'broken', 'url' => $url('500'), 'method' => 'get'],
                     ['label' => 'moved', 'url' => $url('redirect'), 'method' => 'get'],
+                    ['label' => 'expected', 'url' => $url('404'), 'method' => 'get', 'expect' => [404]],
                     ['label' => 'movedaway', 'url' => $url('redirect404'), 'method' => 'get'],
                     ['label' => 'api', 'url' => $url('200'), 'method' => 'xmlrpc'],
                     ['label' => 'probed', 'url' => $url('404'), 'probe' => $url('200'), 'method' => 'get', 'note' => '/get_grid_info'],
@@ -80,8 +86,8 @@ describe('An address in the health page', function () {
 
         expect($by['fine']['status'])
             ->toBe('200')
-            ->and($by['missing']['level'])
-            ->toBe('warn')
+            ->and($by['missing'])
+            ->toMatchArray(['level' => 'error', 'status' => '404'])
             ->and($by['broken']['level'])
             ->toBe('error')
             // The redirection is anecdotal, the result at the end is what counts
@@ -89,6 +95,8 @@ describe('An address in the health page', function () {
             ->toBe('200')
             ->and($by['movedaway']['status'])
             ->toBe('404')
+            ->and($by['expected'])
+            ->toMatchArray(['level' => 'ok', 'status' => '404'])
             ->and($by['api']['level'])
             ->toBe('ok')
             ->and($by['probed'])
@@ -102,7 +110,7 @@ describe('An address in the health page', function () {
             ->and($by['nobody']['detail'])
             ->not->toBe('')
             ->and($by['fine'])
-            ->not->toHaveKeys(['method', 'probe', 'skip']);
+            ->not->toHaveKeys(['method', 'probe', 'skip', 'expect']);
     });
 });
 
@@ -130,7 +138,7 @@ describe('An address with a certificate this server does not trust', function ()
         proc_terminate($process);
         $row = $groups[0]['rows'][0];
 
-        expect($code)->toBe(0)->and($row)->toMatchArray(['status' => '200', 'level' => 'ok', 'note' => 'certificate not trusted by this server']);
+        expect($code)->toBe(0)->and($row)->toMatchArray(['status' => '200', 'level' => 'warn', 'note' => 'certificate not trusted by this server']);
     })->skip(fn() => trim((string) shell_exec('command -v openssl 2>/dev/null')) === '', 'no openssl to make a certificate');
 });
 
@@ -175,7 +183,7 @@ describe('Block health', function () {
         $rows = $by($groups);
 
         expect(array_column($groups, 'title'))
-            ->toBe(['[GridInfoService]', '[LoginService]', '[Search]', '[DataSnapshot]', '[Messaging]', 'opensim-helpers', '[Helpers]'])
+            ->toBe(['[GridInfoService]', '[LoginService]', '[Search]', '[DataSnapshot]', '[Messaging]', 'opensim-helpers', '[Helpers]', '[MoneyServer]'])
             // Every address the section has, and the ones the helpers expect when it has not, in the same list
             ->and(array_keys($rows['[GridInfoService]']))
             ->toBe(['login', 'gatekeeper', 'uas', 'welcome', 'economy', 'about', 'register', 'help', 'password', 'search', 'web_profile_url', 'partner'])
@@ -217,13 +225,29 @@ describe('Block health', function () {
             ->toMatchArray(['url' => 'https://play.example.org/profile/Jane.Doe', 'note' => 'with the name of Jane.Doe'])
             ->not->toHaveKey('skip')
             ->and($profile[1])
-            ->toMatchArray(['url' => 'https://play.example.org/profile', 'note' => 'without a name']);
+            ->toMatchArray(['url' => 'https://play.example.org/profile', 'expect' => [400]]);
 
         // No account to read: the one with a name is not asked, and says why
         $none = OpenSim_Helpers_Block_Health::plan($settings($info), null, [], $routes, '')[0]['rows'];
         $none = array_values(array_filter($none, fn($row) => $row['label'] === 'web_profile_url'));
 
         expect($none[0])->toHaveKey('skip')->and($none[1]['url'])->toBe('https://play.example.org/profile');
+    });
+
+    test('says whether the grid has the key of its currency, never what it is, and an error for a grid with a currency that has none', function () use ($settings, $routes, $by) {
+        $row = fn(array $sections) => $by(OpenSim_Helpers_Block_Health::plan($settings($sections), null, [], $routes, ''))['[MoneyServer]']['MoneyScriptAccessKey'];
+        $key = ['MoneyServer' => ['MoneyScriptAccessKey' => 'a-secret-key']];
+
+        expect($row($key))
+            ->toMatchArray(['level' => 'ok', 'status' => 'defined'])
+            ->and(json_encode($row($key)))
+            ->not->toContain('a-secret-key')
+            // A grid with a currency module and no key: red
+            ->and($row(['Economy' => ['economymodule' => 'Gloebit']]))
+            ->toMatchArray(['level' => 'error', 'status' => 'not defined'])
+            // A grid without a currency needs none
+            ->and($row(['Economy' => ['economymodule' => 'BetaGridLikeMoneyModule']]))
+            ->toMatchArray(['level' => 'none', 'status' => 'not defined']);
     });
 
     test('shows where the helpers expect a service the grid does not give, saying it is a default', function () use ($settings, $routes, $by) {

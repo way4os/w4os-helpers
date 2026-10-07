@@ -20,6 +20,7 @@
 
 require_once 'includes/bootstrap.php';
 require_once 'includes/economy.php';
+currency_require_key();
 
 // No user serviceable parts below #####################
 //

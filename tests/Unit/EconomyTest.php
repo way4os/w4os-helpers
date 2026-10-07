@@ -57,10 +57,24 @@ describe('The confirm value', function () {
 
         expect($confirm('secret', '203.0.113.7'))
             ->toBe(md5('secret_203.0.113.7'))
-            ->and($confirm(null, '203.0.113.7'))
-            ->toBe(md5('1234567883789_203.0.113.7'))
             ->and($confirm('secret', '203.0.113.8'))
             ->not->toBe($confirm('secret', '203.0.113.7'));
+    });
+
+    test('has no default key: without the key of the grid there is no currency service, and it is a bad configuration', function () {
+        $has = fn($key) => economy_run('currency_has_key()', ['CURRENCY_SCRIPT_KEY' => $key]);
+
+        expect($has('secret'))->toBeTrue()->and($has(null))->toBeFalse()->and($has(''))->toBeFalse()->and($has('  '))->toBeFalse();
+
+        // Nothing is served: the script stops with the error, and what follows it does not run
+        $root = dirname(__DIR__, 2);
+        $script = "require '$root/vendor/autoload.php'; define('NULL_KEY', '0'); define('CURRENCY_SCRIPT_KEY', null);" .
+            "function db_for(\$service = null) { return null; } require '$root/includes/economy.php'; currency_require_key(); echo 'SERVED';";
+        $process = proc_open([PHP_BINARY, '-d', 'display_errors=0', '-d', 'log_errors=0', '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        $out = (string) stream_get_contents($pipes[1]);
+        proc_close($process);
+
+        expect($out)->toContain('Bad configuration')->not->toContain('SERVED');
     });
 });
 

@@ -82,7 +82,9 @@ define('CURRENCY_TRANSACTION_TBL', 'transactions');
  * Money Server settings.
  */
 define('CURRENCY_USE_MONEYSERVER', false);
-define('CURRENCY_SCRIPT_KEY', '123456789');
+// REQUIRED, there is no default: the secret shared with the MoneyServer (MoneyScriptAccessKey of its MoneyServer.ini). Without it
+// the currency is not served.
+define('CURRENCY_SCRIPT_KEY', '');
 define('CURRENCY_RATE', 10); // amount in dollar...
 define('CURRENCY_RATE_PER', 1000); // ... for this amount in virtual currency
 define('CURRENCY_PROVIDER', null); // NULL, 'podex' or 'gloebit'
