@@ -18,7 +18,12 @@
  */
 
 require_once 'includes/bootstrap.php';
+helpers_require_method('POST', true);
 require_once 'includes/search.php';
+
+if (!$SearchDB || !$SearchDB->connected) {
+    osXmlDie('Bad configuration: the search database is not available', 503);
+}
 
 function ossearch_get_gatekeeperURL($args = [])
 {
@@ -646,11 +651,8 @@ $request_xml = file_get_contents('php://input');
 // error_log( __FILE__ . ':' . __LINE__ . ' request xml ' . $request_xml );
 
 if (!$request_xml) {
-    // Wrong request, probably called directly instead of by sending xml request,
-    // or no data sent, issue proper http response and error message, then die
-    header('HTTP/1.1 400 Bad Request');
-    header('Content-Type: text/plain');
-    die('400 Bad Request' . PHP_EOL);
+    // Wrong request, probably called directly instead of by sending xml request, or no data sent
+    osXmlDie('Bad request: no XML-RPC request', 400);
 }
 
 $request_array = [$_SERVER['REMOTE_ADDR'], $_SERVER['REQUEST_URI'], $request_xml];

@@ -109,11 +109,13 @@ describe('Router', function () {
     });
 
     test('answers at the address of the helpers itself, and not at what is under it that it does not know', function () {
-        // A public page of its own, not the one for who manages the grid
+        // Not a page: a teapot, unless the grid says the address is the one of a page
         expect(OpenSim_Helpers_Router::match('/helpers'))
-            ->toBe(['page', 'helpers'])
+            ->toBe(['teapot', 'teapot'])
             ->and(OpenSim_Helpers_Router::match('/helpers/'))
-            ->toBe(['page', 'helpers'])
+            ->toBe(['teapot', 'teapot'])
+            ->and(OpenSim_Helpers_Router::match('/helpers', ['/helpers' => '@splash']))
+            ->toBe(['page', 'splash'])
             ->and(OpenSim_Helpers_Router::match('/helpers/nothing'))
             ->toBeNull()
             // A site that has them at the root has no such address, the root is the home page
@@ -139,15 +141,6 @@ describe('Router', function () {
         expect($script)->toBe(dirname(__DIR__, 2) . '/query.php');
     });
 
-    test('answers a page itself and gives nothing back', function () {
-        $_SERVER['REQUEST_URI'] = '/nothing';
-        ob_start();
-        $script = OpenSim_Helpers_Router::run();
-        ob_end_clean();
-
-        expect($script)->toBeNull();
-    });
-
     test('serves as pages what were scripts, which keep their name in the URL', function () {
         expect(OpenSim_Helpers_Router::match('/helpers/guide.php'))
             ->toBe(['page', 'destination_guide'])
@@ -155,5 +148,92 @@ describe('Router', function () {
             ->toBe(['page', 'directory_info'])
             ->and(OpenSim_Helpers_Router::match('/guide', ['/guide' => 'guide.php']))
             ->toBe(['page', 'destination_guide']);
+    });
+});
+
+/** A web server that gives every request to the router, with the routes it is given. */
+function router_server(array $routes): array
+{
+    $root = dirname(__DIR__, 2);
+    $dir = sys_get_temp_dir() . '/router-server-' . bin2hex(random_bytes(4));
+    mkdir($dir);
+    file_put_contents(
+        "$dir/index.php",
+        "<?php define('OPENSIM_ENGINE', true); require '$root/vendor/autoload.php'; require '$root/includes/functions.php';" .
+            'define("OPENSIM_ROUTES", ' . var_export($routes, true) . ");\nrequire '$root/classes/class-router.php'; OpenSim_Helpers_Router::run();",
+    );
+    $socket = stream_socket_server('tcp://127.0.0.1:0');
+    $port = (int) substr(strrchr((string) stream_socket_get_name($socket, false), ':'), 1);
+    fclose($socket);
+    $process = proc_open([PHP_BINARY, '-d', 'log_errors=0', '-S', "127.0.0.1:$port", "$dir/index.php"], [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']], $pipes);
+    set_error_handler(static fn() => true);
+    for ($try = 0; $try < 50 && !($connection = fsockopen('127.0.0.1', $port)); ++$try) {
+        usleep(100_000);
+    }
+    restore_error_handler();
+    if (!empty($connection)) {
+        fclose($connection);
+    }
+
+    return [$process, $port];
+}
+
+/** What a server answers to a request: the HTTP code, the status line, the Allow header. */
+function router_ask(int $port, string $path, string $method = 'GET'): array
+{
+    $handle = curl_init("http://127.0.0.1:$port$path");
+    $headers = '';
+    curl_setopt_array($handle, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_TIMEOUT => 5,
+        CURLOPT_HEADERFUNCTION => function ($handle, $line) use (&$headers) {
+            $headers .= $line;
+
+            return strlen($line);
+        },
+    ]);
+    $body = (string) curl_exec($handle);
+
+    return ['code' => curl_getinfo($handle, CURLINFO_RESPONSE_CODE), 'status' => strtok($headers, "\r\n"), 'allow' => preg_match('/^Allow: (.*)$/mi', $headers, $m) ? trim($m[1]) : null, 'body' => $body];
+}
+
+describe('What the router does not serve', function () {
+    test('says why with the code that tells it, never with a 500', function () {
+        [$process, $port] = router_server([
+            '/' => '@home',
+            '/welcome' => '@splash',
+            '/profile' => '@profile',
+            '/helpers' => '@teapot!',
+            '/helpers/query.php' => 'query.php',
+        ]);
+        $answers = [
+            // An address that is not a page, and not an error either
+            'helpers' => router_ask($port, '/helpers'),
+            'helpers slash' => router_ask($port, '/helpers/'),
+            'profile' => router_ask($port, '/profile'),
+            // An address that is nothing
+            'nothing' => router_ask($port, '/nothing'),
+            'under' => router_ask($port, '/helpers/nothing'),
+            // A page is read, not called
+            'post page' => router_ask($port, '/welcome', 'POST'),
+            'put profile' => router_ask($port, '/profile/jane.doe', 'PUT'),
+        ];
+        proc_terminate($process);
+
+        expect($answers['helpers'])
+            ->toMatchArray(['code' => 418, 'status' => "HTTP/1.1 418 I'm a teapot"])
+            ->and($answers['helpers slash']['code'])
+            ->toBe(418)
+            ->and($answers['profile']['code'])
+            ->toBe(418)
+            ->and($answers['nothing'])
+            ->toMatchArray(['code' => 404, 'status' => 'HTTP/1.1 404 Not found'])
+            ->and($answers['under']['code'])
+            ->toBe(404)
+            ->and($answers['post page'])
+            ->toMatchArray(['code' => 405, 'allow' => 'GET, HEAD'])
+            ->and($answers['put profile']['code'])
+            ->toBe(405);
     });
 });

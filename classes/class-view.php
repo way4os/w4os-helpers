@@ -76,7 +76,6 @@ class OpenSim_Helpers_View
             'health' => _('Health'),
             'powered_by' => _('Powered by OpenSimulator Helpers'),
             'skip' => _('Skip to main content'),
-            'helpers_intro' => _('OpenSimulator helpers: the web services of this grid, used by its viewers and its simulators.'),
         ];
     }
 

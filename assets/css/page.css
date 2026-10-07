@@ -34,7 +34,10 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 .health-group { margin: 1.25rem 0 .25rem; font-size: 1rem; }
 .health-table td { padding-right: .75rem; }
 .health-url code { font-size: .8125rem; word-break: break-all; }
-.health-status { white-space: nowrap; text-align: right; }
+.health-ms { white-space: nowrap; text-align: right; opacity: .7; font-size: .8125rem; }
+.health-status { white-space: nowrap; text-align: left; }
+.health-tag, .health-post, .health-cert { opacity: .7; }
+.health-cert { cursor: help; text-decoration: underline dotted; }
 .status { display: inline-block; min-width: 3rem; padding: 0 .5rem; border-radius: .25rem; text-align: center; font-size: .8125rem; }
 .status-ok { background: #2e7d32; color: #fff; }
 .status-warn { background: #b26a00; color: #fff; }

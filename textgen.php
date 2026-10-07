@@ -34,9 +34,8 @@
  **/
 
 if (!class_exists('Imagick')) {
-    http_response_code(501);
-    header('Content-Type: text/plain; charset=utf-8');
-    exit("Not available: this server has no Imagick (php-imagick)\n");
+    require_once 'includes/bootstrap.php';
+    osDie('Bad configuration: this server has no Imagick (php-imagick)', 503);
 }
 
 // The size of the font: `size`, as in the examples, or `fontsize`

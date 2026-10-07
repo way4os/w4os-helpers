@@ -463,9 +463,17 @@ describe('The routes', function () {
                 '/helpers/register.php' => 'register.php',
                 '/helpers/offline.php' => 'offline.php',
                 '/helpers/directory_info.php' => '@directory_info',
-                '/helpers' => '@helpers!',
+                '/helpers' => '@teapot!',
             ])
             ->not->toHaveKey('/helpers/health');
+    });
+
+    test('have the address of the helpers as a page only when the grid says it is the one of a page', function () use ($routes) {
+        // The welcome page of the grid is at the address of the helpers: it is a page, not a teapot
+        expect($routes("[GridInfoService]\nwelcome = \"https://play.example.org/helpers/\"\n"))
+            ->toMatchArray(['/helpers' => '@splash'])
+            ->and($routes("[GridInfoService]\nwelcome = \"https://play.example.org/welcome\"\n"))
+            ->toMatchArray(['/helpers' => '@teapot!', '/welcome' => '@splash']);
     });
 
     test('are the addresses the grid gives, on this site: the path, nothing else', function () use ($routes) {

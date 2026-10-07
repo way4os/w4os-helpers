@@ -597,9 +597,10 @@ class OpenSim_Helpers_GridConfig
             $routes["$base/$script"] = $script;
         }
         $routes["$base/directory_info.php"] = '@directory_info';
-        // What answers at the address of the helpers itself, the one the grid gives for them (its economy): not what is under it
+        // The address of the helpers itself, the one the grid gives for them (its economy), is not a page, unless the grid says
+        // it is the one of a page: a teapot, and not what is under it
         if ($base !== '') {
-            $routes[$base] = '@helpers!';
+            $routes[$base] ??= '@teapot!';
         }
 
         return $routes;

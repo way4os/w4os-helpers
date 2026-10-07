@@ -228,14 +228,38 @@ describe('The menu', function () {
     });
 });
 
-describe('The page of the helpers', function () {
-    test('is public and says what it is, without the pages for who manages the grid', function () {
-        $html = OpenSim_Helpers_View::page('helpers');
+describe('The health block', function () {
+    test('shows the time of an address before its result, and the tag, the method and the sigle of the certificate by the address', function () {
+        $html = OpenSim_Helpers_View::render('components/health-block.twig', [
+            'title' => 'Health',
+            'when' => '2026-10-07T10:00:00+00:00',
+            'cert_title' => 'certificate not trusted by this server',
+            'groups' => [
+                [
+                    'title' => '[Search]',
+                    'rows' => [
+                        ['label' => 'SearchURL', 'url' => 'https://play.example.org/helpers/query.php', 'tag' => 'API', 'level' => 'ok', 'status' => '405', 'ms' => 12],
+                        ['label' => 'SearchURL', 'url' => 'https://play.example.org/helpers/query.php', 'tag' => 'API', 'post' => true, 'cert' => true, 'level' => 'warn', 'status' => '200', 'ms' => 40],
+                        ['label' => 'About', 'url' => '', 'level' => 'none', 'status' => 'not defined', 'ms' => null],
+                    ],
+                ],
+            ],
+        ]);
 
         expect($html)
-            ->toContain('Alpha &lt;b&gt;World')
-            ->toContain('OpenSimulator helpers')
-            ->not->toContain('health-table');
+            ->toContain('<th scope="row">SearchURL</th>')
+            ->toContain('health-ms')
+            // The time comes before the result, so that the results line up
+            ->and(strpos($html, '12 ms'))
+            ->toBeLessThan(strpos($html, 'status-ok'))
+            ->and(substr_count($html, 'health-cert'))
+            ->toBe(1)
+            ->and(substr_count($html, 'certificate not trusted by this server'))
+            ->toBe(1)
+            ->and(substr_count($html, '<small class="health-post">POST</small>'))
+            ->toBe(1)
+            ->and(substr_count($html, 'health-tag'))
+            ->toBe(2);
     });
 });
 

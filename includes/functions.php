@@ -22,6 +22,23 @@ defined('HELPERS_LOCALE_DIR') || define('HELPERS_LOCALE_DIR', dirname(__DIR__) .
 // locale, the constants of those (NULL_KEY, TPLINK_*). Only what has a meaning for the helpers alone is defined here.
 require_once dirname(__DIR__) . '/vendor/magicoli/opensim-engine/includes/functions.php';
 
+/**
+ * Refuse a request made with another method than the ones a script answers: 405, with the methods it does answer. A script that
+ * talks XML-RPC says it in XML.
+ *
+ * @param string|string[] $methods the methods allowed
+ * @param bool            $xml     whether the script talks XML-RPC
+ */
+function helpers_require_method($methods, $xml = false)
+{
+    $methods = array_map('strtoupper', (array) $methods);
+    if (in_array(strtoupper($_SERVER['REQUEST_METHOD'] ?? $methods[0]), $methods, true)) {
+        return;
+    }
+    header('Allow: ' . implode(', ', $methods));
+    $xml ? osXmlDie('Method not allowed: ' . implode(' or ', $methods) . ' only', 405) : osDie('Method not allowed: ' . implode(' or ', $methods) . ' only', 405);
+}
+
 function os_cache_get($key, $default = null)
 {
     global $oshelpers_cache;

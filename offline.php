@@ -17,19 +17,19 @@
  **/
 
 require_once 'includes/bootstrap.php';
+helpers_require_method('POST', true);
 require_once 'includes/databases.php';
 
 // The messages are in the database of the offline messages (Robust's unless OfflineIMService has its own), the mail
 // preferences of the users in the one of their profiles (UserProfilesService)
 if (empty($OfflineDB)) {
-    die();
+    osXmlDie('Bad configuration: the database of the offline messages is not available', 503);
 }
 $ProfilesDB = db_for('UserProfilesService');
 
 $request_xml = file_get_contents('php://input');
 if (empty($request_xml)) {
-    osXmlResponse(false, 'Invalid request');
-    die();
+    osXmlDie('Bad request: no request', 400);
 }
 
 $method = $_SERVER['PATH_INFO'] ?? '';
@@ -37,7 +37,12 @@ if (empty($method)) {
     $method = '/' . basename(getenv('REDIRECT_URL')) . '/';
 }
 
-$xml = new SimpleXMLElement($request_xml);
+// A request that is not XML is a bad request
+libxml_use_internal_errors(true);
+$xml = simplexml_load_string($request_xml);
+if ($xml === false) {
+    osXmlDie('Bad request: not XML', 400);
+}
 
 switch ($method) {
     case '/SaveMessage/':
@@ -211,9 +216,6 @@ switch ($method) {
     // '//': die(); // empty request
 
     default:
-        error_log(
-            "Offline messages: method $method not implemented, please configure OfflineMessageModule = OfflineMessageModule in OpenSim.ini",
-        );
-        osXmlResponse(false, "method $method not implemented");
-        die();
+        // Not a method of the offline messages: nothing there (the simulator that calls it is not set for this service)
+        osXmlDie("method $method not implemented, please configure OfflineMessageModule = OfflineMessageModule in OpenSim.ini", 404);
 }

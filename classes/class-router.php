@@ -20,9 +20,15 @@
  * follows it is given as PATH_INFO. Without config, the defaults are the paths under `/helpers` (see defaults()). A profile is
  * also `<profile>/<first>.<last>`, `<profile>/<first>-<last>` and `/@<first>.<last>`.
  *
+ * What is not served says why, with the code that tells it: 404 for an address that is nothing, 405 for a page called with
+ * another method than GET, 418 for an address that is not a page (the one of the helpers, a profile without a name), which is
+ * not an error: the web services are under it. Nothing is answered with a 500 on purpose.
+ *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
  */
+// The errors are the ones of the engine (osDie), with their codes
+require_once dirname(__DIR__) . '/includes/functions.php';
 require_once __DIR__ . '/class-view.php';
 require_once __DIR__ . '/class-blocks.php';
 
@@ -48,7 +54,7 @@ class OpenSim_Helpers_Router
     ];
 
     /** The pages: the slug of what each shows (see OpenSim_Helpers_View::main). */
-    const PAGES = ['home', 'splash', 'profile', 'health', 'helpers', 'destination_guide', 'directory_info'];
+    const PAGES = ['home', 'splash', 'profile', 'health', 'destination_guide', 'directory_info'];
 
     const MIME = [
         'svg' => 'image/svg+xml',
@@ -79,10 +85,10 @@ class OpenSim_Helpers_Router
         foreach (array_keys(self::SCRIPTS) as $script) {
             $routes["$base/$script"] = $script;
         }
-        // What answers at the address of the helpers itself, the one the grid gives for them (its economy): a public page.
-        // The health page is for who manages the grid, it has its own address and no other
+        // The address of the helpers itself, the one the grid gives for them (its economy), is not a page: a teapot, unless the
+        // grid says it is the one of a page. The health page is for who manages the grid, it has its own address and no other
         if ($base !== '') {
-            $routes[$base] = '@helpers!';
+            $routes[$base] ??= '@teapot!';
         }
         foreach (self::ALIASES as $script => $page) {
             $routes["$base/$script"] = "@$page";
@@ -129,7 +135,7 @@ class OpenSim_Helpers_Router
      * @param  string                    $path
      * @param  array<string,string>|null $routes the routes of the site, the defaults without any
      * @return array{0:string,1:string,2?:array<string,string>}|null [kind, what, arguments]: script (name), page (slug),
-     *                                          block (name), asset (path under assets/); a profile gives its `name`
+     *                                          block (name), asset (path under assets/), teapot; a profile gives its `name`
      */
     public static function match($path, $routes = null)
     {
@@ -161,6 +167,9 @@ class OpenSim_Helpers_Router
             return null;
         }
         $target = rtrim($routes[$route], '!');
+        if ($target === '@teapot') {
+            return ['teapot', 'teapot'];
+        }
         if ($target[0] === '@' && in_array(substr($target, 1), self::PAGES, true)) {
             return ['page', substr($target, 1)];
         }
@@ -206,25 +215,25 @@ class OpenSim_Helpers_Router
         $requested = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         $found = self::match($requested, $routes);
         if ($found === null) {
-            http_response_code(404);
-            header('Content-Type: text/plain; charset=utf-8');
-            echo "Not found\n";
-
-            return null;
+            osDie('Not found', 404);
         }
         [$kind, $what] = $found;
+        // What is not a script is read, not called: nothing else than GET (and HEAD, which is GET without the body)
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        if ($kind !== 'script' && $kind !== 'teapot' && !in_array($method, ['GET', 'HEAD'], true)) {
+            header('Allow: GET, HEAD');
+            osDie('Method not allowed', 405);
+        }
         // What the address says (the name in a profile) is what a query would say
         $_GET = ($found[2] ?? []) + $_GET;
         $root = dirname(__DIR__);
         switch ($kind) {
+            case 'teapot':
+                self::teapot();
             case 'page':
-                // A profile is the one of an avatar: its address without a name asks for nothing
+                // A profile is the one of an avatar: its address without a name is not a page
                 if ($what === 'profile' && empty($found[2]['name'])) {
-                    http_response_code(400);
-                    header('Content-Type: text/plain; charset=utf-8');
-                    echo "Bad request: no avatar name\n";
-
-                    return null;
+                    self::teapot();
                 }
                 // The data of what the page shows, for what makes its own page or watches it
                 if (($_GET['format'] ?? '') === 'json' && OpenSim_Helpers_Blocks::exists($what)) {
@@ -234,11 +243,7 @@ class OpenSim_Helpers_Router
                 }
                 $html = OpenSim_Helpers_View::page($what);
                 if ($html === null) {
-                    http_response_code(404);
-                    header('Content-Type: text/plain; charset=utf-8');
-                    echo "Not found\n";
-
-                    return null;
+                    osDie('Not found', 404);
                 }
                 header('Content-Type: text/html; charset=utf-8');
                 echo $html;
@@ -253,9 +258,7 @@ class OpenSim_Helpers_Router
                 $file = OpenSim_Helpers_View::asset_file($what);
                 $type = self::MIME[strtolower(pathinfo($what, PATHINFO_EXTENSION))] ?? null;
                 if ($type === null || $file === null) {
-                    http_response_code(404);
-
-                    return null;
+                    osDie('Not found', 404);
                 }
                 header("Content-Type: $type");
                 header('Cache-Control: public, max-age=86400');
@@ -277,6 +280,12 @@ class OpenSim_Helpers_Router
 
                 return $root . '/' . self::SCRIPTS[$what];
         }
+    }
+
+    /** An address that is not a page, and not an error either: 418, where nothing is to be seen. */
+    private static function teapot()
+    {
+        osDie("I'm a teapot", 418);
     }
 
     /**

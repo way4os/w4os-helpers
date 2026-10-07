@@ -21,6 +21,7 @@
 // error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 require_once 'includes/bootstrap.php';
+helpers_require_method('POST', true);
 require_once 'includes/economy.php';
 currency_require_key();
 
@@ -328,6 +329,9 @@ function currency_xmlrpc_claimUserRequest($method_name, $params, $app_data)
 //
 $request_xml = file_get_contents('php://input');
 // error_log(__FILE__ . ' '. $request_xml);
+if (empty($request_xml)) {
+    osXmlDie('Bad request: no XML-RPC request', 400);
+}
 
 xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
 xmlrpc_server_destroy($xmlrpc_server);

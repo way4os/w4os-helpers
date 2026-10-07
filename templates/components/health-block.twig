@@ -6,8 +6,9 @@
             {% for row in group.rows %}
                 <tr class="health-{{ row.level }}">
                     <th scope="row">{{ row.label }}</th>
-                    <td class="health-url">{% if row.url %}<a href="{{ row.url }}"><code>{{ row.url }}</code></a>{% elseif row.detail %}<code>{{ row.detail }}</code>{% endif %}{% if row.note %} <small>{{ row.note }}</small>{% endif %}</td>
-                    <td class="health-status"><span class="status status-{{ row.level }}">{{ row.status }}</span>{% if row.ms is not null %} <small>{{ row.ms }} ms</small>{% endif %}{% if row.url and row.detail %}<br><small>{{ row.detail }}</small>{% endif %}</td>
+                    <td class="health-url">{% if row.post %}<small class="health-post">POST</small> {% endif %}{% if row.url %}<a href="{{ row.url }}"><code>{{ row.url }}</code></a>{% elseif row.detail %}<code>{{ row.detail }}</code>{% endif %}{% if row.tag %} <small class="health-tag">{{ row.tag }}</small>{% endif %}{% if row.cert %} <abbr class="health-cert" title="{{ cert_title }}">cert</abbr>{% endif %}</td>
+                    <td class="health-ms">{% if row.ms is not null %}{{ row.ms }} ms{% endif %}</td>
+                    <td class="health-status"><span class="status status-{{ row.level }}">{{ row.status }}</span>{% if row.url and row.detail %}<br><small>{{ row.detail }}</small>{% endif %}</td>
                 </tr>
             {% endfor %}
         </table>

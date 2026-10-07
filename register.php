@@ -23,8 +23,7 @@ require_once 'includes/bootstrap.php';
 require_once 'includes/search.php';
 
 if (!$SearchDB || !$SearchDB->connected) {
-    header('HTTP/1.0 500 Internal Server Error');
-    die("500 Internal Server Error: SearchDB not available\n");
+    osDie('Bad configuration: the search database is not available', 503);
 }
 
 $host = $_GET['host'] ?? '';
@@ -32,9 +31,7 @@ $port = $_GET['port'] ?? '';
 $service = $_GET['service'] ?? '';
 
 if ($host == '' || $port == '') {
-    header('HTTP/1.0 400 Bad Request');
-    echo "400 Bad Request: missing region host and/or port\n";
-    exit();
+    osDie('Bad request: missing simulator host and/or port', 400);
 }
 
 switch ($service) {
@@ -79,6 +76,9 @@ switch ($service) {
     case 'offline':
         ossearch_hostUnregister($host, $port);
         break;
+
+    default:
+        osDie('Bad request: service is online or offline', 400);
 }
 
 die();
