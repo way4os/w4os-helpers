@@ -31,7 +31,7 @@ class OpenSim_Helpers_Block_Profile
             return $statement ? $statement->fetchAll(PDO::FETCH_ASSOC) : [];
         };
 
-        $account = $fetch($accounts, 'SELECT PrincipalID, FirstName, LastName, Created, UserTitle FROM UserAccounts WHERE FirstName = :first AND LastName = :last AND active = 1', ['first' => $first, 'last' => $last])[0] ?? null;
+        $account = $fetch($accounts, 'SELECT PrincipalID, FirstName, LastName, Created, UserTitle, UserFlags FROM UserAccounts WHERE FirstName = :first AND LastName = :last AND active = 1', ['first' => $first, 'last' => $last])[0] ?? null;
         if ($account === null || ($account['FirstName'] === self::SERVICES[0] && $account['LastName'] === self::SERVICES[1])) {
             return self::missing($name);
         }
@@ -51,7 +51,7 @@ class OpenSim_Helpers_Block_Profile
     /**
      * What the page shows, from what the grid keeps of an avatar.
      *
-     * @param  array<string,mixed>             $account     UserAccounts: FirstName, LastName, Created, UserTitle
+     * @param  array<string,mixed>             $account     UserAccounts: FirstName, LastName, Created, UserTitle, UserFlags
      * @param  array<string,mixed>             $profile     userprofile, empty when the avatar made none
      * @param  list<array<string,mixed>>       $picks       userpicks
      * @param  list<array<string,mixed>>       $classifieds classifieds still on
@@ -61,7 +61,8 @@ class OpenSim_Helpers_Block_Profile
     public static function build($account, $profile, $picks, $classifieds, $partner = null)
     {
         $name = $account['FirstName'] . ' ' . $account['LastName'];
-        $published = self::flag($profile['profileAllowPublish'] ?? null);
+        // "Show in search": the first flag of the account, which is what OpenSimulator shows the viewer and takes from it
+        $published = ((int) ($account['UserFlags'] ?? 0) & 1) === 1;
         $text = static fn($key) => trim((string) ($profile[$key] ?? ''));
         $data = [
             'title' => $name,

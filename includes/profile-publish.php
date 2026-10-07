@@ -2,10 +2,10 @@
 /**
  * profile-publish.php
  *
- * The "show in search" box of a profile. The simulator sends it to the profile service of Robust, which ignores it (its update
- * of the profile leaves profileAllowPublish and profileMaturePublish as they were made, false), so the OpenSimSearch module
- * tells it to the search too (avatar_publish_update, query.php), which writes it where the profile service keeps it, for a caller
- * that holds the secure session of the avatar.
+ * The "show in search" box of a profile. What OpenSimulator shows the viewer is the first two flags of the user account
+ * (UserFlags, read by the simulator, kept one hour), but the profile service of Robust, which gets the box with the rest of the
+ * profile, never writes them. So the OpenSimSearch module tells it to the search too (avatar_publish_update, query.php), which
+ * writes them, for a caller that holds the secure session of the avatar.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
@@ -31,28 +31,27 @@ function helpers_has_session($avatar, $secure, $session = 'opensim_get_avatar_se
 }
 
 /**
- * Write the "show in search" box of a profile that exists.
+ * Write the "show in search" box of a profile: the first two flags of the account, which are what OpenSimulator shows the
+ * viewer and keeps (the rest of the flags is left as it is).
  *
- * @param  object $db     the database of the profile service (prepareAndExecute)
+ * @param  object $db     the database of the user accounts service (prepareAndExecute)
  * @param  string $avatar the UUID of the avatar
- * @param  mixed  $allow  the profile is published
- * @param  mixed  $mature the published profile is mature
- * @return string ok, invalid (not an avatar) or missing (the avatar made no profile)
+ * @param  mixed  $allow  the profile is shown in search
+ * @param  mixed  $mature the shown profile is mature
+ * @return string ok, invalid (not an avatar) or missing (not an account of the grid)
  */
 function helpers_profile_publish($db, $avatar, $allow, $mature)
 {
     if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', (string) $avatar)) {
         return 'invalid';
     }
-    $found = $db->prepareAndExecute('SELECT useruuid FROM userprofile WHERE useruuid = :id', ['id' => $avatar]);
-    if (!$found || !$found->fetchAll()) {
+    $found = $db->prepareAndExecute('SELECT UserFlags FROM UserAccounts WHERE PrincipalID = :id', ['id' => $avatar]);
+    $row = $found ? $found->fetchAll() : [];
+    if (!$row) {
         return 'missing';
     }
-    $db->prepareAndExecute('UPDATE userprofile SET profileAllowPublish = :allow, profileMaturePublish = :mature WHERE useruuid = :id', [
-        'allow' => filter_var($allow, FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
-        'mature' => filter_var($mature, FILTER_VALIDATE_BOOLEAN) ? 1 : 0,
-        'id' => $avatar,
-    ]);
+    $flags = ((int) ($row[0]['UserFlags'] ?? 0) & ~3) | (filter_var($allow, FILTER_VALIDATE_BOOLEAN) ? 1 : 0) | (filter_var($mature, FILTER_VALIDATE_BOOLEAN) ? 2 : 0);
+    $db->prepareAndExecute('UPDATE UserAccounts SET UserFlags = :flags WHERE PrincipalID = :id', ['flags' => $flags, 'id' => $avatar]);
 
     return 'ok';
 }

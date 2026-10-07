@@ -659,8 +659,8 @@ function avatar_publish_update($method_name, $params, $app_data)
         osXmlDie('Forbidden: the secure session is not the one of this avatar', 403);
     }
 
-    $result = helpers_profile_publish(db_for('UserProfilesService'), $avatar, $req['allow_publish'] ?? false, $req['mature_publish'] ?? false);
-    osXmlResponse($result === 'ok', $result === 'ok' ? '' : 'This avatar has no profile', []);
+    $result = helpers_profile_publish(db_for('UserAccountService'), $avatar, $req['allow_publish'] ?? false, $req['mature_publish'] ?? false);
+    osXmlResponse($result === 'ok', $result === 'ok' ? '' : 'This avatar has no account', []);
 }
 
 $tmp_dir = get_writable_tmp_dir();

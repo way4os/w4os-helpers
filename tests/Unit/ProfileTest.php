@@ -10,9 +10,8 @@ require_once dirname(__DIR__, 2) . '/classes/class-blocks.php';
 require_once dirname(__DIR__, 2) . '/classes/class-router.php';
 
 describe('The profile of an avatar', function () {
-    $account = ['FirstName' => 'Jane', 'LastName' => 'Doe', 'Created' => 1700000000, 'UserTitle' => 'Builder'];
+    $account = ['FirstName' => 'Jane', 'LastName' => 'Doe', 'Created' => 1700000000, 'UserTitle' => 'Builder', 'UserFlags' => 1];
     $profile = [
-        'profileAllowPublish' => "\x01",
         'profileAboutText' => "Builds things.\nLikes trains.",
         'profileFirstText' => 'Lives by the sea.',
         'profileWantToText' => 'Make friends',
@@ -40,14 +39,14 @@ describe('The profile of an avatar', function () {
     });
 
     test('keeps to itself what is not published: the name and the date of the account are all that is said', function () use ($account, $profile, $picks, $ads) {
-        $data = OpenSim_Helpers_Block_Profile::build($account, ['profileAllowPublish' => "\x00"] + $profile, $picks, $ads, ['name' => 'John Roe', 'url' => null]);
+        $data = OpenSim_Helpers_Block_Profile::build(['UserFlags' => 2] + $account, $profile, $picks, $ads, ['name' => 'John Roe', 'url' => null]);
 
         expect($data)
             ->toMatchArray(['published' => false, 'about' => '', 'languages' => '', 'web' => '', 'partner' => null, 'picks' => [], 'classifieds' => []])
             ->and($data['member_since'])
             ->toBe('2023-11-14')
-            // An avatar that never made a profile is the same
-            ->and(OpenSim_Helpers_Block_Profile::build($account, [], [], [])['published'])
+            // An avatar that did not ask for it and never made a profile is the same
+            ->and(OpenSim_Helpers_Block_Profile::build(['UserFlags' => 0] + $account, [], [], [])['published'])
             ->toBeFalse();
     });
 
