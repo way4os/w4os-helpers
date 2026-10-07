@@ -17,7 +17,7 @@ function economy_run(string $code, array $constants = [])
     }
     $root = dirname(__DIR__, 2);
     $script =
-        "require '$root/vendor/autoload.php'; define('NULL_KEY', '00000000-0000-0000-0000-000000000000');" .
+        "require '$root/vendor/autoload.php'; define('OPENSIM_ENGINE', true); define('NULL_KEY', '00000000-0000-0000-0000-000000000000');" .
         // No database here: every question is answered by "nothing"
         "function db_for(\$service = null) { return new class { public \$connected = false; public function prepareAndExecute() { return false; } }; }" .
         "$define require '$root/includes/economy.php'; echo json_encode($code);";
@@ -68,7 +68,7 @@ describe('The confirm value', function () {
 
         // Nothing is served: the script stops with the error, and what follows it does not run
         $root = dirname(__DIR__, 2);
-        $script = "require '$root/vendor/autoload.php'; define('NULL_KEY', '0'); define('CURRENCY_SCRIPT_KEY', null);" .
+        $script = "require '$root/vendor/autoload.php'; define('OPENSIM_ENGINE', true); define('NULL_KEY', '0'); define('CURRENCY_SCRIPT_KEY', null);" .
             "function db_for(\$service = null) { return null; } require '$root/includes/economy.php'; currency_require_key(); echo 'SERVED';";
         $process = proc_open([PHP_BINARY, '-d', 'display_errors=0', '-d', 'log_errors=0', '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
         $out = (string) stream_get_contents($pipes[1]);

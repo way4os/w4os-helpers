@@ -173,7 +173,7 @@ switch ($method) {
         break;
 
     case '/RetrieveMessages/':
-        if (opensim_isuuid($xml->Guid)) {
+        if (is_uuid((string) $xml->Guid)) {
             $pendingmessages = $OfflineDB->prepareAndExecute(
                 'SELECT ID, Message FROM ' . OFFLINE_MESSAGE_TBL . ' WHERE PrincipalID = :PrincipalID',
                 [

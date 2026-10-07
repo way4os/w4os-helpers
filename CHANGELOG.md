@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update: the functions the engine has (destinations, teleport links, region lookups, XML answers and errors, currency, XML-RPC polyfill) are the engine's, the helpers keep only what is theirs
 - new: the top bar has a menu of the pages the site serves (home, destinations, directory, health), the current one marked
 - update: the ini files are read with the files they include (`Include-`) and their constants, as the OpenSim executables do
 - fix: no default currency key: without `MoneyScriptAccessKey` (`[MoneyServer]` of `MoneyServer.ini`) the currency is not served, bad configuration
