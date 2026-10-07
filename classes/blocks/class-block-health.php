@@ -1,8 +1,8 @@
 <?php
 /**
  * Block health: the page of the checks of the grid, which the engine makes (OpenSim_Health): every address the grid gives out
- * and what each answers. What the helpers add is what is theirs: their own scripts, at the addresses they are served, and what
- * they need to work. Kept half a minute: each look asks the grid.
+ * and what each answers, by file of the config. What the helpers add is what is theirs: their own scripts, at the addresses they
+ * are served, and what they need to work. Kept half a minute: each look asks the grid.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
@@ -39,14 +39,37 @@ class OpenSim_Helpers_Block_Health
         $live = $login ? OpenSim_Helpers_GridInfo::fetch($login) : [];
         $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
         $groups = OpenSim_Health::answers(self::plan($settings, $login, $live, $routes, defined('OPENSIM_GUIDE_SOURCE') ? (string) OPENSIM_GUIDE_SOURCE : '', self::owner()));
-        $groups[] = ['title' => '[DatabaseService]', 'rows' => [self::database_row()]];
-        $groups[] = ['title' => _('PHP extensions'), 'rows' => OpenSim_Health::extensions()];
+        $groups[] = ['file' => OpenSim_Health::names($settings['sources'] ?? [])['robust'], 'title' => '[DatabaseService]', 'rows' => [self::database_row()]];
+        $groups[] = ['file' => _('PHP extensions'), 'title' => '', 'rows' => OpenSim_Health::extensions()];
         $files = OpenSim_Health::files($settings ? OpenSim_Helpers_GridConfig::files($settings['dir']) : []);
         if ($files) {
-            $groups[] = ['title' => _('Files read'), 'rows' => $files];
+            $groups[] = ['file' => _('Files read'), 'title' => '', 'rows' => $files];
         }
 
-        return $groups;
+        return self::arrange($groups);
+    }
+
+    /**
+     * The groups of a file together, files in the order they first appear, and the first group of each file says so (the page
+     * names the file once).
+     *
+     * @param  list<array{file:string,title:string,rows:array}> $groups
+     * @return list<array<string,mixed>>
+     */
+    public static function arrange($groups)
+    {
+        $by = [];
+        foreach ($groups as $group) {
+            $by[$group['file']][] = $group;
+        }
+        $arranged = [];
+        foreach ($by as $file_groups) {
+            foreach ($file_groups as $i => $group) {
+                $arranged[] = $group + ['first_of_file' => $i === 0];
+            }
+        }
+
+        return $arranged;
     }
 
     /**
@@ -59,7 +82,7 @@ class OpenSim_Helpers_Block_Health
      * @param  array<string,string> $routes   the paths the helpers answer
      * @param  string               $guide    the source of the destination guide
      * @param  string|null          $owner    the name of an avatar of the grid (there is always one, the owner), Firstname.Lastname
-     * @return list<array{title:string,rows:list<array<string,mixed>>}>
+     * @return list<array{file:string,title:string,rows:list<array<string,mixed>>}>
      */
     public static function plan($settings, $login, $live, $routes, $guide, $owner = null)
     {
@@ -85,32 +108,30 @@ class OpenSim_Helpers_Block_Health
         foreach (
             [
                 'query.php' => fn($url) => OpenSim_Health::api('query.php', $url, 'dir_places_query', ['flags' => 0, 'text' => 'health', 'query_start' => '0']),
-                'register.php' => fn($url) => [OpenSim_Health::bare('register.php', $url)],
-                'offline.php' => fn($url) => [OpenSim_Health::bare('offline.php', $url)],
+                'register.php' => fn($url) => OpenSim_Health::bare('register.php', $url),
+                'offline.php' => fn($url) => OpenSim_Health::bare('offline.php', $url),
                 'currency.php' => fn($url) => OpenSim_Health::api('currency.php', $url, 'getCurrencyQuote', ['agentId' => $null, 'secureSessionId' => $null, 'currencyBuy' => 0]),
                 'landtool.php' => fn($url) => OpenSim_Health::api('landtool.php', $url, 'preflightBuyLandPrep', ['agentId' => $null, 'secureSessionId' => $null, 'currencyBuy' => 0, 'billableArea' => 0]),
-                'textgen.php' => fn($url) => [['label' => 'textgen.php', 'url' => $url, 'method' => 'get']],
+                'textgen.php' => fn($url) => ['label' => 'textgen.php', 'url' => $url, 'method' => 'get'],
             ]
-            as $script => $rows_of
+            as $script => $row_of
         ) {
             if (($url = $at($script)) !== '') {
-                array_push($rows, ...$rows_of($url));
+                $rows[] = $row_of($url);
             }
         }
-        $helpers = [['title' => 'opensim-helpers', 'rows' => $rows]];
 
         // What has no place in OpenSimulator's files, in Helpers.ini
         $own = $settings['helpers'] ?? [];
-        $rows = [OpenSim_Health::is_url($guide) ? ['label' => 'GuideSource', 'url' => $guide, 'method' => 'get'] : OpenSim_Health::path('GuideSource', $guide)];
+        $helpers = [OpenSim_Health::is_url($guide) ? ['label' => 'GuideSource', 'url' => $guide, 'method' => 'get'] : OpenSim_Health::path('GuideSource', $guide)];
         foreach (['HypEventsURL', 'LogoURL'] as $key) {
             if (OpenSim_Health::is_url($own[$key] ?? '')) {
-                $rows[] = ['label' => $key, 'url' => $own[$key], 'method' => 'get'];
+                $helpers[] = ['label' => $key, 'url' => $own[$key], 'method' => 'get'];
             }
         }
-        $helpers[] = ['title' => '[Helpers]', 'rows' => $rows];
 
-        // Before the key of the currency, the last of the grid: what the helpers serve is read after what the grid says
-        array_splice($groups, -1, 0, $helpers);
+        $groups[] = ['file' => 'Helpers.ini', 'title' => '[Helpers]', 'rows' => $helpers];
+        $groups[] = ['file' => 'opensim-helpers', 'title' => '', 'rows' => $rows];
 
         return $groups;
     }

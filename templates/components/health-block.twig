@@ -1,17 +1,25 @@
 {% extends 'components/block-component.twig' %}
 {% block body %}
-    {% for group in groups %}
-        <h3 class="health-group">{{ group.title }}</h3>
+    <div class="health-scroll">
         <table class="block-table health-table">
-            {% for row in group.rows %}
-                <tr class="health-{{ row.level }}">
-                    <th scope="row">{{ row.label }}</th>
-                    <td class="health-url">{% if row.post %}<small class="health-post">POST</small> {% endif %}{% if row.url %}<a href="{{ row.url }}"><code>{{ row.url }}</code></a>{% elseif row.detail %}<code>{{ row.detail }}</code>{% endif %}{% if row.tag %} <small class="health-tag">{{ row.tag }}</small>{% endif %}{% if row.cert %} <abbr class="health-cert" title="{{ cert_title }}">cert</abbr>{% endif %}</td>
-                    <td class="health-ms">{% if row.ms is not null %}{{ row.ms }} ms{% endif %}</td>
-                    <td class="health-status"><span class="status status-{{ row.level }}">{{ row.status }}</span>{% if row.url and row.detail %}<br><small>{{ row.detail }}</small>{% endif %}</td>
-                </tr>
+            {% for group in groups %}
+                {% if group.first_of_file %}
+                    <tr class="health-file"><th scope="colgroup" colspan="5">{{ group.file }}</th></tr>
+                {% endif %}
+                {% if group.title %}
+                    <tr class="health-section"><th scope="colgroup" colspan="5">{{ group.title }}</th></tr>
+                {% endif %}
+                {% for row in group.rows %}
+                    <tr class="health-{{ row.level }}">
+                        <th scope="row">{{ row.label }}</th>
+                        <td class="health-url">{% if row.url %}<a href="{{ row.url }}"><code>{{ row.url }}</code></a>{% elseif row.detail %}<code>{{ row.detail }}</code>{% endif %}{% if row.tag %} <small class="health-tag">{{ row.tag }}</small>{% endif %}{% if row.url and row.detail %}<br><small>{{ row.detail }}</small>{% endif %}</td>
+                        <td class="health-cert">{% if row.cert %}<abbr title="{{ cert_title }}">cert</abbr>{% endif %}</td>
+                        <td class="health-ms">{% if row.ms is not null %}{{ row.ms }} ms{% endif %}</td>
+                        <td class="health-status">{% if row.status != '' %}<span class="status status-{{ row.level }}">{{ row.status }}</span>{% endif %}</td>
+                    </tr>
+                {% endfor %}
             {% endfor %}
         </table>
-    {% endfor %}
+    </div>
     <p class="health-when"><small>{{ when }}</small></p>
 {% endblock %}

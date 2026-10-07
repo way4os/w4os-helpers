@@ -229,37 +229,52 @@ describe('The menu', function () {
 });
 
 describe('The health block', function () {
-    test('shows the time of an address before its result, and the tag, the method and the sigle of the certificate by the address', function () {
+    test('is one table: the files and the sections are rows of it, the cert, the time and the result are columns on the right, in this order', function () {
         $html = OpenSim_Helpers_View::render('components/health-block.twig', [
             'title' => 'Health',
             'when' => '2026-10-07T10:00:00+00:00',
             'cert_title' => 'certificate not trusted by this server',
             'groups' => [
                 [
+                    'file' => 'OpenSim.ini',
+                    'first_of_file' => true,
                     'title' => '[Search]',
                     'rows' => [
-                        ['label' => 'SearchURL', 'url' => 'https://play.example.org/helpers/query.php', 'tag' => 'API', 'level' => 'ok', 'status' => '405', 'ms' => 12],
-                        ['label' => 'SearchURL', 'url' => 'https://play.example.org/helpers/query.php', 'tag' => 'API', 'post' => true, 'cert' => true, 'level' => 'warn', 'status' => '200', 'ms' => 40],
-                        ['label' => 'About', 'url' => '', 'level' => 'none', 'status' => 'not defined', 'ms' => null],
+                        ['label' => 'SearchURL', 'url' => 'https://play.example.org/helpers/query.php', 'tag' => 'API', 'cert' => true, 'level' => 'ok', 'status' => '200', 'ms' => 40],
+                        ['label' => 'About', 'url' => '', 'level' => 'none', 'status' => '', 'ms' => null],
                     ],
                 ],
+                ['file' => 'OpenSim.ini', 'first_of_file' => false, 'title' => '[Messaging]', 'rows' => [['label' => 'OfflineMessageURL', 'url' => '', 'level' => 'none', 'status' => '', 'ms' => null]]],
+                ['file' => 'PHP', 'first_of_file' => true, 'title' => '', 'rows' => [['label' => 'imagick', 'url' => '', 'level' => 'error', 'status' => 'missing', 'ms' => null]]],
             ],
         ]);
 
-        expect($html)
-            ->toContain('<th scope="row">SearchURL</th>')
-            ->toContain('health-ms')
-            // The time comes before the result, so that the results line up
-            ->and(strpos($html, '12 ms'))
-            ->toBeLessThan(strpos($html, 'status-ok'))
-            ->and(substr_count($html, 'health-cert'))
+        expect(substr_count($html, '<table'))
             ->toBe(1)
+            // The file is named once, the sections are under it, a group with no title has none
+            ->and(substr_count($html, 'health-file'))
+            ->toBe(2)
+            ->and(substr_count($html, 'health-section'))
+            ->toBe(2)
+            ->and(strpos($html, 'OpenSim.ini'))
+            ->toBeLessThan(strpos($html, '[Search]'))
+            // Every row has the same columns, so that the results line up
+            ->and(substr_count($html, 'class="health-status"'))
+            ->toBe(4)
+            ->and(substr_count($html, 'class="health-cert"'))
+            ->toBe(4)
+            ->and(strpos($html, 'health-cert"'))
+            ->toBeLessThan(strpos($html, 'health-ms"'))
+            ->and(strpos($html, 'health-ms"'))
+            ->toBeLessThan(strpos($html, 'health-status"'))
+            // The sigle of the certificate says what it is once, in a title; nothing is said of what is not defined
             ->and(substr_count($html, 'certificate not trusted by this server'))
             ->toBe(1)
-            ->and(substr_count($html, '<small class="health-post">POST</small>'))
-            ->toBe(1)
+            ->and(substr_count($html, 'not defined'))
+            ->toBe(0)
+            ->and(substr_count($html, 'status status-'))
+            ->toBe(2)
             ->and(substr_count($html, 'health-tag'))
-            ->toBe(2);
+            ->toBe(1);
     });
 });
-

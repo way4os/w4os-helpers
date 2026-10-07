@@ -24,79 +24,95 @@ describe('Block health', function () {
         '/helpers/offline.php' => 'offline.php',
         '/helpers/textgen.php' => 'textgen.php',
     ];
-    $by = fn(array $groups) => array_column(array_map(fn($g) => ['title' => $g['title'], 'rows' => $g['rows']], $groups), 'rows', 'title');
+    $by = fn(array $groups) => array_column(array_map(fn($g) => ['title' => $g['file'] . ' ' . $g['title'], 'rows' => $g['rows']], $groups), 'rows', 'title');
+    $scripts = fn(array $groups) => array_values(array_filter($groups, fn($g) => $g['file'] === 'opensim-helpers'))[0]['rows'];
 
-    test('has the sections of the grid, then what is the helpers', function () use ($settings, $routes) {
+    test('has the sections of the grid by file, then what is the helpers', function () use ($settings, $routes) {
         $groups = OpenSim_Helpers_Block_Health::plan($settings(['GridInfoService' => ['login' => 'http://play.example.org:8002/']], ['HypEventsURL' => 'https://2do.directory/events']), 'http://play.example.org:8002/', [], $routes, '');
 
-        expect(array_column($groups, 'title'))
-            ->toBe(['[GridInfoService]', '[LoginService]', '[Search]', '[DataSnapshot]', '[Messaging]', 'opensim-helpers', '[Helpers]', '[MoneyServer]'])
+        expect(array_map(fn($g) => trim($g['file'] . ' ' . $g['title']), $groups))
+            ->toBe(['Robust.HG.ini [GridInfoService]', 'Robust.HG.ini [LoginService]', 'OpenSim.ini [Search]', 'OpenSim.ini [DataSnapshot]', 'OpenSim.ini [Messaging]', 'MoneyServer.ini [MoneyServer]', 'Helpers.ini [Helpers]', 'opensim-helpers'])
             ->and(array_column($groups[6]['rows'], 'label'))
             ->toBe(['GuideSource', 'HypEventsURL']);
     });
 
-    test('asks every script of the helpers where it is served, a service with both ways', function () use ($settings, $routes, $by) {
-        $rows = $by(OpenSim_Helpers_Block_Health::plan($settings(['GridInfoService' => []]), null, [], $routes, ''))['opensim-helpers'];
-        $of = fn(string $label) => array_values(array_filter($rows, fn($row) => $row['label'] === $label));
+    test('asks every script of the helpers where it is served, a call that makes sense for the ones that can answer one', function () use ($settings, $routes, $scripts) {
+        $rows = $scripts(OpenSim_Helpers_Block_Health::plan($settings(['GridInfoService' => []]), null, [], $routes, ''));
+        $by = array_column($rows, null, 'label');
 
-        // The wrong method must refuse, the right one must answer, for the services that are called with XML-RPC
         expect(array_column($rows, 'label'))
-            ->toBe(['query.php', 'query.php', 'register.php', 'offline.php', 'currency.php', 'currency.php', 'landtool.php', 'landtool.php', 'textgen.php'])
-            ->and($of('currency.php')[0])
-            ->toMatchArray(['url' => 'https://play.example.org/helpers/currency.php', 'method' => 'get', 'expect' => [400, 405]])
-            ->and($of('currency.php')[1])
+            ->toBe(['query.php', 'register.php', 'offline.php', 'currency.php', 'landtool.php', 'textgen.php'])
+            // The services of XML-RPC are called, once, with what makes sense
+            ->and($by['currency.php'])
             ->toMatchArray(['url' => 'https://play.example.org/helpers/currency.php', 'method' => 'xmlrpc'])
-            ->and($of('currency.php')[1]['body'])
+            ->and($by['currency.php']['body'])
             ->toContain('getCurrencyQuote')
-            ->and($of('landtool.php')[1]['body'])
+            ->and($by['landtool.php']['body'])
             ->toContain('preflightBuyLandPrep')
-            // A script called without what it needs is a bad request
-            ->and($of('register.php')[0])
+            ->and($by['query.php']['body'])
+            ->toContain('dir_places_query')
+            // A script that cannot be called without what it needs is a bad request when it is
+            ->and($by['register.php'])
+            ->toMatchArray(['method' => 'get', 'expect' => [400, 405]])
+            ->and($by['offline.php'])
             ->toMatchArray(['method' => 'get', 'expect' => [400, 405]])
             // A page is asked to answer
-            ->and($of('textgen.php')[0])
+            ->and($by['textgen.php'])
+            ->toMatchArray(['method' => 'get'])
             ->not->toHaveKey('expect')
-            // No script is said twice: the grid has none of these addresses, so they are all here
-            ->and(count($of('query.php')))
-            ->toBe(2);
+            // No tag: they are not the two of a same name
+            ->and($by['query.php'])
+            ->not->toHaveKey('tag');
     });
 
-    test('does not ask twice what the grid already gives an address to', function () use ($settings, $routes, $by) {
-        $rows = $by(
-            OpenSim_Helpers_Block_Health::plan(
-                $settings([
-                    'Search' => ['SearchURL' => 'https://play.example.org/helpers/query.php'],
-                    'Messaging' => ['OfflineMessageURL' => 'https://play.example.org/helpers/offline.php'],
-                ]),
-                null,
-                [],
-                $routes,
-                '',
-            ),
+    test('does not ask twice what the grid already gives an address to', function () use ($settings, $routes, $scripts, $by) {
+        $groups = OpenSim_Helpers_Block_Health::plan(
+            $settings([
+                'Search' => ['SearchURL' => 'https://play.example.org/helpers/query.php'],
+                'Messaging' => ['OfflineMessageURL' => 'https://play.example.org/helpers/offline.php'],
+            ]),
+            null,
+            [],
+            $routes,
+            '',
         );
+        $rows = $by($groups);
 
-        expect(array_column($rows['opensim-helpers'], 'label'))
+        expect(array_column($scripts($groups), 'label'))
             ->not->toContain('query.php')
             ->not->toContain('offline.php')
             ->toContain('register.php')
-            ->and(array_column($rows['[Search]'], 'label'))
-            ->toBe(['SearchURL', 'SearchURL']);
+            ->and(array_column($rows['OpenSim.ini [Search]'], 'label'))
+            ->toBe(['SearchURL']);
     });
 
-    test('has no row for a script the helpers do not serve here (the grid has its economy elsewhere)', function () use ($settings, $by) {
-        $rows = $by(OpenSim_Helpers_Block_Health::plan($settings(['GridInfoService' => []]), null, [], ['/helpers/query.php' => 'query.php'], ''))['opensim-helpers'];
+    test('has no row for a script the helpers do not serve here (the grid has its economy elsewhere)', function () use ($settings, $scripts) {
+        $rows = $scripts(OpenSim_Helpers_Block_Health::plan($settings(['GridInfoService' => []]), null, [], ['/helpers/query.php' => 'query.php'], ''));
 
-        expect(array_column($rows, 'label'))->toBe(['query.php', 'query.php']);
+        expect(array_column($rows, 'label'))->toBe(['query.php']);
     });
 
-    test('names the guide source as a setting: an address is asked, a folder is read, nothing is not defined', function () use ($settings, $routes, $by) {
-        $row = fn(string $guide) => $by(OpenSim_Helpers_Block_Health::plan($settings([]), null, [], $routes, $guide))['[Helpers]'][0];
+    test('names the guide source as a setting: an address is asked, a folder is read, nothing is not shown', function () use ($settings, $routes, $by) {
+        $row = fn(string $guide) => $by(OpenSim_Helpers_Block_Health::plan($settings([]), null, [], $routes, $guide))['Helpers.ini [Helpers]'][0];
 
         expect($row('https://play.example.org/guide.json'))
             ->toMatchArray(['label' => 'GuideSource', 'url' => 'https://play.example.org/guide.json'])
             ->and($row(''))
-            ->toMatchArray(['label' => 'GuideSource', 'status' => 'not defined', 'level' => 'none'])
+            ->toMatchArray(['label' => 'GuideSource', 'status' => '', 'level' => 'none'])
             ->and($row(__DIR__))
             ->toMatchArray(['label' => 'GuideSource', 'level' => 'ok']);
+    });
+
+    test('puts the sections of a file together, files in the order they come, the file named once', function () {
+        $groups = OpenSim_Helpers_Block_Health::arrange([
+            ['file' => 'Robust.ini', 'title' => '[GridInfoService]', 'rows' => []],
+            ['file' => 'OpenSim.ini', 'title' => '[Search]', 'rows' => []],
+            ['file' => 'Robust.ini', 'title' => '[DatabaseService]', 'rows' => []],
+        ]);
+
+        expect(array_map(fn($g) => $g['title'], $groups))
+            ->toBe(['[GridInfoService]', '[DatabaseService]', '[Search]'])
+            ->and(array_column($groups, 'first_of_file'))
+            ->toBe([true, false, true]);
     });
 });
