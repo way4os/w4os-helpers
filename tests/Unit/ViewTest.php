@@ -304,4 +304,22 @@ describe('The health block', function () {
             // The title of a group that has none is not a row of the table
             ->not->toContain('health-section');
     });
+
+    test('shows an address as the config says it and links the one it was asked with (the profile of the owner of the grid)', function () {
+        $html = OpenSim_Helpers_View::render('components/health-block.twig', [
+            'title' => 'Health',
+            'when' => 'now',
+            'cert_title' => '',
+            'groups' => [
+                [
+                    'file' => 'Robust.HG.ini',
+                    'first_of_file' => true,
+                    'title' => '[GridInfoService]',
+                    'rows' => [['label' => 'web_profile_url', 'url' => 'https://play.example.org/profile/Jane.Doe', 'display' => 'https://play.example.org/profile/[AGENT_NAME]', 'level' => 'ok', 'status' => '200', 'ms' => 5]],
+                ],
+            ],
+        ]);
+
+        expect($html)->toContain('<a href="https://play.example.org/profile/Jane.Doe"><code>https://play.example.org/profile/[AGENT_NAME]</code></a>');
+    });
 });
