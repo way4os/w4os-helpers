@@ -9,6 +9,7 @@ require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 require_once dirname(__DIR__, 2) . '/includes/functions.php';
 require_once dirname(__DIR__, 2) . '/classes/class-view.php';
 require_once dirname(__DIR__, 2) . '/classes/class-blocks.php';
+require_once dirname(__DIR__, 2) . '/classes/class-router.php';
 
 defined('OPENSIM_GRID_NAME') || define('OPENSIM_GRID_NAME', 'Alpha <b>World');
 defined('OPENSIM_LOGIN_URI') || define('OPENSIM_LOGIN_URI', 'http://127.0.0.1:9');
@@ -276,5 +277,31 @@ describe('The health block', function () {
             ->toBe(2)
             ->and(substr_count($html, 'health-tag'))
             ->toBe(1);
+    });
+
+    test('shows a value that is not an address as text, and what differs from what the grid says under the setting, in an error', function () {
+        $html = OpenSim_Helpers_View::render('components/health-block.twig', [
+            'title' => 'Health',
+            'when' => 'now',
+            'cert_title' => 'certificate not trusted by this server',
+            'groups' => [
+                [
+                    'file' => 'get_grid_info',
+                    'first_of_file' => true,
+                    'title' => '',
+                    'rows' => [
+                        ['label' => 'gridname', 'url' => '', 'text' => 'Alpha World', 'level' => 'none', 'status' => '', 'ms' => null],
+                        ['label' => 'economy', 'url' => 'https://other.example.org/helpers', 'detail' => 'get_grid_info: https://play.example.org/helpers', 'level' => 'error', 'status' => 'differs', 'ms' => null],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($html)
+            ->toContain('<code>Alpha World</code>')
+            ->toContain('status status-error">differs')
+            ->toContain('<small>get_grid_info: https://play.example.org/helpers</small>')
+            // The title of a group that has none is not a row of the table
+            ->not->toContain('health-section');
     });
 });

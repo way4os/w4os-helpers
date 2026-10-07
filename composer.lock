@@ -73,7 +73,7 @@
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "82de0a21a5757bf7095d946dfce36466f0208782"
+                "reference": "cffcc85687d381743fafcc686e0458c046dfd0ff"
             },
             "require": {
                 "ext-curl": "*",
@@ -110,7 +110,8 @@
                 },
                 "classmap": [
                     "class-oar.php",
-                    "class-health.php"
+                    "class-health.php",
+                    "class-config.php"
                 ],
                 "files": [
                     "includes/functions-escaping.php"

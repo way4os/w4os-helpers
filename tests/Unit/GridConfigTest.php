@@ -4,6 +4,7 @@
  * settings Helpers.ini adds, the databases of each service, the routes the grid's own addresses make, and the constants.
  */
 
+require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 require_once dirname(__DIR__, 2) . '/classes/class-grid-config.php';
 
 /**
@@ -64,34 +65,13 @@ function grid_constants(string $helpers = '', bool $robust = true, array $files 
     return OpenSim_Helpers_GridConfig::constants(OpenSim_Helpers_GridConfig::settings(null, $conf));
 }
 
-describe('Reading the files', function () {
-    test('is as OpenSimulator reads them: sections, quotes, constants expanded', function () {
-        [, $grid] = grid_config_tree();
-
-        $ini = OpenSim_Helpers_GridConfig::read_ini("$grid/Robust.HG.ini");
-
-        expect($ini['Const']['BaseURL'])
-            ->toBe('http://play.example.org')
-            ->and($ini['Hypergrid']['GatekeeperURI'])
-            ->toBe('http://play.example.org:8002')
-            ->and($ini['GridInfoService']['gridname'])
-            ->toBe('Alpha World')
-            ->and(OpenSim_Helpers_GridConfig::read_ini('/nonexistent.ini'))
-            ->toBe([]);
-    });
-
-    test('keeps the first of a key given twice in a section, as OpenSimulator does', function () {
-        [, $grid] = grid_config_tree('', true, ['twice.ini' => "[DatabaseService]\nConnectionString = \"first\"\nConnectionString = \"second\"\n"]);
-
-        expect(OpenSim_Helpers_GridConfig::read_ini("$grid/twice.ini")['DatabaseService']['ConnectionString'])->toBe('first');
-    });
-
+describe('Finding the grid', function () {
     test('expands the constants of Robust in the files of the simulators', function () {
         [$conf] = grid_config_tree('', true, ['sims/one.ini' => "[Messaging]\nOfflineMessageURL = \"\${Const|WebURL}/helpers/offline.php\"\n"]);
 
         $settings = OpenSim_Helpers_GridConfig::settings(null, $conf);
 
-        expect(OpenSim_Helpers_GridConfig::value($settings['sources'], 'Messaging', 'OfflineMessageURL'))->toBe(
+        expect($settings['config']->find('Messaging', 'OfflineMessageURL'))->toBe(
             'https://play.example.org/helpers/offline.php',
         );
     });
@@ -122,68 +102,6 @@ describe('Reading the files', function () {
             ->toBeNull()
             ->and(OpenSim_Helpers_GridConfig::grid_nick('Beta', $conf))
             ->toBe('Beta');
-    });
-});
-
-describe('The files a file includes', function () {
-    /** The merged settings of the main file of a test tree. */
-    $chain = fn(array $files, string $main = 'OpenSim.ini') => (function () use ($files, $main) {
-        [, $grid] = grid_config_tree('', false, $files);
-
-        return OpenSim_Helpers_GridConfig::read_chain("$grid/$main");
-    })();
-
-    test('are read after the file that includes them, in any section, a relative path being relative to that file', function () use ($chain) {
-        $ini = $chain([
-            'OpenSim.ini' => "[Economy]\neconomymodule = Gloebit\n[Architecture]\nInclude-Gloebit = \"config-include/Gloebit.ini\"\n",
-            'config-include/Gloebit.ini' => "[Gloebit]\nGLBEnvironment = sandbox\n",
-        ]);
-
-        expect($ini['Gloebit']['GLBEnvironment'])->toBe('sandbox')->and($ini['Economy']['economymodule'])->toBe('Gloebit');
-    });
-
-    test('give their values over the ones read before, and the ones they include theirs in turn', function () use ($chain) {
-        $ini = $chain([
-            'OpenSim.ini' => "[A]\none = main\ntwo = main\n[Includes]\nInclude-First = \"first.ini\"\n",
-            'first.ini' => "[A]\ntwo = first\n[Other]\nInclude-Second = \"sub/second.ini\"\n",
-            'sub/second.ini' => "[A]\nthree = second\n[Other]\nInclude-Back = \"../OpenSim.ini\"\n",
-        ]);
-
-        // The file that includes itself again is not read twice
-        expect($ini['A'])->toBe(['one' => 'main', 'two' => 'first', 'three' => 'second']);
-    });
-
-    test('can be given with a constant, an absolute path or a wildcard', function () use ($chain) {
-        $dir = null;
-        [, $grid] = grid_config_tree('', false, [
-            'OpenSim.ini' => "[Const]\nEtc = \"ETC\"\n[Includes]\nInclude-A = \"\${Const|Etc}/a.ini\"\nInclude-B = \"ETC/more/*.ini\"\n",
-            'a.ini' => "[A]\nfrom = a\n",
-            'more/b.ini' => "[B]\nfrom = b\n",
-            'more/c.ini' => "[C]\nfrom = c\n",
-            'more/ignored.txt' => "[D]\nfrom = d\n",
-        ]);
-        file_put_contents("$grid/OpenSim.ini", str_replace('ETC', $grid, (string) file_get_contents("$grid/OpenSim.ini")));
-        $ini = OpenSim_Helpers_GridConfig::read_chain("$grid/OpenSim.ini");
-
-        expect(array_keys($ini))->toBe(['Const', 'Includes', 'A', 'B', 'C']);
-    });
-
-    test('are not read when nothing includes them, nor the constants of a file that is not read', function () use ($chain) {
-        $ini = $chain([
-            'OpenSim.ini' => "[A]\none = 1\n",
-            'config-include/Gloebit.ini' => "[Gloebit]\nGLBEnvironment = sandbox\n",
-        ]);
-
-        expect($ini)->not->toHaveKey('Gloebit');
-    });
-
-    test('have their constants replaced in the whole, whichever file has them', function () use ($chain) {
-        $ini = $chain([
-            'OpenSim.ini' => "[Net]\nurl = \"http://\${Const|Host}:8002\"\n[Includes]\nInclude-Const = \"const.ini\"\n",
-            'const.ini' => "[Const]\nHost = \"play.example.org\"\n",
-        ]);
-
-        expect($ini['Net']['url'])->toBe('http://play.example.org:8002');
     });
 });
 
@@ -348,7 +266,7 @@ describe('The addon of a module', function () {
         ]);
         $root = dirname(__DIR__, 2);
         $script =
-            "putenv('OPENSIM_CONF=$conf'); require '$root/classes/class-grid-config.php'; OpenSim_Helpers_GridConfig::load();" .
+            "putenv('OPENSIM_CONF=$conf'); require '$root/vendor/autoload.php'; require '$root/classes/class-grid-config.php'; OpenSim_Helpers_GridConfig::load();" .
             "define('CURRENCY_PROVIDER', 'gloebit'); require '$root/addons/gloebit.php';" .
             'echo json_encode([GLOEBIT_SANDBOX, GLOEBIT_CONVERSION_THRESHOLD]);';
         $process = proc_open([PHP_BINARY, '-d', 'display_errors=0', '-r', $script], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);

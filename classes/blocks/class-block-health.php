@@ -7,7 +7,6 @@
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
  */
-require_once dirname(__DIR__) . '/class-grid-info.php';
 require_once dirname(__DIR__) . '/class-grid-config.php';
 
 class OpenSim_Helpers_Block_Health
@@ -36,12 +35,13 @@ class OpenSim_Helpers_Block_Health
     {
         $settings = OpenSim_Helpers_GridConfig::settings();
         $login = defined('OPENSIM_LOGIN_URI') ? OPENSIM_LOGIN_URI : ($settings['login_uri'] ?? null);
-        $live = $login ? OpenSim_Helpers_GridInfo::fetch($login) : [];
+        // What the grid says of itself, as it says it (the pages make a name of the address when it says none, not the checks)
+        $live = $login ? OpenSim_Health::grid_info($login) : [];
         $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
         $groups = OpenSim_Health::answers(self::plan($settings, $login, $live, $routes, defined('OPENSIM_GUIDE_SOURCE') ? (string) OPENSIM_GUIDE_SOURCE : '', self::owner()));
-        $groups[] = ['file' => OpenSim_Health::names($settings['sources'] ?? [])['robust'], 'title' => '[DatabaseService]', 'rows' => [self::database_row()]];
+        $groups[] = ['file' => OpenSim_Health::names($settings['config'] ?? null)['robust'], 'title' => '[DatabaseService]', 'rows' => [self::database_row()]];
         $groups[] = ['file' => _('PHP extensions'), 'title' => '', 'rows' => OpenSim_Health::extensions()];
-        $files = OpenSim_Health::files($settings ? OpenSim_Helpers_GridConfig::files($settings['dir']) : []);
+        $files = OpenSim_Health::files(isset($settings['config']) ? $settings['config']->files() : []);
         if ($files) {
             $groups[] = ['file' => _('Files read'), 'title' => '', 'rows' => $files];
         }
@@ -76,7 +76,8 @@ class OpenSim_Helpers_Block_Health
      * The addresses to ask: the ones of the grid, as the engine makes them, with the scripts of the helpers (where they are
      * served, and only the ones the grid does not already give an address to) and what has no place in OpenSimulator's files.
      *
-     * @param  array|null           $settings what OpenSim_Helpers_GridConfig::settings() gave, null without a config
+     * @param  array|null           $settings what OpenSim_Helpers_GridConfig::settings() gave (its `config` is the one of the
+     *                                        engine, OpenSim_Config), null without a config
      * @param  string|null          $login    the login address
      * @param  array<string,mixed>  $live     what the grid says at /get_grid_info
      * @param  array<string,string> $routes   the paths the helpers answer
@@ -86,7 +87,7 @@ class OpenSim_Helpers_Block_Health
      */
     public static function plan($settings, $login, $live, $routes, $guide, $owner = null)
     {
-        $groups = OpenSim_Health::grid(['sources' => $settings['sources'] ?? [], 'live' => $live, 'login' => $login, 'owner' => $owner]);
+        $groups = OpenSim_Health::grid(['config' => $settings['config'] ?? null, 'live' => $live, 'login' => $login, 'owner' => $owner]);
         $web = rtrim((string) ($settings['web_url'] ?? ''), '/');
         $null = defined('NULL_KEY') ? NULL_KEY : '00000000-0000-0000-0000-000000000000';
 
@@ -95,7 +96,7 @@ class OpenSim_Helpers_Block_Health
         $asked = [];
         foreach ($groups as $group) {
             foreach ($group['rows'] as $row) {
-                $asked[rtrim((string) $row['url'], '/')] = true;
+                $asked[rtrim((string) ($row['url'] ?? ''), '/')] = true;
             }
         }
         $at = function ($script) use ($routes, $web, $asked) {
@@ -104,29 +105,30 @@ class OpenSim_Helpers_Block_Health
 
             return isset($asked[$url]) ? '' : $url;
         };
+        // Each service is called twice, with nothing (it must refuse) and with what it expects (it must answer)
         $rows = [];
         foreach (
             [
-                'query.php' => fn($url) => OpenSim_Health::api('query.php', $url, 'dir_places_query', ['flags' => 0, 'text' => 'health', 'query_start' => '0']),
-                'register.php' => fn($url) => OpenSim_Health::bare('register.php', $url),
-                'offline.php' => fn($url) => OpenSim_Health::bare('offline.php', $url),
-                'currency.php' => fn($url) => OpenSim_Health::api('currency.php', $url, 'getCurrencyQuote', ['agentId' => $null, 'secureSessionId' => $null, 'currencyBuy' => 0]),
-                'landtool.php' => fn($url) => OpenSim_Health::api('landtool.php', $url, 'preflightBuyLandPrep', ['agentId' => $null, 'secureSessionId' => $null, 'currencyBuy' => 0, 'billableArea' => 0]),
-                'textgen.php' => fn($url) => ['label' => 'textgen.php', 'url' => $url, 'method' => 'get'],
+                'query.php' => fn($url) => OpenSim_Health::xmlrpc('query.php', $url, 'dir_places_query', ['flags' => 0, 'text' => 'health', 'query_start' => '0']),
+                'register.php' => fn($url) => OpenSim_Health::query('register.php', $url, 'service=offline&host=health.invalid&port=1'),
+                'offline.php' => fn($url) => OpenSim_Health::post('offline.php', $url, OpenSim_Health::retrieve_messages(), 'RetrieveMessages/'),
+                'currency.php' => fn($url) => OpenSim_Health::xmlrpc('currency.php', $url, 'getCurrencyQuote', ['agentId' => $null, 'secureSessionId' => $null, 'currencyBuy' => 0]),
+                'landtool.php' => fn($url) => OpenSim_Health::xmlrpc('landtool.php', $url, 'preflightBuyLandPrep', ['agentId' => $null, 'secureSessionId' => $null, 'currencyBuy' => 0, 'billableArea' => 0]),
+                'textgen.php' => fn($url) => [OpenSim_Health::page('textgen.php', $url)],
             ]
-            as $script => $row_of
+            as $script => $rows_of
         ) {
             if (($url = $at($script)) !== '') {
-                $rows[] = $row_of($url);
+                array_push($rows, ...$rows_of($url));
             }
         }
 
         // What has no place in OpenSimulator's files, in Helpers.ini
         $own = $settings['helpers'] ?? [];
-        $helpers = [OpenSim_Health::is_url($guide) ? ['label' => 'GuideSource', 'url' => $guide, 'method' => 'get'] : OpenSim_Health::path('GuideSource', $guide)];
+        $helpers = [OpenSim_Health::is_url($guide) ? OpenSim_Health::page('GuideSource', $guide) : OpenSim_Health::path('GuideSource', $guide)];
         foreach (['HypEventsURL', 'LogoURL'] as $key) {
             if (OpenSim_Health::is_url($own[$key] ?? '')) {
-                $helpers[] = ['label' => $key, 'url' => $own[$key], 'method' => 'get'];
+                $helpers[] = OpenSim_Health::page($key, $own[$key]);
             }
         }
 

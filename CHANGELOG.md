@@ -8,7 +8,8 @@
 - fix: no default currency key: without `MoneyScriptAccessKey` (`[MoneyServer]` of `MoneyServer.ini`) the currency is not served, bad configuration
 - update: the health page uses the engine's `OpenSim_Health`: sections and settings as in the ini files, each API asked both ways
 - update: health is one table by config file, cert, time and result aligned on the right, nothing said of what is not defined
-- update: health asks each service once, with a call that makes sense (SearchURL: Web search in Robust, API in OpenSim.ini)
+- update: health starts with what the grid says (get_grid_info), compares it with the config, calls each service without data and with valid data
+- update: the ini files are read by the engine's `OpenSim_Config`, the helpers keep the grid, the constants and the routes
 - update: `/profile` without a name and the address of the helpers itself answer 418, not a page
 - update: a wrong call gets its code (400, 404, 405, 503 for a missing configuration), never a 500 on purpose
 - update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting
