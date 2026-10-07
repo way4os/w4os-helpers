@@ -381,14 +381,15 @@ class OpenSim_Helpers_Block_Health
     }
 
     /**
-     * The name of an avatar of the grid to ask a profile for: there is always one, its owner, the first account made.
+     * The name of an avatar of the grid to ask a profile for: there is always one, its owner, the first account made (not the
+     * account of the services of the grid, which Robust makes for itself).
      *
      * @return string|null Firstname.Lastname, null when the accounts cannot be read
      */
     private static function owner()
     {
         $db = function_exists('db_for') ? db_for('UserAccountService') : null;
-        $statement = $db ? $db->prepareAndExecute('SELECT FirstName, LastName FROM UserAccounts ORDER BY Created, FirstName LIMIT 1', []) : false;
+        $statement = $db ? $db->prepareAndExecute("SELECT FirstName, LastName FROM UserAccounts WHERE NOT (FirstName = 'GRID' AND LastName = 'SERVICES') ORDER BY Created, FirstName LIMIT 1", []) : false;
         $row = $statement ? $statement->fetch(PDO::FETCH_NUM) : false;
 
         return $row ? "$row[0].$row[1]" : null;
