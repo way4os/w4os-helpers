@@ -79,6 +79,8 @@ class OpenSim_Helpers_Router
         foreach (array_keys(self::SCRIPTS) as $script) {
             $routes["$base/$script"] = $script;
         }
+        // The health page is also with the other services, where the person looking for it goes
+        $routes["$base/health"] = '@health';
         foreach (self::ALIASES as $script => $page) {
             $routes["$base/$script"] = "@$page";
         }

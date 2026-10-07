@@ -19,7 +19,7 @@
                     <span>{{ grid_name }}</span>
                 </a>
                 <nav>
-                    {% for item in menu %}<a href="{{ item.url }}">{{ item.label }}</a>{% endfor %}
+                    {% for item in menu %}<a href="{{ item.url }}"{% if item.slug == slug %} aria-current="page"{% endif %}>{{ item.label }}</a>{% endfor %}
                 </nav>
             </header>
         {% endif %}

@@ -102,9 +102,13 @@ The historic config is still supported, but might be deprecated in the future: c
   ;; Whatever this folder holds (templates/, assets/) replaces the files of the helpers
   ThemePath = "theme"
   ;; LogoURL, MailSender, UseUTCTime (true by default)
+  ;; The secret that ties a quote of currency to its purchase. A grid with a MoneyServer has it already, MoneyScriptAccessKey
+  ;; of its [MoneyServer] (MoneyServer.ini): the helpers read it there. Without one, each grid has a key of its own, made of the
+  ;; password of its database.
+  ; ScriptKey = "a secret"
 ```
 
-**Addresses.** The helpers answer the addresses the grid gives to its services, those of this site only (the host, and the port when the address has one, of the page that is served): a service the grid has set up on another site (`SearchURL = "https://2do.directory/helpers/query.php"`) has no ghost on this one. A service the grid says nothing about answers at its default address, `/helpers/<script>.php`. Only `currency.php` and `landtool.php` have a fixed place, under the address of the economy. `/health` lists every address of the grid with its status.
+**Addresses.** The helpers answer the addresses the grid gives to its services, those of this site only (the host, and the port when the address has one, of the page that is served): a service the grid has set up on another site (`SearchURL = "https://2do.directory/helpers/query.php"`) has no ghost on this one. A service the grid says nothing about answers at its default address, `/helpers/<script>.php`. Only `currency.php` and `landtool.php` have a fixed place, under the address of the economy. `/health` lists every address of the grid with its status. The menu of the top bar lists the pages the site serves (home, destinations, directory, health).
 
 **Databases.** Each query uses the database of its service: the connection string (.NET format) of the section of the service when it has one, else `[DatabaseService]`.
 

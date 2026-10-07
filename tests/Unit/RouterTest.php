@@ -101,8 +101,11 @@ describe('Router', function () {
             ->toBe(['page', 'profile']);
     });
 
-    test('serves the health page', function () {
-        expect(OpenSim_Helpers_Router::match('/health'))->toBe(['page', 'health']);
+    test('serves the health page, and with the other services too', function () {
+        expect(OpenSim_Helpers_Router::match('/health'))
+            ->toBe(['page', 'health'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/health'))
+            ->toBe(['page', 'health']);
     });
 
     test('knows no other URL', function () {

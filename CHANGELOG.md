@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+- new: the top bar has a menu of the pages the site serves (home, destinations, directory, health), the current one marked
+- new: the health page is also at `<helpers>/health`
+- update: each grid has its own script key: `MoneyScriptAccessKey` of [MoneyServer], else `[Helpers] ScriptKey`, else one made of the database password
 - update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting
 - update: the Gloebit sandbox is `[Gloebit] GLBEnvironment`; the rate is 4 for 1000 unless the module's addon says
 - update: an address of the grid is served when its host (and its port, if it gives one) are the ones of the page served

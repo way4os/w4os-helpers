@@ -56,6 +56,13 @@ function grid_config_tree(string $helpers = '', bool $robust = true, array $file
     return ["$root/opensim.conf", $grid];
 }
 
+/** A Robust config of a test grid with the connection string given, to put in the files of a tree. */
+function robust_with_database(string $connection): string
+{
+    return "[Const]\n  BaseHostname = \"play.example.org\"\n  BaseURL = \"http://\${Const|BaseHostname}\"\n  WebURL = \"https://\${Const|BaseHostname}\"\n  PublicPort = 8002\n" .
+        "[DatabaseService]\n  ConnectionString = \"$connection\"\n[GridInfoService]\n  gridname = \"Beta World\"\n";
+}
+
 /** The constants a grid gives, from the tree of a test. */
 function grid_constants(string $helpers = '', bool $robust = true, array $files = []): array
 {
@@ -254,9 +261,37 @@ describe('The settings', function () {
             ->not->toHaveKeys(['CURRENCY_PROVIDER', 'CURRENCY_USE_MONEYSERVER'])
             ->and(grid_constants())
             ->not->toHaveKeys(['CURRENCY_PROVIDER', 'CURRENCY_USE_MONEYSERVER'])
-            // The rates and the key are not settings of the grid: the module (its addon) and the helpers have their own
+            // The rates are not settings of the grid: the module (its addon) and the helpers have their own
             ->and(grid_constants())
-            ->not->toHaveKeys(['CURRENCY_RATE', 'CURRENCY_RATE_PER', 'CURRENCY_SCRIPT_KEY', 'GLOEBIT_SANDBOX']);
+            ->not->toHaveKeys(['CURRENCY_RATE', 'CURRENCY_RATE_PER', 'GLOEBIT_SANDBOX']);
+    });
+
+    test('have a script key of their own, the MoneyServer one if the grid has it, else the one of Helpers.ini', function () {
+        $key = fn(string $helpers = '', array $files = []) => grid_constants($helpers, true, $files)['CURRENCY_SCRIPT_KEY'] ?? null;
+        $own = $key();
+        $other = $key('', ['Robust.HG.ini' => robust_with_database('Data Source=x;Database=y;User ID=z;Password=other;')]);
+
+        // One made of the database password: stable, not the public default, and not the one of a grid with another password
+        expect($own)
+            ->toMatch('/^[0-9a-f]{32}$/')
+            ->not->toBe('1234567883789')
+            ->and($key())
+            ->toBe($own)
+            ->and($other)
+            ->toMatch('/^[0-9a-f]{32}$/')
+            ->not->toBe($own)
+            // What the grid says wins: the key of the MoneyServer (its own file, or any other), then Helpers.ini
+            ->and($key("[Helpers]\nScriptKey = \"from-helpers\"\n"))
+            ->toBe('from-helpers')
+            ->and($key('', ['MoneyServer.ini' => "[MoneyServer]\nMoneyScriptAccessKey = \"from-money-server\"\n"]))
+            ->toBe('from-money-server')
+            ->and($key("[Helpers]\nScriptKey = \"from-helpers\"\n", ['OpenSim.ini' => "[MoneyServer]\nMoneyScriptAccessKey = \"from-money-server\"\n"]))
+            ->toBe('from-money-server');
+    });
+
+    test('have no script key to make when the grid has no password either', function () {
+        expect(grid_constants('', true, ['Robust.HG.ini' => robust_with_database('Data Source=x;Database=y;User ID=z;')]))
+            ->not->toHaveKey('CURRENCY_SCRIPT_KEY');
     });
 
     test('keep UTC time unless Helpers.ini says otherwise', function () {
@@ -386,6 +421,7 @@ describe('The routes', function () {
                 '/helpers/register.php' => 'register.php',
                 '/helpers/offline.php' => 'offline.php',
                 '/helpers/directory_info.php' => '@directory_info',
+                '/helpers/health' => '@health',
             ]);
     });
 

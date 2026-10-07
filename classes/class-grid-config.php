@@ -267,6 +267,10 @@ class OpenSim_Helpers_GridConfig
         foreach (array_merge(glob("$dir/config-include/*.ini") ?: [], glob("$dir/sims/*.ini") ?: []) as $file) {
             $files[] = $file;
         }
+        // The MoneyServer reads its own file ([MoneyServer], with the script key); a grid that keeps it with the others
+        if (is_file("$dir/MoneyServer.ini")) {
+            $files[] = "$dir/MoneyServer.ini";
+        }
         $files[] = "$dir/" . self::HELPERS_FILE;
 
         return $files;
@@ -496,6 +500,7 @@ class OpenSim_Helpers_GridConfig
             $routes["$base/$script"] = $script;
         }
         $routes["$base/directory_info.php"] = '@directory_info';
+        $routes["$base/health"] = '@health';
 
         return $routes;
     }
@@ -564,6 +569,7 @@ class OpenSim_Helpers_GridConfig
             // know its rates and settings
             'CURRENCY_PROVIDER' => $provider,
             'CURRENCY_USE_MONEYSERVER' => $module === '' || $module === 'betagridlikemoneymodule' ? null : true,
+            'CURRENCY_SCRIPT_KEY' => self::script_key($settings),
             'OPENSIM_USE_UTC_TIME' => isset($helpers['UseUTCTime']) ? self::flag($helpers['UseUTCTime']) : null,
             'CURRENCY_HELPER_URL' =>
                 $settings['web_url'] === '' ? null : $settings['web_url'] . ($economy === null ? $base : self::path_of($economy)) . '/currency.php',
@@ -602,6 +608,26 @@ class OpenSim_Helpers_GridConfig
         $constants['OPENSIM_DB_SERVICES'] = $services;
 
         return $constants;
+    }
+
+    /**
+     * The key that ties a quote of currency to its purchase (the confirm value is made with it), the one of the script key of the
+     * MoneyServer: `MoneyScriptAccessKey` of its `[MoneyServer]`, which is the same secret as the helpers have to know, else
+     * `ScriptKey` of `[Helpers]`. A grid that says nothing has one of its own, made of the password of its database (the
+     * helpers read it and nobody else knows it), so that no grid has the public default key.
+     *
+     * @param  array $settings what settings() gave
+     * @return string|null null when there is nothing to make one from (the helpers use their default then)
+     */
+    public static function script_key($settings)
+    {
+        $given = self::value($settings['sources'], 'MoneyServer', 'MoneyScriptAccessKey') ?? ($settings['helpers']['ScriptKey'] ?? null);
+        if ($given !== null && trim($given) !== '') {
+            return trim($given);
+        }
+        $password = (string) (self::connection_for($settings, 'DatabaseService')['password'] ?? '');
+
+        return $password === '' ? null : substr(hash_hmac('sha256', 'opensim-helpers script key', $password), 0, 32);
     }
 
     /**

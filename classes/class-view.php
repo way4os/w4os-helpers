@@ -15,6 +15,14 @@ class OpenSim_Helpers_View
     /** Where the helpers are on the web site when the grid says nothing. */
     const DEFAULT_PATH = '/helpers';
 
+    /** The pages of the menu, in their order: the page (see OpenSim_Helpers_Router::PAGES) and the label it has in labels(). */
+    const MENU = [
+        'home' => 'home',
+        'destination_guide' => 'guide',
+        'directory_info' => 'directory',
+        'health' => 'health',
+    ];
+
     /**
      * Whether the page is for a viewer: the User-Agent says so, `?viewer=1` or `?viewer=0` decides for a browser that wants to
      * see what a viewer sees.
@@ -64,9 +72,31 @@ class OpenSim_Helpers_View
         return [
             'home' => _('Home'),
             'guide' => _('Destinations'),
+            'directory' => _('Directory'),
+            'health' => _('Health'),
             'powered_by' => _('Powered by OpenSimulator Helpers'),
             'skip' => _('Skip to main content'),
         ];
+    }
+
+    /**
+     * The menu: the pages this site serves, in the order of MENU, each at the address the router gives it.
+     *
+     * @param  array<string,string> $routes path => script or page, as the router has them
+     * @param  array<string,string> $labels the texts of the layout
+     * @return list<array{slug:string,label:string,url:string}>
+     */
+    public static function menu($routes, $labels)
+    {
+        $menu = [];
+        foreach (self::MENU as $page => $label) {
+            $path = $page === 'home' ? '/' : array_search("@$page", $routes, true);
+            if ($path !== false) {
+                $menu[] = ['slug' => $page, 'label' => $labels[$label], 'url' => $path];
+            }
+        }
+
+        return $menu;
     }
 
     /**
@@ -88,10 +118,7 @@ class OpenSim_Helpers_View
             }
         }
         $labels = self::labels();
-        $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
-        $menu = [['label' => $labels['home'], 'url' => '/']];
-        $guide = array_search('@destination_guide', $routes, true);
-        $menu[] = ['label' => $labels['guide'], 'url' => $guide !== false ? $guide : self::base_path() . '/guide.php'];
+        $menu = self::menu(defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : OpenSim_Helpers_Router::defaults(self::base_path()), $labels);
         $viewer = self::is_viewer();
 
         return [

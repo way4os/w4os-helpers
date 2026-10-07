@@ -193,3 +193,38 @@ describe('A template', function () {
         expect($html)->toContain('News &lt;i&gt;');
     });
 });
+
+describe('The menu', function () {
+    $labels = OpenSim_Helpers_View::labels();
+
+    test('has the pages the site serves, at the address of each, in a fixed order', function () use ($labels) {
+        $menu = OpenSim_Helpers_View::menu(OpenSim_Helpers_Router::defaults('/helpers'), $labels);
+
+        expect(array_column($menu, 'slug'))
+            ->toBe(['home', 'destination_guide', 'directory_info', 'health'])
+            ->and(array_column($menu, 'url'))
+            ->toBe(['/', '/helpers/guide.php', '/helpers/directory_info.php', '/health']);
+    });
+
+    test('follows the addresses the grid gave, and leaves out what it does not serve', function () use ($labels) {
+        $menu = OpenSim_Helpers_View::menu(['/' => '@home', '/places' => '@destination_guide', '/helpers/query.php' => 'query.php'], $labels);
+
+        expect(array_column($menu, 'slug'))
+            ->toBe(['home', 'destination_guide'])
+            ->and($menu[1]['url'])
+            ->toBe('/places');
+    });
+
+    test('is in the top bar of a browser, the current page marked, and not in a viewer', function () {
+        $dirs = [dirname(__DIR__, 2) . '/templates'];
+        $browser = OpenSim_Helpers_View::render('layouts/base-layout.twig', array_merge(['main' => 'x'], OpenSim_Helpers_View::context('health'), ['viewer' => false]), $dirs);
+        $viewer = OpenSim_Helpers_View::render('layouts/base-layout.twig', array_merge(['main' => 'x'], OpenSim_Helpers_View::context('health'), ['viewer' => true]), $dirs);
+
+        expect($browser)
+            ->toContain('<a href="/health" aria-current="page">Health</a>')
+            ->toContain('<a href="/">Home</a>')
+            ->and($viewer)
+            ->not->toContain('<nav>');
+    });
+});
+
