@@ -18,6 +18,8 @@
 - update: the web search is `search` of `[GridInfoService]`, `SearchURL` of `[LoginService]` stands for it; health compares both
 - new: public pages `grid_info` and `grid_status` (ONLINE or OFFLINE) under the helpers, `GridInfoURL` and `GridStatusURL` in `[Helpers]`
 - update: `/profile` without a name and the address of the helpers itself answer 418, not a page
+- fix: the search never makes its `regions` table in the database of Robust (it took the place of Robust's); `regionsregister` unless a search table of that name is already there
+- fix: a search request without flags or without the day and category is answered, not a 500
 - update: a wrong call gets its code (400, 404, 405, 503 for a missing configuration), never a 500 on purpose
 - update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting
 - update: the Gloebit sandbox is `[Gloebit] GLBEnvironment`; the rate is 4 for 1000 unless the module's addon says
