@@ -58,7 +58,7 @@ function dir_places_query($method_name, $params, $app_data)
     global $SearchDB;
     $req = $params[0];
 
-    $flags = $req['flags'];
+    $flags = (int) ($req['flags'] ?? 0);
     $text = $req['text'];
     $category = isset($req['category']) ? $req['category'] : null;
     $query_start = $req['query_start'] ?? 0;
@@ -138,7 +138,7 @@ function dir_popular_query($method_name, $params, $app_data)
 
     $req = $params[0];
     $text = $req['text'] ?? '';
-    $flags = $req['flags'];
+    $flags = (int) ($req['flags'] ?? 0);
     $query_start = $req['query_start'] ?? 0;
     $include_hypergrid = isset($req['include_hypergrid']) && $req['include_hypergrid'] == 'false' ? false : true;
     $include_landsales = isset($req['include_landsales']) && $req['include_landsales'] == 'true' ? true : false;
@@ -221,7 +221,7 @@ function dir_land_query($method_name, $params, $app_data)
     global $SearchDB;
     $req = $params[0];
 
-    $flags = $req['flags'];
+    $flags = (int) ($req['flags'] ?? 0);
     $type = $req['type'];
     $price = $req['price'];
     $area = $req['area'];
@@ -320,7 +320,7 @@ function dir_events_query($method_name, $params, $app_data)
     $req = $params[0];
 
     $text = $req['text'] ?? '';
-    $flags = $req['flags'];
+    $flags = (int) ($req['flags'] ?? 0);
     $query_start = $req['query_start'] ?? 0;
 
     if ($text == '%%%') {
@@ -337,7 +337,7 @@ function dir_events_query($method_name, $params, $app_data)
     $pieces = explode('|', $text);
 
     $day = $pieces[0];
-    $category = $pieces[1];
+    $category = $pieces[1] ?? 0;
     if (count($pieces) < 3) {
         $search_text = '';
     } else {
@@ -451,7 +451,7 @@ function dir_classified_query($method_name, $params, $app_data)
     $req = $params[0];
 
     $text = $req['text'];
-    $flags = $req['flags'];
+    $flags = (int) ($req['flags'] ?? 0);
     $category = $req['category'];
     $query_start = $req['query_start'] ?? 0;
 
