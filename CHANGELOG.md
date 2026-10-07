@@ -13,12 +13,13 @@
 - new: the web search page (`search` of the grid info): places, land for sale, events, classifieds, people, a link a viewer follows for each place
 - new: the page of an avatar at `web_profile_url`: what its profile publishes, its picks, its classifieds; a 404 for one that is not there
 - new: the popular places block, the search form on the home page
-- fix: the search registry is read by the helpers when a simulator registers (not by a request to their own address, which their PHP may not trust) and again every ten minutes by the search: no cron job needed
+- fix: the search registry is read by the helpers when a simulator registers (not by a request to their own address, which their PHP may not trust) and again, when a host is due, by the search (once a minute at most): no cron job needed
 - fix: a registration (`DATA_SRV_`) that points to `query.php` no longer takes the place of the search at that address: the script an address names answers it
 - update: the web search is `search` of `[GridInfoService]`, `SearchURL` of `[LoginService]` stands for it; health compares both
 - new: public pages `grid_info` and `grid_status` (ONLINE or OFFLINE) under the helpers, `GridInfoURL` and `GridStatusURL` in `[Helpers]`
 - update: `/profile` without a name and the address of the helpers itself answer 418, not a page
 - fix: the search never makes its `regions` table in the database of Robust (it took the place of Robust's); `regionsregister` unless a search table of that name is already there
+- fix: a simulator that registers is let go at once (length and closed connection when the server has no fastcgi_finish_request), it was held while its snapshot was read, which came out empty
 - fix: a search request without flags or without the day and category is answered, not a 500
 - update: a wrong call gets its code (400, 404, 405, 503 for a missing configuration), never a 500 on purpose
 - update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting

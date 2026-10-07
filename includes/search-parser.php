@@ -347,13 +347,13 @@ function ossearch_parse()
 }
 
 /**
- * Do what a cron job would do, when it has not been done for a while: send the answer that is being made, then read the
- * snapshots. Asked by what uses the search, the answer first.
+ * Do what a cron job would do: read the snapshot of the hosts that are due, looking at most once every `$every` seconds. Asked
+ * by what uses the search, the answer first.
  *
- * @param  int $every seconds between two runs
+ * @param  int $every seconds between two looks
  * @return void
  */
-function ossearch_parse_if_due($every = 600)
+function ossearch_parse_if_due($every = 60)
 {
     global $SearchDB;
 
@@ -364,8 +364,11 @@ function ossearch_parse_if_due($every = 600)
     if (is_file($stamp) && time() - filemtime($stamp) < $every) {
         return;
     }
-    // Taken before it is done: a second request does not do it again at the same time
+    // Taken before it is done: a second request does not look at the same time
     touch($stamp);
+    if (!(int) $SearchDB->query('SELECT COUNT(*) FROM hostsregister WHERE nextcheck < ' . time())->fetchColumn()) {
+        return;
+    }
     ossearch_answer_sent();
     ossearch_parse();
 }
@@ -383,8 +386,17 @@ function ossearch_answer_sent()
 
         return;
     }
+    // The other servers let the client go when the answer is complete: its length, and a connection that is not kept (a
+    // simulator waits for the answer to go on starting)
+    $body = '';
     while (ob_get_level() > 0) {
-        ob_end_flush();
+        $body = ob_get_clean() . $body;
     }
+    if (!headers_sent()) {
+        header('Content-Length: ' . strlen($body));
+        header('Connection: close');
+        header('Content-Encoding: none');
+    }
+    echo $body;
     flush();
 }

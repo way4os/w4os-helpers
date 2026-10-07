@@ -3,7 +3,7 @@
  * parser.php
  *
  * Parse data from registered hosts to feed the search database. It is done when a simulator registers and, for the data that
- * change after that, by the search itself when it has not been done for ten minutes (see includes/search-parser.php): a cron job
+ * change after that, by the search itself when a host is due, looking once a minute (see includes/search-parser.php): a cron job
  * that calls this script is not needed, and may make it more often.
  *
  * Requires OpenSimulator Search module
