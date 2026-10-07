@@ -10,6 +10,7 @@
 - update: health is one table by config file, cert, time and result aligned on the right, nothing said of what is not defined
 - update: health starts with what the grid says (get_grid_info), compares it with the config, calls each service without data and with valid data
 - update: the ini files are read by the engine's `OpenSim_Config`, the helpers keep the grid, the constants and the routes
+- fix: a registration (`DATA_SRV_`) that points to `query.php` no longer takes the place of the search at that address: the script an address names answers it
 - update: the web search is `search` of `[GridInfoService]`, `SearchURL` of `[LoginService]` stands for it; health compares both
 - new: public pages `grid_info` and `grid_status` (ONLINE or OFFLINE) under the helpers, `GridInfoURL` and `GridStatusURL` in `[Helpers]`
 - update: `/profile` without a name and the address of the helpers itself answer 418, not a page
