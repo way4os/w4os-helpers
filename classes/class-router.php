@@ -79,8 +79,12 @@ class OpenSim_Helpers_Router
         foreach (array_keys(self::SCRIPTS) as $script) {
             $routes["$base/$script"] = $script;
         }
-        // The health page is also with the other services, where the person looking for it goes
+        // The health page is also with the other services, where the person looking for it goes, and it is what answers
+        // at the address of the helpers itself, the one the grid gives for them (its economy)
         $routes["$base/health"] = '@health';
+        if ($base !== '') {
+            $routes[$base] = '@health!';
+        }
         foreach (self::ALIASES as $script => $page) {
             $routes["$base/$script"] = "@$page";
         }
@@ -108,7 +112,9 @@ class OpenSim_Helpers_Router
         $found = null;
         foreach ($routes as $route => $target) {
             $route = self::normalize($route);
-            if ($path === $route || ($route !== '/' && str_starts_with($path, $route . '/'))) {
+            // A target ending with `!` answers its own path only (the address of the helpers, not what is under it)
+            $below = $route !== '/' && substr($target, -1) !== '!' && str_starts_with($path, $route . '/');
+            if ($path === $route || $below) {
                 if ($found === null || strlen($route) > strlen($found)) {
                     $found = $route;
                 }
@@ -155,7 +161,7 @@ class OpenSim_Helpers_Router
         if ($route === null) {
             return null;
         }
-        $target = $routes[$route];
+        $target = rtrim($routes[$route], '!');
         if ($target[0] === '@' && in_array(substr($target, 1), self::PAGES, true)) {
             return ['page', substr($target, 1)];
         }

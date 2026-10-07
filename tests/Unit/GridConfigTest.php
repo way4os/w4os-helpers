@@ -132,6 +132,68 @@ describe('Reading the files', function () {
     });
 });
 
+describe('The files a file includes', function () {
+    /** The merged settings of the main file of a test tree. */
+    $chain = fn(array $files, string $main = 'OpenSim.ini') => (function () use ($files, $main) {
+        [, $grid] = grid_config_tree('', false, $files);
+
+        return OpenSim_Helpers_GridConfig::read_chain("$grid/$main");
+    })();
+
+    test('are read after the file that includes them, in any section, a relative path being relative to that file', function () use ($chain) {
+        $ini = $chain([
+            'OpenSim.ini' => "[Economy]\neconomymodule = Gloebit\n[Architecture]\nInclude-Gloebit = \"config-include/Gloebit.ini\"\n",
+            'config-include/Gloebit.ini' => "[Gloebit]\nGLBEnvironment = sandbox\n",
+        ]);
+
+        expect($ini['Gloebit']['GLBEnvironment'])->toBe('sandbox')->and($ini['Economy']['economymodule'])->toBe('Gloebit');
+    });
+
+    test('give their values over the ones read before, and the ones they include theirs in turn', function () use ($chain) {
+        $ini = $chain([
+            'OpenSim.ini' => "[A]\none = main\ntwo = main\n[Includes]\nInclude-First = \"first.ini\"\n",
+            'first.ini' => "[A]\ntwo = first\n[Other]\nInclude-Second = \"sub/second.ini\"\n",
+            'sub/second.ini' => "[A]\nthree = second\n[Other]\nInclude-Back = \"../OpenSim.ini\"\n",
+        ]);
+
+        // The file that includes itself again is not read twice
+        expect($ini['A'])->toBe(['one' => 'main', 'two' => 'first', 'three' => 'second']);
+    });
+
+    test('can be given with a constant, an absolute path or a wildcard', function () use ($chain) {
+        $dir = null;
+        [, $grid] = grid_config_tree('', false, [
+            'OpenSim.ini' => "[Const]\nEtc = \"ETC\"\n[Includes]\nInclude-A = \"\${Const|Etc}/a.ini\"\nInclude-B = \"ETC/more/*.ini\"\n",
+            'a.ini' => "[A]\nfrom = a\n",
+            'more/b.ini' => "[B]\nfrom = b\n",
+            'more/c.ini' => "[C]\nfrom = c\n",
+            'more/ignored.txt' => "[D]\nfrom = d\n",
+        ]);
+        file_put_contents("$grid/OpenSim.ini", str_replace('ETC', $grid, (string) file_get_contents("$grid/OpenSim.ini")));
+        $ini = OpenSim_Helpers_GridConfig::read_chain("$grid/OpenSim.ini");
+
+        expect(array_keys($ini))->toBe(['Const', 'Includes', 'A', 'B', 'C']);
+    });
+
+    test('are not read when nothing includes them, nor the constants of a file that is not read', function () use ($chain) {
+        $ini = $chain([
+            'OpenSim.ini' => "[A]\none = 1\n",
+            'config-include/Gloebit.ini' => "[Gloebit]\nGLBEnvironment = sandbox\n",
+        ]);
+
+        expect($ini)->not->toHaveKey('Gloebit');
+    });
+
+    test('have their constants replaced in the whole, whichever file has them', function () use ($chain) {
+        $ini = $chain([
+            'OpenSim.ini' => "[Net]\nurl = \"http://\${Const|Host}:8002\"\n[Includes]\nInclude-Const = \"const.ini\"\n",
+            'const.ini' => "[Const]\nHost = \"play.example.org\"\n",
+        ]);
+
+        expect($ini['Net']['url'])->toBe('http://play.example.org:8002');
+    });
+});
+
 describe('The settings', function () {
     test('are the official ones: the name of the grid, its address, its web site', function () {
         [$conf] = grid_config_tree();
@@ -266,7 +328,7 @@ describe('The settings', function () {
             ->not->toHaveKeys(['CURRENCY_RATE', 'CURRENCY_RATE_PER', 'GLOEBIT_SANDBOX']);
     });
 
-    test('have a script key of their own, the MoneyServer one if the grid has it, else the one of Helpers.ini', function () {
+    test('have a script key of their own, the MoneyServer one if the grid has it, in its MoneyServer.ini', function () {
         $key = fn(string $helpers = '', array $files = []) => grid_constants($helpers, true, $files)['CURRENCY_SCRIPT_KEY'] ?? null;
         $own = $key();
         $other = $key('', ['Robust.HG.ini' => robust_with_database('Data Source=x;Database=y;User ID=z;Password=other;')]);
@@ -280,13 +342,12 @@ describe('The settings', function () {
             ->and($other)
             ->toMatch('/^[0-9a-f]{32}$/')
             ->not->toBe($own)
-            // What the grid says wins: the key of the MoneyServer (its own file, or any other), then Helpers.ini
-            ->and($key("[Helpers]\nScriptKey = \"from-helpers\"\n"))
-            ->toBe('from-helpers')
+            // The key of the MoneyServer is where the MoneyServer has it: [MoneyServer] MoneyScriptAccessKey of MoneyServer.ini
             ->and($key('', ['MoneyServer.ini' => "[MoneyServer]\nMoneyScriptAccessKey = \"from-money-server\"\n"]))
             ->toBe('from-money-server')
-            ->and($key("[Helpers]\nScriptKey = \"from-helpers\"\n", ['OpenSim.ini' => "[MoneyServer]\nMoneyScriptAccessKey = \"from-money-server\"\n"]))
-            ->toBe('from-money-server');
+            // No other name nor other place: Helpers.ini has no such setting
+            ->and($key("[Helpers]\nScriptKey = \"from-helpers\"\n"))
+            ->toBe($own);
     });
 
     test('have no script key to make when the grid has no password either', function () {
@@ -303,7 +364,10 @@ describe('The addon of a module', function () {
     /** Load the Gloebit addon against the config of a test grid, in its own process: it defines constants. */
     function gloebit_addon(string $ini): array
     {
-        [$conf] = grid_config_tree('', true, ['OpenSim.ini' => "[Economy]\neconomymodule = Gloebit\n", 'config-include/Gloebit.ini' => $ini]);
+        [$conf] = grid_config_tree('', true, [
+            'OpenSim.ini' => "[Economy]\neconomymodule = Gloebit\n[Architecture]\nInclude-Gloebit = \"config-include/Gloebit.ini\"\n",
+            'config-include/Gloebit.ini' => $ini,
+        ]);
         $root = dirname(__DIR__, 2);
         $script =
             "putenv('OPENSIM_CONF=$conf'); require '$root/classes/class-grid-config.php'; OpenSim_Helpers_GridConfig::load();" .
@@ -316,7 +380,7 @@ describe('The addon of a module', function () {
         return json_decode($out, true) ?? [];
     }
 
-    test('Gloebit is the sandbox or the real one as its own settings say, in the files a simulator includes', function () {
+    test('Gloebit is the sandbox or the real one as its own settings say, in the file OpenSim.ini includes', function () {
         expect(gloebit_addon("[Gloebit]\nGLBEnvironment = sandbox\n")[0])
             ->toBeTrue()
             ->and(gloebit_addon("[Gloebit]\nGLBEnvironment = production\n")[0])
@@ -422,6 +486,7 @@ describe('The routes', function () {
                 '/helpers/offline.php' => 'offline.php',
                 '/helpers/directory_info.php' => '@directory_info',
                 '/helpers/health' => '@health',
+                '/helpers' => '@health!',
             ]);
     });
 

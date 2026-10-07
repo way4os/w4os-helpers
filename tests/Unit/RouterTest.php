@@ -108,6 +108,18 @@ describe('Router', function () {
             ->toBe(['page', 'health']);
     });
 
+    test('answers at the address of the helpers itself, and not at what is under it that it does not know', function () {
+        expect(OpenSim_Helpers_Router::match('/helpers'))
+            ->toBe(['page', 'health'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/'))
+            ->toBe(['page', 'health'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/nothing'))
+            ->toBeNull()
+            // A site that has them at the root has no such address, the root is the home page
+            ->and(OpenSim_Helpers_Router::defaults(''))
+            ->not->toHaveKey('');
+    });
+
     test('knows no other URL', function () {
         expect(OpenSim_Helpers_Router::match('/nothing'))
             ->toBeNull()

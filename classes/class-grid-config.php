@@ -109,6 +109,80 @@ class OpenSim_Helpers_GridConfig
      */
     public static function read_ini($path, $constants = [])
     {
+        return self::expand(self::parse_ini($path), $constants);
+    }
+
+    /**
+     * A file of the OpenSim environment and the files it includes, read the way the OpenSimulator executables read them: a
+     * key `Include-<name>` in any section gives a file (`${Const|Name}` replaced, `*` a wildcard, a relative path being relative
+     * to the folder of the file that includes it), read after the file that has it, then the ones that file includes; what a
+     * file read later says replaces what was said before; a file is read once, and a file that nothing includes is not read.
+     * The constants are replaced in the end, from all the files.
+     *
+     * @param  string               $path
+     * @param  array<string,string> $constants those of another file (Robust's), for the ones the chain has not
+     * @return array<string,array<string,string>> section => key => value, empty when unreadable
+     */
+    public static function read_chain($path, $constants = [])
+    {
+        $merged = [];
+        $queue = [$path];
+        $done = [];
+        while ($queue) {
+            $file = array_shift($queue);
+            $real = realpath($file) ?: $file;
+            if (isset($done[$real])) {
+                continue;
+            }
+            $done[$real] = true;
+            $ini = self::parse_ini($file);
+            foreach ($ini as $section => $values) {
+                $merged[$section] = array_merge($merged[$section] ?? [], $values);
+            }
+            $const = ($merged['Const'] ?? []) + $constants;
+            foreach ($ini as $values) {
+                foreach ($values as $key => $value) {
+                    if (stripos($key, 'Include-') === 0 && $value !== '') {
+                        array_push($queue, ...self::included($value, dirname($file), $const));
+                    }
+                }
+            }
+        }
+
+        return self::expand($merged, $constants);
+    }
+
+    /**
+     * The files an `Include-` key gives.
+     *
+     * @param  string               $value the path as written
+     * @param  string               $from  the folder of the file that includes it
+     * @param  array<string,string> $const the constants known
+     * @return string[]
+     */
+    private static function included($value, $from, $const)
+    {
+        for ($i = 0; $i < 5 && strpos($value, '${Const|') !== false; $i++) {
+            $value = preg_replace_callback('/\$\{Const\|([^}]+)\}/', fn($m) => $const[$m[1]] ?? $m[0], $value);
+        }
+        $path = $value !== '' && $value[0] === '/' ? $value : "$from/$value";
+        if (strpbrk($path, '*?') === false) {
+            return [$path];
+        }
+        $files = glob($path) ?: [];
+        sort($files);
+
+        return $files;
+    }
+
+    /**
+     * The sections and keys of an ini file as written, with nothing replaced.
+     *
+     * @param  string $path
+     * @return array<string,array<string,string>> section => key => value, empty when unreadable
+     */
+    private static function parse_ini($path)
+    {
         $lines = is_readable($path) ? file($path, FILE_IGNORE_NEW_LINES) : false;
         if ($lines === false) {
             return [];
@@ -137,7 +211,7 @@ class OpenSim_Helpers_GridConfig
             $ini[$section][trim($m[1])] ??= $value;
         }
 
-        return self::expand($ini, $constants);
+        return $ini;
     }
 
     /**
@@ -263,11 +337,11 @@ class OpenSim_Helpers_GridConfig
                 $files[] = "$dir/$file";
             }
         }
-        // The modules are set in the files a simulator includes ([Gloebit]), and in the ones of the simulators
-        foreach (array_merge(glob("$dir/config-include/*.ini") ?: [], glob("$dir/sims/*.ini") ?: []) as $file) {
+        // The simulators: each reads its own file, and the files it includes (sources() follows them)
+        foreach (glob("$dir/sims/*.ini") ?: [] as $file) {
             $files[] = $file;
         }
-        // The MoneyServer reads its own file ([MoneyServer], with the script key); a grid that keeps it with the others
+        // The MoneyServer reads only its own file, beside Robust.ini and OpenSim.ini
         if (is_file("$dir/MoneyServer.ini")) {
             $files[] = "$dir/MoneyServer.ini";
         }
@@ -287,7 +361,7 @@ class OpenSim_Helpers_GridConfig
         $sources = [];
         $constants = [];
         foreach (self::files($dir) as $file) {
-            $ini = self::read_ini($file, $constants);
+            $ini = self::read_chain($file, $constants);
             if (str_contains(basename($file), 'Robust')) {
                 // The constants of Robust serve the files that follow (the web address)
                 $constants = $ini['Const'] ?? [];
@@ -337,6 +411,29 @@ class OpenSim_Helpers_GridConfig
         }
 
         return array_values(array_unique($values));
+    }
+
+    /**
+     * The settings of a section whose key matches, with their keys, in every file (DATA_SRV_<Grid> of [DataSnapshot]); the first
+     * file that has a key gives its value.
+     *
+     * @param  array  $sources
+     * @param  string $section
+     * @param  string $pattern a regular expression for the keys
+     * @return array<string,string> key => value
+     */
+    public static function keys($sources, $section, $pattern)
+    {
+        $found = [];
+        foreach ($sources as $ini) {
+            foreach ($ini[$section] ?? [] as $key => $value) {
+                if ($value !== '' && preg_match($pattern, $key)) {
+                    $found[$key] ??= $value;
+                }
+            }
+        }
+
+        return $found;
     }
 
     /**
@@ -501,6 +598,10 @@ class OpenSim_Helpers_GridConfig
         }
         $routes["$base/directory_info.php"] = '@directory_info';
         $routes["$base/health"] = '@health';
+        // What answers at the address of the helpers itself, the one the grid gives for them (its economy): not what is under it
+        if ($base !== '') {
+            $routes[$base] = '@health!';
+        }
 
         return $routes;
     }
@@ -611,9 +712,9 @@ class OpenSim_Helpers_GridConfig
     }
 
     /**
-     * The key that ties a quote of currency to its purchase (the confirm value is made with it), the one of the script key of the
-     * MoneyServer: `MoneyScriptAccessKey` of its `[MoneyServer]`, which is the same secret as the helpers have to know, else
-     * `ScriptKey` of `[Helpers]`. A grid that says nothing has one of its own, made of the password of its database (the
+     * The key that ties a quote of currency to its purchase (the confirm value is made with it), the script key of the
+     * MoneyServer: `MoneyScriptAccessKey` of `[MoneyServer]` in its MoneyServer.ini, where it is written and read, whatever
+     * name the helpers give it inside. A grid without one has a key of its own, made of the password of its database (the
      * helpers read it and nobody else knows it), so that no grid has the public default key.
      *
      * @param  array $settings what settings() gave
@@ -621,7 +722,7 @@ class OpenSim_Helpers_GridConfig
      */
     public static function script_key($settings)
     {
-        $given = self::value($settings['sources'], 'MoneyServer', 'MoneyScriptAccessKey') ?? ($settings['helpers']['ScriptKey'] ?? null);
+        $given = self::value($settings['sources'], 'MoneyServer', 'MoneyScriptAccessKey');
         if ($given !== null && trim($given) !== '') {
             return trim($given);
         }

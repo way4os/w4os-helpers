@@ -1,13 +1,16 @@
 <?php
 /**
- * Block health: every address the grid gives out (what the viewers read in its grid info, what Robust tells them at login,
- * the services of the helpers) with whether it answers, and what the helpers need to work. An address that is not defined
- * is shown empty, so nothing is forgotten. Kept half a minute: each look asks the grid.
+ * Block health: every address the grid gives out, the ones its settings hold and the ones the helpers expect, with what each
+ * answers, and what the helpers need to work. It is a page to check things: the sections and the settings are named as in the
+ * ini files, so that nobody wonders where to look for one, an address is a link, and what an address answers is the HTTP code
+ * where the redirections lead, or the error code when nothing answers. An address that is not defined is shown empty, so
+ * nothing is forgotten. Kept half a minute: each look asks the grid.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
  */
 require_once dirname(__DIR__) . '/class-grid-info.php';
+require_once dirname(__DIR__) . '/class-grid-config.php';
 
 class OpenSim_Helpers_Block_Health
 {
@@ -17,11 +20,14 @@ class OpenSim_Helpers_Block_Health
     /** How long an address has to answer, in seconds. */
     const TIMEOUT = 3;
 
-    /** The addresses of the grid info that viewers read, in the order the page shows them. */
+    /** The settings of [GridInfoService] that are addresses, shown first and in this order even when the grid gives none. */
     const GRID_INFO = ['login', 'gatekeeper', 'uas', 'welcome', 'economy', 'about', 'register', 'help', 'password', 'search'];
 
-    /** The addresses Robust gives at login ([LoginService]). */
-    const LOGIN_SERVICE = ['DestinationGuide' => 'Destination guide', 'MessageUrl' => 'Message of the day', 'SearchURL' => 'Search'];
+    /** The addresses of the grid itself, which answer at /get_grid_info. */
+    const GRID_ADDRESSES = ['login', 'gatekeeper', 'uas'];
+
+    /** The errors of curl that are a certificate this server does not trust (the address may well answer). */
+    const CERTIFICATE_ERRORS = [51, 58, 59, 60, 77, 83, 90, 91];
 
     /**
      * @param  array<string,mixed> $args
@@ -35,106 +41,234 @@ class OpenSim_Helpers_Block_Health
         return ['title' => _('Health'), 'groups' => $groups, 'when' => date('c')];
     }
 
+    /** Whether a value is an address. */
+    private static function is_url($value)
+    {
+        return (bool) preg_match('#^https?://#i', (string) $value);
+    }
+
     /**
-     * What there is to see now: the addresses and the state of the install, as groups of rows. The addresses are the ones the
-     * official settings give (grid info and login service of Robust, search, registration and offline messages of the
-     * simulators), each followed by what it answers; one the grid does not give is shown empty, so nothing is forgotten.
+     * What there is to see now: the addresses and the state of the install, with what each address answers.
      *
      * @return list<array{title:string,rows:list<array<string,mixed>>}>
      */
     public static function look()
     {
-        $settings = class_exists('OpenSim_Helpers_GridConfig') ? OpenSim_Helpers_GridConfig::settings() : null;
-        $sources = $settings['sources'] ?? [];
-        $get = fn($section, $key) => (string) OpenSim_Helpers_GridConfig::value($sources, $section, $key);
+        $settings = OpenSim_Helpers_GridConfig::settings();
         $login = defined('OPENSIM_LOGIN_URI') ? OPENSIM_LOGIN_URI : ($settings['login_uri'] ?? null);
-        $web = rtrim((string) ($settings['web_url'] ?? ''), '/');
         $live = $login ? OpenSim_Helpers_GridInfo::fetch($login) : [];
         $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : [];
-        $default = function ($script) use ($routes, $web) {
-            $path = array_search($script, $routes, true);
-
-            return $path === false || $web === '' ? '' : $web . $path;
-        };
-
-        $groups = [];
-        // What the viewers read at the login address (/get_grid_info), else what the config of Robust says
-        $rows = [];
-        foreach (self::GRID_INFO as $name) {
-            $value = $name === 'login' ? (string) $login : (string) ($live[$name] ?? $get('GridInfoService', $name));
-            $row = ['label' => $name, 'url' => $value, 'method' => 'get'];
-            // The addresses of the grid itself answer at /get_grid_info, what the viewers ask first
-            if (in_array($name, ['login', 'gatekeeper', 'uas'], true) && $value !== '') {
-                $row['probe'] = rtrim($value, '/') . '/get_grid_info';
-            }
-            $rows[] = $row;
+        $groups = self::answers(self::plan($settings, $login, $live, $routes, defined('OPENSIM_GUIDE_SOURCE') ? (string) OPENSIM_GUIDE_SOURCE : ''));
+        $groups[] = ['title' => '[DatabaseService]', 'rows' => [self::database_row()]];
+        $groups[] = ['title' => _('PHP extensions'), 'rows' => self::extensions()];
+        $files = self::files($settings);
+        if ($files) {
+            $groups[] = ['title' => _('Files read'), 'rows' => $files];
         }
-        $groups[] = ['title' => _('Grid info (what the viewers read)'), 'rows' => $rows];
-
-        $rows = [];
-        foreach (self::LOGIN_SERVICE as $name => $label) {
-            $rows[] = ['label' => $label . " ($name)", 'url' => $get('LoginService', $name), 'method' => 'get'];
-        }
-        $groups[] = ['title' => _('Login service (what Robust tells at login)'), 'rows' => $rows];
-
-        // What the simulators call (OpenSim.ini): the search, the registration on a directory, the offline messages
-        $rows = [['label' => 'SearchURL', 'url' => $get('Search', 'SearchURL') ?: $default('query.php'), 'method' => 'xmlrpc']];
-        $registers = OpenSim_Helpers_GridConfig::values($sources, 'DataSnapshot', '/^DATA_SRV_/');
-        foreach ($registers ?: [$default('register.php')] as $url) {
-            $rows[] = ['label' => 'DATA_SRV', 'url' => (string) $url, 'method' => 'get'];
-        }
-        $rows[] = ['label' => 'OfflineMessageURL', 'url' => $get('Messaging', 'OfflineMessageURL') ?: $default('offline.php'), 'method' => 'get'];
-        $groups[] = ['title' => _('Simulators (what they call)'), 'rows' => $rows];
-
-        // The economy: the viewers add the name of the script to the address the grid gives
-        $rows = [];
-        $economy = (string) ($live['economy'] ?? $get('GridInfoService', 'economy'));
-        foreach (['currency.php', 'landtool.php'] as $script) {
-            $rows[] = ['label' => $script, 'url' => $economy === '' ? $default($script) : rtrim($economy, '/') . "/$script", 'method' => 'xmlrpc'];
-        }
-        $rows[] = ['label' => 'textgen.php', 'url' => $default('textgen.php'), 'method' => 'get'];
-        $groups[] = ['title' => _('Helpers'), 'rows' => $rows];
-
-        $groups = self::answers($groups);
-        $groups[] = ['title' => _('System'), 'rows' => self::system($settings)];
 
         return $groups;
     }
 
     /**
-     * Ask every address, all at once.
+     * The addresses to ask, as groups of rows, a group being a section of the ini files (its title is its name) and a row a
+     * setting of it (its label is its key): the addresses the settings give, and the ones the helpers expect that the grid does
+     * not give, at their default address. A row has `url`, `method` (get or xmlrpc) and, when it needs, `probe` (where to ask
+     * instead), `skip` (why it is not asked) and `note`.
+     *
+     * @param  array|null           $settings what OpenSim_Helpers_GridConfig::settings() gave, null without a config
+     * @param  string|null          $login    the login address
+     * @param  array<string,mixed>  $live     what the grid says at /get_grid_info
+     * @param  array<string,string> $routes   the paths the helpers answer
+     * @param  string               $guide    the source of the destination guide
+     * @return list<array{title:string,rows:list<array<string,mixed>>}>
+     */
+    public static function plan($settings, $login, $live, $routes, $guide)
+    {
+        $sources = $settings['sources'] ?? [];
+        $get = fn($section, $key) => (string) OpenSim_Helpers_GridConfig::value($sources, $section, $key);
+        $web = rtrim((string) ($settings['web_url'] ?? ''), '/');
+        // Where the helpers serve a script when the grid says nothing: an address the grid does not give is checked there
+        $default = function ($script) use ($routes, $web) {
+            $path = array_search($script, $routes, true);
+
+            return $path === false || $web === '' ? '' : $web . $path;
+        };
+        // A setting of the grid, or where the helpers expect it when it is not given
+        $setting = function ($section, $key, $script, $method = 'get') use ($get, $default) {
+            $value = $get($section, $key);
+            $row = ['label' => $key, 'url' => $value !== '' ? $value : $default($script), 'method' => $method];
+            if ($value === '' && $row['url'] !== '') {
+                $row['note'] = _('default address of the helpers');
+            }
+
+            return $row;
+        };
+
+        $groups = [];
+
+        // What the viewers read at the login address (/get_grid_info), else what the config of Robust says: every address in it
+        $info = [];
+        foreach ($sources as $ini) {
+            foreach ($ini['GridInfoService'] ?? [] as $key => $value) {
+                if (self::is_url($value)) {
+                    $info[$key] ??= $value;
+                }
+            }
+        }
+        foreach ($live as $key => $value) {
+            if (is_string($value) && self::is_url($value)) {
+                $info[$key] = $value;
+            }
+        }
+        if ($login) {
+            $info['login'] = (string) $login;
+        }
+        $rows = [];
+        foreach (array_values(array_unique(array_merge(self::GRID_INFO, array_keys($info)))) as $key) {
+            $value = (string) ($info[$key] ?? '');
+            $row = ['label' => $key, 'url' => $value, 'method' => 'get'];
+            if (in_array($key, self::GRID_ADDRESSES, true) && $value !== '') {
+                // What answers at these addresses is the grid info, the first thing the viewers ask
+                $row['probe'] = rtrim($value, '/') . '/get_grid_info';
+                $row['note'] = '/get_grid_info';
+            } elseif (str_contains($value, '[')) {
+                // An address with the place of a name in it ([AGENT_NAME]): no avatar to ask for
+                $row['skip'] = _('not asked (has a name to fill in)');
+            }
+            $rows[] = $row;
+        }
+        $groups[] = ['title' => '[GridInfoService]', 'rows' => $rows];
+
+        $groups[] = [
+            'title' => '[LoginService]',
+            'rows' => [
+                ['label' => 'DestinationGuide', 'url' => $get('LoginService', 'DestinationGuide'), 'method' => 'get'],
+                ['label' => 'MessageUrl', 'url' => $get('LoginService', 'MessageUrl'), 'method' => 'get'],
+                ['label' => 'SearchURL', 'url' => $get('LoginService', 'SearchURL'), 'method' => 'get'],
+            ],
+        ];
+
+        // What the simulators call (OpenSim.ini): the search, the registration on a directory, the offline messages
+        $groups[] = ['title' => '[Search]', 'rows' => [$setting('Search', 'SearchURL', 'query.php', 'xmlrpc')]];
+        $rows = [];
+        foreach (OpenSim_Helpers_GridConfig::keys($sources, 'DataSnapshot', '/^DATA_SRV_/') as $key => $url) {
+            $rows[] = ['label' => $key, 'url' => $url, 'method' => 'get'];
+        }
+        if (!$rows) {
+            $register = $default('register.php');
+            $rows[] = ['label' => 'DATA_SRV_*', 'url' => $register, 'method' => 'get'] + ($register !== '' ? ['note' => _('default address of the helpers')] : []);
+        }
+        $groups[] = ['title' => '[DataSnapshot]', 'rows' => $rows];
+        $groups[] = ['title' => '[Messaging]', 'rows' => [$setting('Messaging', 'OfflineMessageURL', 'offline.php')]];
+
+        // The scripts the viewers and the simulators ask: the viewers add the name of the script to the address of the economy
+        $rows = [];
+        $economy = (string) ($info['economy'] ?? '');
+        foreach (['currency.php', 'landtool.php'] as $script) {
+            $rows[] = ['label' => $script, 'url' => $economy === '' ? $default($script) : rtrim($economy, '/') . "/$script", 'method' => 'xmlrpc'];
+        }
+        $rows[] = ['label' => 'textgen.php', 'url' => $default('textgen.php'), 'method' => 'get'];
+        $groups[] = ['title' => 'opensim-helpers', 'rows' => $rows];
+
+        // What has no place in OpenSimulator's files, in Helpers.ini
+        $helpers = $settings['helpers'] ?? [];
+        $rows = [self::is_url($guide) ? ['label' => 'GuideSource', 'url' => $guide, 'method' => 'get'] : self::file_row('GuideSource', $guide)];
+        foreach (['HypEventsURL', 'LogoURL'] as $key) {
+            if (self::is_url($helpers[$key] ?? '')) {
+                $rows[] = ['label' => $key, 'url' => $helpers[$key], 'method' => 'get'];
+            }
+        }
+        $groups[] = ['title' => '[Helpers]', 'rows' => $rows];
+
+        return $groups;
+    }
+
+    /**
+     * Ask every address, all at once. An address that has a `probe` is asked there, one that has a `skip` is not asked and says
+     * why. What an address answers is the HTTP code where its redirections lead; an address whose certificate this server
+     * does not trust is asked again without the check, and says so.
      *
      * @param  list<array{title:string,rows:list<array<string,mixed>>}> $groups
      * @return list<array{title:string,rows:list<array<string,mixed>>}>
      */
     public static function answers($groups)
     {
-        $multi = curl_multi_init();
-        $handles = [];
+        $requests = [];
         foreach ($groups as $g => $group) {
             foreach ($group['rows'] as $r => $row) {
-                if ($row['url'] === '') {
-                    continue;
+                if ($row['url'] !== '' && !isset($row['skip'])) {
+                    $requests["$g/$r"] = $row;
                 }
-                $handle = curl_init($row['probe'] ?? $row['url']);
-                curl_setopt_array($handle, [
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_TIMEOUT => self::TIMEOUT,
-                    CURLOPT_CONNECTTIMEOUT => 2,
-                    CURLOPT_USERAGENT => 'OpenSimHelpers-health',
-                    // Only the answer matters, not what follows it
-                    CURLOPT_WRITEFUNCTION => static fn($handle, $chunk) => 0,
-                ]);
-                if ($row['method'] === 'xmlrpc') {
-                    curl_setopt_array($handle, [
-                        CURLOPT_POST => true,
-                        CURLOPT_POSTFIELDS => '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>',
-                        CURLOPT_HTTPHEADER => ['Content-Type: text/xml'],
-                    ]);
-                }
-                curl_multi_add_handle($multi, $handle);
-                $handles[] = [$g, $r, $handle];
             }
+        }
+        $results = self::ask($requests, false);
+        $retry = array_filter($requests, fn($row, $id) => $results[$id]['code'] === 0 && in_array($results[$id]['errno'], self::CERTIFICATE_ERRORS, true), ARRAY_FILTER_USE_BOTH);
+        foreach (self::ask($retry, true) as $id => $result) {
+            $results[$id] = $result + ['note' => _('certificate not trusted by this server')];
+        }
+
+        foreach ($groups as $g => $group) {
+            foreach ($group['rows'] as $r => $row) {
+                $result = $results["$g/$r"] ?? null;
+                if (isset($row['skip'])) {
+                    $verdict = ['level' => 'none', 'status' => $row['skip'], 'ms' => null];
+                } elseif ($result === null) {
+                    $verdict = self::verdict(null, '', 0);
+                } else {
+                    $verdict = self::verdict($result['code'], $result['error'], $result['ms'], $result['errno']);
+                }
+                // What the row says of itself first, then what was found out
+                $notes = array_filter([$row['note'] ?? null, $result['note'] ?? null]);
+                $row = array_diff_key($row, ['method' => 0, 'probe' => 0, 'skip' => 0, 'note' => 0]) + $verdict;
+                if ($notes) {
+                    $row['note'] = implode(', ', $notes);
+                }
+                $groups[$g]['rows'][$r] = $row;
+            }
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Ask a set of addresses at once.
+     *
+     * @param  array<string,array<string,mixed>> $requests id => row (url, probe, method)
+     * @param  bool                              $insecure do not check the certificates
+     * @return array<string,array{code:int,errno:int,error:string,ms:int}> id => what came back
+     */
+    private static function ask($requests, $insecure)
+    {
+        if (!$requests) {
+            return [];
+        }
+        $multi = curl_multi_init();
+        $handles = [];
+        foreach ($requests as $id => $row) {
+            $handle = curl_init($row['probe'] ?? $row['url']);
+            curl_setopt_array($handle, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => self::TIMEOUT,
+                CURLOPT_CONNECTTIMEOUT => 2,
+                CURLOPT_USERAGENT => 'OpenSimHelpers-health',
+                // What counts is where the address leads, not the redirection it has on the way
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS => 5,
+                // Only the answer matters, not what follows it
+                CURLOPT_WRITEFUNCTION => static fn($handle, $chunk) => strlen($chunk),
+            ]);
+            if ($insecure) {
+                curl_setopt_array($handle, [CURLOPT_SSL_VERIFYPEER => false, CURLOPT_SSL_VERIFYHOST => 0]);
+            }
+            if (($row['method'] ?? 'get') === 'xmlrpc') {
+                curl_setopt_array($handle, [
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => '<?xml version="1.0"?><methodCall><methodName>system.listMethods</methodName></methodCall>',
+                    CURLOPT_HTTPHEADER => ['Content-Type: text/xml'],
+                ]);
+            }
+            curl_multi_add_handle($multi, $handle);
+            $handles[$id] = $handle;
         }
         do {
             $status = curl_multi_exec($multi, $running);
@@ -143,51 +277,63 @@ class OpenSim_Helpers_Block_Health
             }
         } while ($running && $status === CURLM_OK);
 
-        foreach ($handles as [$g, $r, $handle]) {
-            $code = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
-            $groups[$g]['rows'][$r] += self::verdict($code, curl_error($handle), (int) round(curl_getinfo($handle, CURLINFO_TOTAL_TIME) * 1000));
+        // The code of the error of each address is told by the set, not by the handle
+        $errors = [];
+        while (($done = curl_multi_info_read($multi)) !== false) {
+            $errors[spl_object_id($done['handle'])] = (int) $done['result'];
+        }
+        $results = [];
+        foreach ($handles as $id => $handle) {
+            $errno = $errors[spl_object_id($handle)] ?? 0;
+            $results[$id] = [
+                'code' => (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE),
+                'errno' => $errno,
+                'error' => curl_error($handle) ?: ($errno ? curl_strerror($errno) : ''),
+                'ms' => (int) round(curl_getinfo($handle, CURLINFO_TOTAL_TIME) * 1000),
+            ];
             curl_multi_remove_handle($multi, $handle);
         }
         curl_multi_close($multi);
-        foreach ($groups as $g => $group) {
-            foreach ($group['rows'] as $r => $row) {
-                $groups[$g]['rows'][$r] += self::verdict(null, '', 0);
-                unset($groups[$g]['rows'][$r]['method'], $groups[$g]['rows'][$r]['probe']);
-            }
-        }
 
-        return $groups;
+        return $results;
     }
 
     /**
-     * What an answer means: 2xx and 3xx are fine, a 4xx is an address that answers (an API says so to a request that is not
-     * its own), 5xx and no answer are not.
+     * What an answer means: 2xx is fine, a 4xx is an address that answers (an API says so to a request that is not its own),
+     * 5xx and no answer are not. An address that does not answer gives the code of the error and what it says.
      *
-     * @param  int|null $code the HTTP code, null for an address that is not defined
-     * @return array{level:string,status:string,ms:?int}
+     * @param  int|null $code  the HTTP code at the end of the redirections, 0 when nothing answered, null for an address that is not defined
+     * @param  string   $error what curl says when nothing answered
+     * @param  int      $errno the code of that error
+     * @return array{level:string,status:string,ms:?int,detail?:string}
      */
-    public static function verdict($code, $error, $ms)
+    public static function verdict($code, $error, $ms, $errno = 0)
     {
         if ($code === null) {
             return ['level' => 'none', 'status' => _('not defined'), 'ms' => null];
         }
         if ($code === 0) {
-            return ['level' => 'error', 'status' => _('no answer') . ($error !== '' && $error !== 'Operation timed out' ? ": $error" : ''), 'ms' => null];
+            return ['level' => 'error', 'status' => 'cURL ' . _('error') . ' ' . $errno, 'ms' => null, 'detail' => $error];
         }
         $level = $code < 400 ? 'ok' : ($code < 500 ? 'warn' : 'error');
 
         return ['level' => $level, 'status' => (string) $code, 'ms' => $ms];
     }
 
-    /**
-     * What the install needs, one row per thing.
-     *
-     * @return list<array<string,mixed>>
-     */
-    public static function system($settings = null)
+    /** The row of a file or a folder the helpers read, named as in the setting. */
+    private static function file_row($label, $path)
     {
-        global $OpenSimDB;
-        $ok = fn($label, $good, $detail = '') => [
+        if ($path === '') {
+            return ['label' => $label, 'url' => '', 'method' => 'get', 'level' => 'none', 'status' => _('not defined'), 'ms' => null];
+        }
+
+        return self::row($label, is_readable($path), $path);
+    }
+
+    /** A row for what is there or not, and the file it is about. */
+    private static function row($label, $good, $detail = '')
+    {
+        return [
             'label' => $label,
             'url' => '',
             'level' => $good ? 'ok' : 'error',
@@ -195,23 +341,43 @@ class OpenSim_Helpers_Block_Health
             'detail' => $detail,
             'ms' => null,
         ];
-        $guide = defined('OPENSIM_GUIDE_SOURCE') ? OPENSIM_GUIDE_SOURCE : '';
-        $rows = [
-            $ok(_('Database of Robust'), !empty($OpenSimDB) && !empty($OpenSimDB->connected)),
-            $ok(_('XML-RPC (extension or polyfill)'), function_exists('xmlrpc_encode')),
-            $ok(_('Imagick (text to image, web assets)'), class_exists('Imagick')),
-            $ok(_('Gettext (translations)'), function_exists('gettext')),
+    }
+
+    /** The database of Robust, the one every query starts from. */
+    private static function database_row()
+    {
+        global $OpenSimDB;
+
+        return self::row('ConnectionString', !empty($OpenSimDB) && !empty($OpenSimDB->connected));
+    }
+
+    /**
+     * What the helpers need of PHP, one row per extension.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function extensions()
+    {
+        return [
+            self::row('xmlrpc', function_exists('xmlrpc_encode'), 'extension or polyfill'),
+            self::row('imagick', class_exists('Imagick'), 'text to image, web assets'),
+            self::row('gettext', function_exists('gettext'), 'translations'),
         ];
-        // The ini files the helpers read, and the ones the web server user cannot
+    }
+
+    /**
+     * The ini files the helpers read, and whether the web server user can.
+     *
+     * @return list<array<string,mixed>>
+     */
+    public static function files($settings = null)
+    {
+        $rows = [];
         foreach ($settings ? OpenSim_Helpers_GridConfig::files($settings['dir']) : [] as $file) {
             if (is_file($file)) {
-                $rows[] = $ok(basename($file), is_readable($file), $file);
+                $rows[] = self::row(basename($file), is_readable($file), $file);
             }
         }
-        $rows[] =
-            $guide === ''
-                ? ['label' => _('Destination guide source'), 'url' => '', 'level' => 'none', 'status' => _('not defined'), 'detail' => 'GuideSource', 'ms' => null]
-                : $ok(_('Destination guide source'), preg_match('#^https?://#', $guide) || is_readable($guide), $guide);
 
         return $rows;
     }

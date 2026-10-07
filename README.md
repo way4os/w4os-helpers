@@ -102,11 +102,9 @@ The historic config is still supported, but might be deprecated in the future: c
   ;; Whatever this folder holds (templates/, assets/) replaces the files of the helpers
   ThemePath = "theme"
   ;; LogoURL, MailSender, UseUTCTime (true by default)
-  ;; The secret that ties a quote of currency to its purchase. A grid with a MoneyServer has it already, MoneyScriptAccessKey
-  ;; of its [MoneyServer] (MoneyServer.ini): the helpers read it there. Without one, each grid has a key of its own, made of the
-  ;; password of its database.
-  ; ScriptKey = "a secret"
 ```
+
+**The files of the grid.** The helpers read the ini files of the OpenSimulator environment the way its executables do: each one with the files it includes (`Include-` in any section, in the other files too) and the `${Const|...}` substitutions. Every setting is where OpenSimulator has it, under its own name: `MoneyScriptAccessKey` of the MoneyServer is read in `[MoneyServer]` of `MoneyServer.ini`, kept beside `Robust.ini` and `OpenSim.ini` with the conventions of the MoneyServer, and the settings of Gloebit as `Gloebit.ini.example` has them, in `OpenSim.ini` or in a file it includes. `Helpers.ini` has only what OpenSimulator has no place for. The key that ties a quote of currency to its purchase is the one of the MoneyServer; a grid without one has a key of its own, made of the password of its database.
 
 **Addresses.** The helpers answer the addresses the grid gives to its services, those of this site only (the host, and the port when the address has one, of the page that is served): a service the grid has set up on another site (`SearchURL = "https://2do.directory/helpers/query.php"`) has no ghost on this one. A service the grid says nothing about answers at its default address, `/helpers/<script>.php`. Only `currency.php` and `landtool.php` have a fixed place, under the address of the economy. `/health` lists every address of the grid with its status. The menu of the top bar lists the pages the site serves (home, destinations, directory, health).
 
