@@ -374,6 +374,26 @@ function ossearch_parse_if_due($every = 60)
 }
 
 /**
+ * A simulator registers while it starts: its regions are not all loaded yet, so what it tells now may be a part of it. It is
+ * read again soon (not within the minute: a simulator answers one request a minute to the same address).
+ *
+ * @param  string $host
+ * @param  int    $port
+ * @param  int    $after seconds
+ * @return void
+ */
+function ossearch_host_again($host, $port, $after = 90)
+{
+    global $SearchDB;
+
+    $SearchDB->prepareAndExecute('UPDATE hostsregister SET nextcheck = :next, checked = 0 WHERE host = :host AND port = :port', [
+        'next' => time() + $after,
+        'host' => $host,
+        'port' => $port,
+    ]);
+}
+
+/**
  * The answer is complete: the client gets it now, what follows is not waited for.
  *
  * @return void

@@ -69,6 +69,7 @@ switch ($service) {
         ossearch_answer_sent(); // make sure simulator doesn't pause start process
         sleep(2); // leave simulator start process some time before querying it
         ossearch_parse();
+        ossearch_host_again($host, $port);
         touch(get_writable_tmp_dir() . '/ossearch-parsed');
         break;
 

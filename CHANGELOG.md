@@ -13,7 +13,7 @@
 - new: the web search page (`search` of the grid info): places, land for sale, events, classifieds, people, a link a viewer follows for each place
 - new: the page of an avatar at `web_profile_url`: what its profile publishes, its picks, its classifieds; a 404 for one that is not there
 - new: the popular places block, the search form on the home page
-- fix: the search registry is read by the helpers when a simulator registers (not by a request to their own address, which their PHP may not trust) and again, when a host is due, by the search (once a minute at most): no cron job needed
+- fix: the search registry is read by the helpers when a simulator registers (not by a request to their own address, which their PHP may not trust) again 90 s later (its regions are not all loaded when it registers), then when a host is due, by the search (once a minute at most): no cron job needed
 - fix: a registration (`DATA_SRV_`) that points to `query.php` no longer takes the place of the search at that address: the script an address names answers it
 - update: the web search is `search` of `[GridInfoService]`, `SearchURL` of `[LoginService]` stands for it; health compares both
 - new: public pages `grid_info` and `grid_status` (ONLINE or OFFLINE) under the helpers, `GridInfoURL` and `GridStatusURL` in `[Helpers]`
