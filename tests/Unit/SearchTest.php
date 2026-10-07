@@ -40,6 +40,18 @@ function search_db(array &$asked): object
     };
 }
 
+describe('The tables of the search', function () {
+    test('never take the regions table of Robust, made before or after the search', function () {
+        expect(helpers_search_region_table(false, false))
+            ->toBe('regionsregister')
+            ->and(helpers_search_region_table(true, true))
+            ->toBe('regionsregister')
+            // A table of the search made by an older version keeps its name
+            ->and(helpers_search_region_table(true, false))
+            ->toBe('regions');
+    });
+});
+
 describe('The search of the web', function () {
     beforeEach(function () {
         unset($_SERVER['PATH_INFO']);

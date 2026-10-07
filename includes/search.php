@@ -16,6 +16,8 @@
  *   [OpenSimSearch](https://github.com/kcozens/OpenSimSearch)
  */
 
+require_once __DIR__ . '/functions.php';
+
 if (!defined('SEARCH_TABLE_EVENTS')) {
     define('SEARCH_TABLE_EVENTS', 'events');
 }
@@ -193,7 +195,7 @@ function ossearch_db_update_1()
         'parcels',
         'parcelsales',
         'popularplaces',
-        'regions',
+        SEARCH_REGION_TABLE,
     ];
     foreach ($tables as $table) {
         if (!count($SearchDB->query("SHOW COLUMNS FROM `$table` LIKE 'gatekeeperURL'")->fetchAll())) {
@@ -343,18 +345,13 @@ try {
 }
 
 if ($SearchDB && $SearchDB->connected) {
-    // <tl;tr> To avoid data loss, fatal errors or conflicts, we use regionsregister
-    // table instead of regions if it seems to be a robust database. For obscure and
-    // historical reasons, search regions table has the same name as robust regions
-    // table, although it has a different structure and a different purpose. It
-    // could be renamed but some developers are reluctant to do it, so we keep the
-    // original name for backward compatibility when in a separate database.
-    if (tableExists($SearchDB, ['regions'])) {
-        $formatCheck = $SearchDB->query("SHOW COLUMNS FROM regions LIKE 'uuid'");
-        $regions_table = $formatCheck->rowCount() == 0 ? 'regions' : 'regionsregister';
-    } else {
-        $regions_table = 'regions';
-    }
+    // Robust has a table `regions` with another structure, in a database the search may share with it, before or after Robust
+    // made it: the search never makes it
+    $regions_exists = tableExists($SearchDB, ['regions']);
+    $regions_table = helpers_search_region_table(
+        $regions_exists,
+        $regions_exists && $SearchDB->query("SHOW COLUMNS FROM regions LIKE 'uuid'")->rowCount() > 0,
+    );
     define('SEARCH_REGION_TABLE', $regions_table);
 
     if (

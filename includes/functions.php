@@ -23,6 +23,19 @@ defined('HELPERS_LOCALE_DIR') || define('HELPERS_LOCALE_DIR', dirname(__DIR__) .
 require_once dirname(__DIR__) . '/vendor/magicoli/opensim-engine/includes/functions.php';
 
 /**
+ * The table of the regions of the search. Robust has a table named `regions` with another structure: the search never makes it,
+ * it only keeps the one it already has (a separate database made it before).
+ *
+ * @param  bool $regions_exists whether a table `regions` is in the database
+ * @param  bool $is_robust      whether that table is the one of Robust
+ * @return string
+ */
+function helpers_search_region_table($regions_exists, $is_robust)
+{
+    return $regions_exists && !$is_robust ? 'regions' : 'regionsregister';
+}
+
+/**
  * Refuse a request made with another method than the ones a script answers: 405, with the methods it does answer. A script that
  * talks XML-RPC says it in XML.
  *
