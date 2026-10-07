@@ -121,6 +121,24 @@ describe('The settings', function () {
             ->toBeTrue();
     });
 
+    test('have the web search of the grid: search of the grid info is the real one, SearchURL of the login service stands for it', function () {
+        $search = function (string $robust) {
+            [$conf, $grid] = grid_config_tree();
+            file_put_contents("$grid/Robust.HG.ini", (string) file_get_contents("$grid/Robust.HG.ini") . $robust);
+
+            return OpenSim_Helpers_GridConfig::settings(null, $conf)['search_url'];
+        };
+
+        expect($search("\n[GridInfoService]\nsearch = \"https://play.example.org/search\"\n"))
+            ->toBe('https://play.example.org/search')
+            ->and($search("\n[LoginService]\nSearchURL = \"https://play.example.org/find\"\n"))
+            ->toBe('https://play.example.org/find')
+            ->and($search("\n[LoginService]\nSearchURL = \"https://play.example.org/find\"\n[GridInfoService]\nsearch = \"https://play.example.org/search\"\n"))
+            ->toBe('https://play.example.org/search')
+            ->and($search(''))
+            ->toBeNull();
+    });
+
     test('are the ones of the official files first: Helpers.ini only fills what they leave out', function () {
         [$conf] = grid_config_tree(
             <<<'INI'

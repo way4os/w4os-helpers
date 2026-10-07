@@ -205,6 +205,9 @@ class OpenSim_Helpers_GridConfig
             'grid_name' => $get('GridInfoService', 'gridname') ?? ucfirst($nick),
             'login_uri' => rtrim((string) ($get('GridInfoService', 'login') ?? self::login_uri($config)), '/'),
             'web_url' => rtrim((string) ($get('Const', 'WebURL') ?? ''), '/'),
+            // The search of the web: `search` of [GridInfoService] (what get_grid_info says) is the real one, SearchURL of
+            // [LoginService] (sent to the viewers at login) stands for it when the grid has only that one
+            'search_url' => $get('GridInfoService', 'search') ?? $get('LoginService', 'SearchURL'),
             'helpers' => $config->section('Helpers'),
         ];
     }
