@@ -433,6 +433,20 @@ describe('The routes', function () {
             ->not->toHaveKeys(['/helpers/query.php', '/helpers/register.php', '/helpers/offline.php']);
     });
 
+    test('go by the name of the script an address has: a registration that points to query.php does not take the place of the search', function () use ($routes) {
+        $table = $routes('', [
+            'sims/one.ini' => "[Search]\nSearchURL = \"https://play.example.org/helpers/query.php\"\n[DataSnapshot]\nDATA_SRV_Alpha = \"https://play.example.org/helpers/query.php\"\n",
+        ]);
+
+        // The search keeps its address, the registration, which has none that is right, is served at the default one
+        expect($table)->toMatchArray(['/helpers/query.php' => 'query.php', '/helpers/register.php' => 'register.php']);
+
+        // On another site it is not ours to serve, and nothing is served in its place
+        $elsewhere = $routes('', ['sims/one.ini' => "[DataSnapshot]\nDATA_SRV_2do = \"https://2do.directory/helpers/register.php\"\n"]);
+
+        expect($elsewhere)->not->toHaveKey('/helpers/register.php');
+    });
+
     test('are none for a service the grid has set up on another site: no ghost service on this one', function () use ($routes) {
         $table = $routes('', [
             'sims/one.ini' => "[Search]\nSearchURL = \"https://2do.directory/helpers/query.php\"\n[DataSnapshot]\nDATA_SRV_Alpha = \"https://play.example.org/helpers/register.php\"\nDATA_SRV_2do = \"https://2do.directory/helpers/register.php\"\n",

@@ -33,6 +33,9 @@ class OpenSim_Helpers_GridConfig
     /** The file of what has no official place. */
     const HELPERS_FILE = 'Helpers.ini';
 
+    /** The scripts of the helpers, which an address names. */
+    const SCRIPTS = ['query.php', 'register.php', 'offline.php', 'currency.php', 'landtool.php', 'motd.php', 'textgen.php', 'parser.php', 'eventsparser.php'];
+
     /**
      * Define the constants of the grid.
      *
@@ -311,17 +314,35 @@ class OpenSim_Helpers_GridConfig
             $routes["$base/landtool.php"] = 'landtool.php';
         }
 
-        // The other services: the addresses the grid gives, or the default one
+        // The other services: the addresses the grid gives, or the default one. The name of a script of the helpers in an address
+        // is the script that answers it, whatever the setting that gives it: a registration (DATA_SRV_) that points to
+        // query.php is a mistake of the setting, which must not take the place of the search at that address; the service that
+        // the setting is for is then served at its default address
         $add = function (array $urls, $target, $default) use (&$routes, $site) {
             if (!$urls) {
                 $routes[$default] = $target;
 
                 return;
             }
+            $served = false;
+            $misnamed = false;
             foreach ($urls as $url) {
-                if (self::is_local($url, $site)) {
-                    $routes[self::path_of($url)] = $target;
+                if (!self::is_local($url, $site)) {
+                    continue;
                 }
+                $path = self::path_of($url);
+                $named = basename($path);
+                if ($target[0] !== '@' && $named !== $target && in_array($named, self::SCRIPTS, true)) {
+                    $routes[$path] = $named;
+                    $misnamed = true;
+
+                    continue;
+                }
+                $routes[$path] = $target;
+                $served = true;
+            }
+            if ($misnamed && !$served) {
+                $routes[$default] = $target;
             }
         };
         $one = fn($section, $key) => ($value = $get($section, $key)) === null ? [] : [$value];
