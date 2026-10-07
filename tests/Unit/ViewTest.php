@@ -99,7 +99,7 @@ describe('The theme of the grid', function () {
 });
 
 describe('The home page', function () {
-    test('shows the destination guide, the message of an empty one included, and nothing for a block that does not exist yet', function () {
+    test('shows the destination guide, the message of an empty one included, the search form alone, and no place when none has traffic', function () {
         $_SERVER['HTTP_USER_AGENT'] = FIREFOX;
         ini_set('error_log', '/dev/null');
         // The templates of the helpers alone, whatever theme the grid has
@@ -108,8 +108,11 @@ describe('The home page', function () {
         expect($html)
             ->toContain('id="guide"')
             ->toContain('realm of destinations')
-            ->not->toContain('block-popular-places')
-            ->not->toContain('block-search');
+            ->toContain('block-search')
+            ->toContain('type="search"')
+            // Embedded, the search is the form: the results are on its page
+            ->not->toContain('search-topics')
+            ->not->toContain('block-popular-places');
     });
 });
 

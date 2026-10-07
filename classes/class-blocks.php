@@ -15,6 +15,9 @@ require_once __DIR__ . '/blocks/class-block-motd.php';
 require_once __DIR__ . '/blocks/class-block-health.php';
 require_once __DIR__ . '/blocks/class-block-destination-guide.php';
 require_once __DIR__ . '/blocks/class-block-directory-info.php';
+require_once __DIR__ . '/blocks/class-block-popular-places.php';
+require_once __DIR__ . '/blocks/class-block-profile.php';
+require_once __DIR__ . '/blocks/class-block-search.php';
 
 class OpenSim_Helpers_Blocks
 {
@@ -26,6 +29,9 @@ class OpenSim_Helpers_Blocks
         'health' => 'OpenSim_Helpers_Block_Health',
         'destination_guide' => 'OpenSim_Helpers_Block_DestinationGuide',
         'directory_info' => 'OpenSim_Helpers_Block_DirectoryInfo',
+        'popular_places' => 'OpenSim_Helpers_Block_PopularPlaces',
+        'profile' => 'OpenSim_Helpers_Block_Profile',
+        'search' => 'OpenSim_Helpers_Block_Search',
     ];
 
     /** The css and js files the blocks shown in this request need, for the layout to link them in its head. */
@@ -111,7 +117,14 @@ class OpenSim_Helpers_Blocks
         $data = self::data($name, $args);
         if (
             $data === null ||
-            (empty($data['rows']) && empty($data['groups']) && empty($data['items']) && empty($data['text']) && empty($data['summary']))
+            (empty($data['rows']) &&
+                empty($data['groups']) &&
+                empty($data['items']) &&
+                empty($data['text']) &&
+                empty($data['summary']) &&
+                // A form is something to show, and what a page is about that is not there is a page that says so
+                empty($data['form']) &&
+                !array_key_exists('found', $data))
         ) {
             return '';
         }

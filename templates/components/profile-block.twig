@@ -1,0 +1,43 @@
+<section class="block block-profile">
+    <h1 class="block-title">{{ title }}</h1>
+    {% if not found %}
+        <p>{{ labels.profile_not_found }}</p>
+    {% else %}
+        <p class="profile-meta">
+            {% if account_title %}<span class="profile-title">{{ account_title }}</span> · {% endif %}
+            {% if member_since %}{{ labels.member_since }} {{ member_since }}{% endif %}
+        </p>
+        {% if not published %}
+            <p class="profile-private">{{ labels.profile_private }}</p>
+        {% else %}
+            {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
+            <dl class="profile-details">
+                {% if partner %}<dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd>{% endif %}
+                {% if languages %}<dt>{{ labels.languages }}</dt><dd>{{ languages }}</dd>{% endif %}
+                {% if wants %}<dt>{{ labels.wants }}</dt><dd>{{ wants|nl2br }}</dd>{% endif %}
+                {% if skills %}<dt>{{ labels.skills }}</dt><dd>{{ skills|nl2br }}</dd>{% endif %}
+                {% if web %}<dt>{{ labels.web }}</dt><dd><a href="{{ web }}" rel="nofollow ugc">{{ web }}</a></dd>{% endif %}
+            </dl>
+            {% if first_life %}
+                <h2>{{ labels.first_life }}</h2>
+                <div class="profile-first-life">{{ first_life|nl2br }}</div>
+            {% endif %}
+            {% if picks %}
+                <h2>{{ labels.picks }}</h2>
+                <ul class="profile-picks">
+                    {% for pick in picks %}
+                        <li>{% if pick.url %}<a href="{{ pick.url }}">{{ pick.name }}</a>{% else %}{{ pick.name }}{% endif %}{% if pick.place %} <small>{{ pick.place }}</small>{% endif %}{% if pick.description %}<br>{{ pick.description|nl2br }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if classifieds %}
+                <h2>{{ labels.classifieds }}</h2>
+                <ul class="profile-classifieds">
+                    {% for ad in classifieds %}
+                        <li><strong>{{ ad.name }}</strong>{% if ad.place %} <small>{{ ad.place }}</small>{% endif %}{% if ad.description %}<br>{{ ad.description|nl2br }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</section>

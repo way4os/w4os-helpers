@@ -47,3 +47,17 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 .status-ok { background: #16a34a; color: #fff; }
 .status-error { background: #dc2626; color: #fff; }
 .status-none { background: var(--line); color: var(--muted); }
+
+/* The profile of an avatar, the search of the web */
+.profile-meta { color: var(--muted); margin-top: 0; }
+.profile-details dt { font-weight: 600; margin-top: .5rem; }
+.profile-details dd { margin: 0 0 0 1rem; }
+.profile-picks, .profile-classifieds, .search-results { padding-left: 1.25rem; }
+.profile-picks li, .profile-classifieds li, .search-results li { margin: .5rem 0; }
+.search-form { display: flex; gap: .5rem; margin: 0 0 .75rem; }
+.search-form input[type=search] { flex: 1; padding: .375rem .5rem; font: inherit; }
+.search-form button { padding: .375rem .875rem; font: inherit; }
+.search-topics { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin-bottom: 1rem; }
+.search-topics a[aria-current=page] { font-weight: 700; text-decoration: none; color: var(--fg); }
+.search-group { font-size: 1.0625rem; margin: 1.25rem 0 .25rem; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

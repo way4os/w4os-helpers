@@ -350,6 +350,8 @@ class OpenSim_Helpers_GridConfig
         $add($one('LoginService', 'DestinationGuide'), '@destination_guide', "$base/guide.php");
         $add($one('LoginService', 'MessageUrl'), 'motd.php', "$base/motd.php");
         $add($one('GridInfoService', 'web_profile_url'), '@profile', '/profile');
+        // The web search: `search` of the grid info is the real one, SearchURL of the login service stands for it
+        $add($one('GridInfoService', 'search') ?: $one('LoginService', 'SearchURL'), '@search', '/search');
         $add($one('Search', 'SearchURL'), 'query.php', "$base/query.php");
         $add(array_values(array_unique($config->keys('DataSnapshot', '/^DATA_SRV_/'))), 'register.php', "$base/register.php");
         $add($one('Messaging', 'OfflineMessageURL'), 'offline.php', "$base/offline.php");

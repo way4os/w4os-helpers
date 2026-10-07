@@ -21,6 +21,7 @@
 
 require_once 'includes/bootstrap.php';
 require_once 'includes/search.php';
+require_once 'includes/search-parser.php';
 
 if (!$SearchDB || !$SearchDB->connected) {
     osDie('Bad configuration: the search database is not available', 503);
@@ -64,13 +65,11 @@ switch ($service) {
             ':timestamp' => $timestamp,
         ]);
 
-        // Trigger parser for new host
-        dontwait(); // make sure simulator doesn't pause start process
+        // Read what the simulator tells, here and not by a request to this same site: its own PHP may not trust its certificate
+        ossearch_answer_sent(); // make sure simulator doesn't pause start process
         sleep(2); // leave simulator start process some time before querying it
-        $scheme =
-            $_SERVER['REQUEST_SCHEME'] ?? (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http');
-        $parser = "$scheme://{$_SERVER['HTTP_HOST']}" . dirname($_SERVER['REQUEST_URI']) . '/parser.php';
-        $result = file_get_contents($parser);
+        ossearch_parse();
+        touch(get_writable_tmp_dir() . '/ossearch-parsed');
         break;
 
     case 'offline':

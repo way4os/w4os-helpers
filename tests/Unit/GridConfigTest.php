@@ -422,6 +422,16 @@ describe('The routes', function () {
         expect($moved)->toMatchArray(['/status' => '@grid_status'])->not->toHaveKeys(['/helpers/grid_status', '/helpers/grid_info']);
     });
 
+    test('have the web search where the grid says it (search of the grid info, else SearchURL of the login service), and by default', function () use ($routes) {
+        expect($routes())
+            ->toMatchArray(['/search' => '@search'])
+            ->and($routes("[GridInfoService]\nsearch = \"https://play.example.org/find\"\n"))
+            ->toMatchArray(['/find' => '@search'])
+            ->not->toHaveKey('/search')
+            ->and($routes("[LoginService]\nSearchURL = \"https://play.example.org/where\"\n"))
+            ->toMatchArray(['/where' => '@search']);
+    });
+
     test('are the addresses the grid gives, on this site: the path, nothing else', function () use ($routes) {
         $table = $routes('', [
             'sims/one.ini' => "[Search]\nSearchURL = \"https://play.example.org/v3/query\"\n[DataSnapshot]\nDATA_SRV_Alpha = \"https://play.example.org/v3/register.php\"\n[Messaging]\nOfflineMessageURL = \"https://play.example.org/offline\"\n",

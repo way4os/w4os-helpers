@@ -15,6 +15,9 @@ class OpenSim_Helpers_View
     /** Where the helpers are on the web site when the grid says nothing. */
     const DEFAULT_PATH = '/helpers';
 
+    /** The HTTP status of the page being made: a block says 404 when what the page is about is not there. */
+    public static $status = 200;
+
     /** The pages of the menu, in their order: the page (see OpenSim_Helpers_Router::PAGES) and the label it has in labels(). */
     const MENU = [
         'home' => 'home',
@@ -40,6 +43,26 @@ class OpenSim_Helpers_View
         }
 
         return (bool) preg_match(self::VIEWER_PATTERN, (string) $agent);
+    }
+
+    /** Say the status of the page being made (404 for an avatar that does not exist). */
+    public static function set_status($code)
+    {
+        self::$status = (int) $code;
+    }
+
+    /**
+     * Where a page is on this site, from the routes: the path of the profiles, of the search.
+     *
+     * @param  string $page profile, search...
+     * @return string|null null when the site does not serve it
+     */
+    public static function page_path($page)
+    {
+        $routes = defined('OPENSIM_ROUTES') ? OPENSIM_ROUTES : OpenSim_Helpers_Router::defaults(self::base_path());
+        $path = array_search("@$page", $routes, true);
+
+        return $path === false ? null : '/' . trim((string) $path, '/');
     }
 
     /** Where the helpers are on the web site: the path of the economy of the grid, `/helpers` by default. */
@@ -76,6 +99,24 @@ class OpenSim_Helpers_View
             'health' => _('Health'),
             'powered_by' => _('Powered by OpenSimulator Helpers'),
             'skip' => _('Skip to main content'),
+            // The profile of an avatar
+            'profile_not_found' => _('There is no such avatar here.'),
+            'profile_private' => _('This profile is not published.'),
+            'member_since' => _('Member since'),
+            'partner' => _('Partner'),
+            'languages' => _('Languages'),
+            'wants' => _('Interests'),
+            'skills' => _('Skills'),
+            'web' => _('Web page'),
+            'first_life' => _('First life'),
+            'picks' => _('Picks'),
+            'classifieds' => _('Classifieds'),
+            // The search
+            'search' => _('Search'),
+            'search_for' => _('Search for'),
+            'search_all' => _('Everything'),
+            'search_nothing' => _('Nothing found.'),
+            'search_empty' => _('Search the places, the land for sale, the events, the classifieds and the people of the grid.'),
         ];
     }
 
@@ -224,6 +265,7 @@ class OpenSim_Helpers_View
      */
     public static function render($template, $context, $dirs = null)
     {
+        $context += ['labels' => self::labels()];
         $loader = new \Twig\Loader\FilesystemLoader(array_values(array_filter($dirs ?? self::template_dirs(), 'is_dir')));
         $twig = new \Twig\Environment($loader, ['autoescape' => 'html']);
         $twig->addFunction(

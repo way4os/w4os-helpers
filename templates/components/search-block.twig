@@ -1,0 +1,29 @@
+<section class="block block-search">
+    <{{ level }} class="block-title">{{ title }}</{{ level }}>
+    <form class="search-form" action="{{ action }}{% if topic %}/{{ topic }}/{% endif %}" method="get" role="search">
+        <label class="visually-hidden" for="search-q">{{ labels.search_for }}</label>
+        <input id="search-q" type="search" name="q" value="{{ q }}" autofocus>
+        <button type="submit">{{ labels.search }}</button>
+    </form>
+    {% if not embedded %}
+    <nav class="search-topics">
+        <a href="{{ all_url }}"{% if not topic %} aria-current="page"{% endif %}>{{ labels.search_all }}</a>
+        {% for t in topics %}<a href="{{ t.url }}"{% if t.current %} aria-current="page"{% endif %}>{{ t.title }}</a>{% endfor %}
+    </nav>
+    {% if not groups %}
+        <p class="search-none">{% if q %}{{ labels.search_nothing }}{% else %}{{ labels.search_empty }}{% endif %}</p>
+    {% endif %}
+    {% for group in groups %}
+        <h2 class="search-group"><a href="{{ group.url }}">{{ group.title }}</a></h2>
+        <ul class="search-results">
+            {% for item in group.items %}
+                <li>
+                    {% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}<strong>{{ item.title }}</strong>{% endif %}
+                    {% if item.detail %} <small>{{ item.detail }}</small>{% endif %}
+                    {% if item.text %}<br>{{ item.text|nl2br }}{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    {% endif %}
+</section>

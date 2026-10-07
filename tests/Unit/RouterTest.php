@@ -132,6 +132,17 @@ describe('Router', function () {
             ->toBe(['page', 'grid_status']);
     });
 
+    test('serves the search under its address, and what is under it, and the profiles by name', function () {
+        expect(OpenSim_Helpers_Router::match('/search'))
+            ->toBe(['page', 'search'])
+            ->and(OpenSim_Helpers_Router::match('/search/land/'))
+            ->toBe(['page', 'search'])
+            ->and(OpenSim_Helpers_Router::pathInfo('/search/land/', OpenSim_Helpers_Router::defaults()))
+            ->toBe('/land/')
+            ->and(OpenSim_Helpers_Router::match('/find', ['/find' => '@search']))
+            ->toBe(['page', 'search']);
+    });
+
     test('knows no other URL', function () {
         expect(OpenSim_Helpers_Router::match('/nothing'))
             ->toBeNull()
@@ -244,5 +255,27 @@ describe('What the router does not serve', function () {
             ->toMatchArray(['code' => 405, 'allow' => 'GET, HEAD'])
             ->and($answers['put profile']['code'])
             ->toBe(405);
+    });
+});
+
+describe('The pages of the search and of the profiles', function () {
+    test('are pages that answer, and an avatar that is not there is a page that says so with a 404', function () {
+        [$process, $port] = router_server(['/' => '@home', '/profile' => '@profile', '/search' => '@search']);
+        $profile = router_ask($port, '/profile/Nobody.Here');
+        $search = router_ask($port, '/search?q=garden');
+        $topic = router_ask($port, '/search/land/');
+        proc_terminate($process);
+
+        expect($profile['code'])
+            ->toBe(404)
+            ->and($profile['body'])
+            ->toContain('There is no such avatar here.')
+            ->and($search['code'])
+            ->toBe(200)
+            ->and($search['body'])
+            ->toContain('type="search"')
+            ->toContain('value="garden"')
+            ->and($topic['code'])
+            ->toBe(200);
     });
 });

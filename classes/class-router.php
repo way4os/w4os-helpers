@@ -54,7 +54,7 @@ class OpenSim_Helpers_Router
     ];
 
     /** The pages: the slug of what each shows (see OpenSim_Helpers_View::main). */
-    const PAGES = ['home', 'splash', 'profile', 'health', 'destination_guide', 'directory_info', 'grid_info', 'grid_status'];
+    const PAGES = ['home', 'splash', 'profile', 'search', 'health', 'destination_guide', 'directory_info', 'grid_info', 'grid_status'];
 
     const MIME = [
         'svg' => 'image/svg+xml',
@@ -81,7 +81,7 @@ class OpenSim_Helpers_Router
     public static function defaults($base = '/helpers')
     {
         $base = rtrim($base, '/');
-        $routes = ['/' => '@home', '/welcome' => '@splash', '/profile' => '@profile', '/health' => '@health'];
+        $routes = ['/' => '@home', '/welcome' => '@splash', '/profile' => '@profile', '/search' => '@search', '/health' => '@health'];
         foreach (array_keys(self::SCRIPTS) as $script) {
             $routes["$base/$script"] = $script;
         }
@@ -244,9 +244,17 @@ class OpenSim_Helpers_Router
 
                     return null;
                 }
+                // What follows the route of the page (the topic of a search) is what the web server would give as PATH_INFO
+                if (($info = self::pathInfo($requested, $routes)) !== '') {
+                    $_SERVER['PATH_INFO'] = $info;
+                }
                 $html = OpenSim_Helpers_View::page($what);
                 if ($html === null) {
                     osDie('Not found', 404);
+                }
+                // A page that says there is nothing (an avatar that does not exist) says it with the status too
+                if (OpenSim_Helpers_View::$status !== 200) {
+                    http_response_code(OpenSim_Helpers_View::$status);
                 }
                 header('Content-Type: text/html; charset=utf-8');
                 echo $html;

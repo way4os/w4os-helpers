@@ -20,6 +20,7 @@
 require_once 'includes/bootstrap.php';
 helpers_require_method('POST', true);
 require_once 'includes/search.php';
+require_once 'includes/search-parser.php';
 
 if (!$SearchDB || !$SearchDB->connected) {
     osXmlDie('Bad configuration: the search database is not available', 503);
@@ -666,4 +667,6 @@ $request_key = md5(serialize($request_array));
 xmlrpc_server_call_method($xmlrpc_server, $request_xml, '');
 
 xmlrpc_server_destroy($xmlrpc_server);
+// What a cron job would do: the snapshots of the simulators are read again when they have not been for a while
+ossearch_parse_if_due();
 die();

@@ -21,6 +21,8 @@ class OpenSim_Helpers_Cache
     {
         $dir = $dir ?? sys_get_temp_dir() . '/opensim-helpers-cache';
         $file = $dir . '/' . md5($key) . '.json';
+        // What PHP remembers of a file is not what it is now when another process (or a touch) changed it
+        clearstatcache(true, $file);
         if (is_file($file)) {
             $kept = json_decode((string) @file_get_contents($file), true);
             if (is_array($kept) && array_key_exists('value', $kept)) {
