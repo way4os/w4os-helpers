@@ -649,22 +649,17 @@ function classifieds_info_query($method_name, $params, $app_data)
 xmlrpc_server_register_method($xmlrpc_server, 'avatar_publish_update', 'avatar_publish_update');
 function avatar_publish_update($method_name, $params, $app_data)
 {
-    global $SearchDB;
-
-    $hosts = [];
-    $query = $SearchDB->prepareAndExecute('SELECT DISTINCT host FROM hostsregister', []);
-    while ($query && ($row = $query->fetch(PDO::FETCH_NUM))) {
-        $hosts[] = $row[0];
-    }
-    if (!helpers_is_simulator($_SERVER['REMOTE_ADDR'] ?? '', $hosts, $_SERVER['SERVER_ADDR'] ?? '')) {
-        osXmlDie('Forbidden: only the simulators of the grid tell this', 403);
-    }
-
     $req = $params[0];
-    $result = helpers_profile_publish(db_for('UserProfilesService'), $req['avatar_id'] ?? '', $req['allow_publish'] ?? false, $req['mature_publish'] ?? false);
-    if ($result === 'invalid') {
+    $avatar = $req['avatar_id'] ?? '';
+    if (!is_uuid($avatar)) {
         osXmlDie('Bad request: avatar_id is not an avatar', 400);
     }
+    // The simulator the avatar is connected to is the one that holds its secure session
+    if (!helpers_has_session($avatar, $req['secure_session_id'] ?? '')) {
+        osXmlDie('Forbidden: the secure session is not the one of this avatar', 403);
+    }
+
+    $result = helpers_profile_publish(db_for('UserProfilesService'), $avatar, $req['allow_publish'] ?? false, $req['mature_publish'] ?? false);
     osXmlResponse($result === 'ok', $result === 'ok' ? '' : 'This avatar has no profile', []);
 }
 

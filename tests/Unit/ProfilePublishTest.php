@@ -1,6 +1,6 @@
 <?php
 /**
- * The "show in search" box of a profile: who may tell it, and what is written.
+ * The "show in search" box of a profile: who may tell it (the holder of the secure session of the avatar), and what is written.
  */
 
 require_once dirname(__DIR__, 2) . '/includes/profile-publish.php';
@@ -30,26 +30,23 @@ function profiles_db(array $profiles, array &$written): object
     };
 }
 
-describe('The simulators that may tell it', function () {
-    $resolve = fn($name) => $name === 'sim.example.org' ? ['203.0.113.7'] : false;
+describe('The caller that may tell it', function () {
+    $session = fn($avatar) => $avatar === 'aaaaaaaa-0000-4000-8000-000000000001' ? ['secureID' => 'B0B0B0B0-0000-4000-8000-000000000002'] : [];
 
-    test('are the ones registered to the search, by address or by name, and this machine', function () use ($resolve) {
-        $hosts = ['192.168.8.105', 'sim.example.org'];
-
-        expect(helpers_is_simulator('192.168.8.105', $hosts, '', $resolve))
-            ->toBeTrue()
-            ->and(helpers_is_simulator('203.0.113.7', $hosts, '', $resolve))
-            ->toBeTrue()
-            ->and(helpers_is_simulator('127.0.0.1', [], '', $resolve))
-            ->toBeTrue()
-            ->and(helpers_is_simulator('198.51.100.9', [], '198.51.100.9', $resolve))
-            ->toBeTrue();
+    test('holds the secure session of an avatar who is in the grid', function () use ($session) {
+        expect(helpers_has_session('aaaaaaaa-0000-4000-8000-000000000001', 'b0b0b0b0-0000-4000-8000-000000000002', $session))->toBeTrue();
     });
 
-    test('are not anybody else', function () use ($resolve) {
-        expect(helpers_is_simulator('198.51.100.1', ['192.168.8.105', 'sim.example.org'], '198.51.100.9', $resolve))
+    test('is nobody else: another session, none, an avatar who is not in the grid, a null session', function () use ($session) {
+        $null = '00000000-0000-0000-0000-000000000000';
+
+        expect(helpers_has_session('aaaaaaaa-0000-4000-8000-000000000001', 'b0b0b0b0-0000-4000-8000-0000000000ff', $session))
             ->toBeFalse()
-            ->and(helpers_is_simulator('', ['192.168.8.105'], '', $resolve))
+            ->and(helpers_has_session('aaaaaaaa-0000-4000-8000-000000000001', '', $session))
+            ->toBeFalse()
+            ->and(helpers_has_session('cccccccc-0000-4000-8000-0000000000cc', 'b0b0b0b0-0000-4000-8000-000000000002', $session))
+            ->toBeFalse()
+            ->and(helpers_has_session('dddddddd-0000-4000-8000-0000000000dd', $null, fn() => ['secureID' => $null]))
             ->toBeFalse();
     });
 });

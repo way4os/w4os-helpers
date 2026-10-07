@@ -4,39 +4,30 @@
  *
  * The "show in search" box of a profile. The simulator sends it to the profile service of Robust, which ignores it (its update
  * of the profile leaves profileAllowPublish and profileMaturePublish as they were made, false), so the OpenSimSearch module
- * tells it to the search too (avatar_publish_update, query.php), which writes it where the profile service keeps it.
+ * tells it to the search too (avatar_publish_update, query.php), which writes it where the profile service keeps it, for a caller
+ * that holds the secure session of the avatar.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
  */
 
 /**
- * Whether a call comes from a simulator of the grid: one registered to the search, or the machine of the site itself.
+ * Whether the caller holds the secure session of an avatar who is in the grid: what only the simulator the avatar is connected
+ * to knows (the economy of the helpers asks the same of a simulator).
  *
- * @param  string   $remote   the address of the caller
- * @param  string[] $hosts    the hosts the simulators registered with (addresses or names)
- * @param  string   $server   the address of this site, for the simulators on the same machine
- * @param  callable $resolve  gives the addresses of a name (gethostbynamel)
+ * @param  string   $avatar  the UUID of the avatar
+ * @param  mixed    $secure  the secure session ID the caller gives
+ * @param  callable $session gives the session of an avatar (opensim_get_avatar_session)
  * @return bool
  */
-function helpers_is_simulator($remote, $hosts, $server = '', $resolve = 'gethostbynamel')
+function helpers_has_session($avatar, $secure, $session = 'opensim_get_avatar_session')
 {
-    if ($remote === '') {
-        return false;
-    }
-    if ($remote === '127.0.0.1' || $remote === '::1' || ($server !== '' && $remote === $server)) {
-        return true;
-    }
-    foreach ($hosts as $host) {
-        if ($host === $remote) {
-            return true;
-        }
-        if (filter_var($host, FILTER_VALIDATE_IP) === false && in_array($remote, $resolve($host) ?: [], true)) {
-            return true;
-        }
-    }
+    $null = '00000000-0000-0000-0000-000000000000';
+    $current = $session($avatar);
+    $known = is_array($current) ? strtolower((string) ($current['secureID'] ?? '')) : '';
+    $given = is_string($secure) ? strtolower($secure) : '';
 
-    return false;
+    return $known !== '' && $known !== $null && $given !== '' && hash_equals($known, $given);
 }
 
 /**

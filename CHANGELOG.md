@@ -20,7 +20,7 @@
 - update: `/profile` without a name and the address of the helpers itself answer 418, not a page
 - fix: the search never makes its `regions` table in the database of Robust (it took the place of Robust's); `regionsregister` unless a search table of that name is already there
 - fix: a simulator that registers is let go at once (length and closed connection when the server has no fastcgi_finish_request), it was held while its snapshot was read, which came out empty
-- new: `avatar_publish_update` (query.php): the "show in search" box of a profile, which Robust ignores, told by the OpenSimSearch module and written in `userprofile`, from the simulators of the grid only
+- new: `avatar_publish_update` (query.php): the "show in search" box of a profile, which Robust ignores, told by the OpenSimSearch module and written in `userprofile`, for a caller that holds the secure session of the avatar
 - fix: a search request without flags or without the day and category is answered, not a 500
 - update: a wrong call gets its code (400, 404, 405, 503 for a missing configuration), never a 500 on purpose
 - update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting
