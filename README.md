@@ -57,7 +57,8 @@ The historic config is still supported, but might be deprecated in the future: c
 
 [Economy]
   ;; BetaGridLikeMoneyModule (the default): everything is free, the helpers do nothing. With any other module
-  ;; (Gloebit...), currency.php and landtool.php relay the purchases, the transfers and the balance to the module.
+  ;; (Gloebit...), currency.php and landtool.php answer the viewers and the regions (cost, purchase, land, balance,
+  ;; transfers) through the module of the region; when it cannot add the currency itself, the user is sent to its page.
   ;; Gloebit: its sandbox is [Gloebit] GLBEnvironment, its packs and prices are in addons/gloebit.php.
   economymodule = Gloebit
 ```
