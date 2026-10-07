@@ -394,6 +394,16 @@ describe('The routes', function () {
             ->toMatchArray(['/helpers' => '@teapot!', '/welcome' => '@splash']);
     });
 
+    test('have the public pages of the grid (what it is, its state) by default, and where Helpers.ini says', function () use ($routes) {
+        expect($routes())
+            ->toMatchArray(['/helpers/grid_info' => '@grid_info', '/helpers/grid_status' => '@grid_status']);
+
+        $moved = $routes("[Helpers]\nGridStatusURL = \"https://play.example.org/status\"\nGridInfoURL = \"https://elsewhere.example.net/info\"\n");
+
+        // The one that is on this site is where it says, the one that is on another site has no ghost here
+        expect($moved)->toMatchArray(['/status' => '@grid_status'])->not->toHaveKeys(['/helpers/grid_status', '/helpers/grid_info']);
+    });
+
     test('are the addresses the grid gives, on this site: the path, nothing else', function () use ($routes) {
         $table = $routes('', [
             'sims/one.ini' => "[Search]\nSearchURL = \"https://play.example.org/v3/query\"\n[DataSnapshot]\nDATA_SRV_Alpha = \"https://play.example.org/v3/register.php\"\n[Messaging]\nOfflineMessageURL = \"https://play.example.org/offline\"\n",

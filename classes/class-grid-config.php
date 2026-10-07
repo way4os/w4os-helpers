@@ -329,6 +329,10 @@ class OpenSim_Helpers_GridConfig
         $add($one('Search', 'SearchURL'), 'query.php', "$base/query.php");
         $add(array_values(array_unique($config->keys('DataSnapshot', '/^DATA_SRV_/'))), 'register.php', "$base/register.php");
         $add($one('Messaging', 'OfflineMessageURL'), 'offline.php', "$base/offline.php");
+        // Public information of the grid, served by default: what it is, and its state (`GridStatus` of [GridInfoService] can
+        // point to the second one)
+        $add($one('Helpers', 'GridInfoURL'), '@grid_info', "$base/grid_info");
+        $add($one('Helpers', 'GridStatusURL'), '@grid_status', "$base/grid_status");
         foreach (['textgen.php', 'parser.php', 'eventsparser.php'] as $script) {
             $routes["$base/$script"] = $script;
         }

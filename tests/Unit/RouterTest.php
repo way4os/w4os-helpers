@@ -123,6 +123,15 @@ describe('Router', function () {
             ->not->toHaveKey('');
     });
 
+    test('serves the public pages of the grid, what it is and its state, without a word of the grid', function () {
+        expect(OpenSim_Helpers_Router::match('/helpers/grid_info'))
+            ->toBe(['page', 'grid_info'])
+            ->and(OpenSim_Helpers_Router::match('/helpers/grid_status'))
+            ->toBe(['page', 'grid_status'])
+            ->and(OpenSim_Helpers_Router::match('/status', ['/status' => '@grid_status']))
+            ->toBe(['page', 'grid_status']);
+    });
+
     test('knows no other URL', function () {
         expect(OpenSim_Helpers_Router::match('/nothing'))
             ->toBeNull()

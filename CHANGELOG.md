@@ -10,6 +10,7 @@
 - update: health is one table by config file, cert, time and result aligned on the right, nothing said of what is not defined
 - update: health starts with what the grid says (get_grid_info), compares it with the config, calls each service without data and with valid data
 - update: the ini files are read by the engine's `OpenSim_Config`, the helpers keep the grid, the constants and the routes
+- new: public pages `grid_info` and `grid_status` (ONLINE or OFFLINE) under the helpers, `GridInfoURL` and `GridStatusURL` in `[Helpers]`
 - update: `/profile` without a name and the address of the helpers itself answer 418, not a page
 - update: a wrong call gets its code (400, 404, 405, 503 for a missing configuration), never a 500 on purpose
 - update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting

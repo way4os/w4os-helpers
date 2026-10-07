@@ -54,7 +54,7 @@ class OpenSim_Helpers_Router
     ];
 
     /** The pages: the slug of what each shows (see OpenSim_Helpers_View::main). */
-    const PAGES = ['home', 'splash', 'profile', 'health', 'destination_guide', 'directory_info'];
+    const PAGES = ['home', 'splash', 'profile', 'health', 'destination_guide', 'directory_info', 'grid_info', 'grid_status'];
 
     const MIME = [
         'svg' => 'image/svg+xml',
@@ -93,6 +93,9 @@ class OpenSim_Helpers_Router
         foreach (self::ALIASES as $script => $page) {
             $routes["$base/$script"] = "@$page";
         }
+        // What the grid is and its state: public information, served without a word of the grid
+        $routes["$base/grid_info"] = '@grid_info';
+        $routes["$base/grid_status"] = '@grid_status';
 
         return $routes;
     }
@@ -236,8 +239,8 @@ class OpenSim_Helpers_Router
                     self::teapot();
                 }
                 // The data of what the page shows, for what makes its own page or watches it
-                if (($_GET['format'] ?? '') === 'json' && OpenSim_Helpers_Blocks::exists($what)) {
-                    self::answer_block($what);
+                if (($_GET['format'] ?? '') === 'json' && ($block = OpenSim_Helpers_Blocks::name($what)) !== null) {
+                    self::answer_block($block);
 
                     return null;
                 }

@@ -41,7 +41,8 @@ class OpenSim_Helpers_Block_GridStatus
     {
         $rows = [];
         if ($numbers['online'] !== null) {
-            $rows[] = ['label' => _('Status'), 'value' => $numbers['online'] ? _('Online') : _('Offline')];
+            // A keyword the viewers read (Firestorm takes the state of the grid from it), as Second Life says it: not translated
+            $rows[] = ['label' => _('Status'), 'value' => $numbers['online'] ? 'ONLINE' : 'OFFLINE'];
         }
         $counts = $numbers['counts'] ?? null;
         if ($counts) {

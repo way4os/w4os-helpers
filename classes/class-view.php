@@ -267,8 +267,8 @@ class OpenSim_Helpers_View
         if (self::has_template("pages/$slug-page.twig", $dirs)) {
             return self::render("pages/$slug-page.twig", $context, $dirs);
         }
-        if (OpenSim_Helpers_Blocks::exists($slug)) {
-            return OpenSim_Helpers_Blocks::render($slug, $args + ['level' => 'h1'], $dirs);
+        if (($block = OpenSim_Helpers_Blocks::name($slug)) !== null) {
+            return OpenSim_Helpers_Blocks::render($block, $args + ['level' => 'h1'], $dirs);
         }
 
         return null;

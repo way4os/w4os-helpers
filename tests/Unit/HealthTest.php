@@ -104,6 +104,18 @@ describe('Block health', function () {
         expect(array_column($rows, 'label'))->toBe(['query.php', 'query.php']);
     });
 
+    test('asks the public pages of the grid where the helpers serve them, or where Helpers.ini puts them', function () use ($settings, $routes, $by) {
+        $routes += ['/helpers/grid_info' => '@grid_info', '/helpers/grid_status' => '@grid_status'];
+        $rows = fn(array $helpers) => array_column($by(OpenSim_Helpers_Block_Health::plan($settings([], $helpers), null, [], $routes, ''))['Helpers.ini [Helpers]'], null, 'label');
+
+        expect($rows([])['GridInfoURL']['url'])
+            ->toBe('https://play.example.org/helpers/grid_info')
+            ->and($rows([])['GridStatusURL']['url'])
+            ->toBe('https://play.example.org/helpers/grid_status')
+            ->and($rows(['GridStatusURL' => 'https://status.example.org/'])['GridStatusURL']['url'])
+            ->toBe('https://status.example.org/');
+    });
+
     test('names the guide source as a setting: an address is asked, a folder is read, nothing is not shown', function () use ($settings, $routes, $by) {
         $row = fn(string $guide) => $by(OpenSim_Helpers_Block_Health::plan($settings([]), null, [], $routes, $guide))['Helpers.ini [Helpers]'][0];
 

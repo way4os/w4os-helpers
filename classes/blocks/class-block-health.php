@@ -131,6 +131,13 @@ class OpenSim_Helpers_Block_Health
                 $helpers[] = OpenSim_Health::page($key, $own[$key]);
             }
         }
+        // The public pages of the grid, served by default: the address the setting gives, else where the helpers serve them
+        foreach (['GridInfoURL' => '@grid_info', 'GridStatusURL' => '@grid_status'] as $key => $page) {
+            $url = OpenSim_Health::is_url($own[$key] ?? '') ? $own[$key] : $at($page);
+            if ($url !== '') {
+                $helpers[] = OpenSim_Health::page($key, $url);
+            }
+        }
 
         $groups[] = ['file' => 'Helpers.ini', 'title' => '[Helpers]', 'rows' => $helpers];
         $groups[] = ['file' => 'opensim-helpers', 'title' => '', 'rows' => $rows];

@@ -98,7 +98,7 @@ describe('Block grid-status', function () {
         $by = array_column($rows, 'value', 'label');
 
         expect($by['Status'])
-            ->toBe('Online')
+            ->toBe('ONLINE')
             ->and($by['Members'])
             ->toBe('1,234')
             ->and($by['Regions'])
@@ -118,9 +118,9 @@ describe('Block grid-status', function () {
             ->toContain('Members in world');
     });
 
-    test('says Offline, and has only the status without a database', function () {
+    test('says OFFLINE, and has only the status without a database', function () {
         expect(OpenSim_Helpers_Block_GridStatus::rows(['online' => false, 'counts' => null]))->toBe([
-            ['label' => 'Status', 'value' => 'Offline'],
+            ['label' => 'Status', 'value' => 'OFFLINE'],
         ])
             ->and(OpenSim_Helpers_Block_GridStatus::rows(['online' => null, 'counts' => null]))
             ->toBe([]);

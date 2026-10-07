@@ -40,6 +40,17 @@ class OpenSim_Helpers_Blocks
     }
 
     /**
+     * The block a page shows: the one of its slug, which may have dashes where the slug has underscores (the page grid_status
+     * shows the block grid-status).
+     *
+     * @return string|null null when the slug is no block
+     */
+    public static function name($slug)
+    {
+        return self::exists($slug) ? $slug : self::from_variable($slug);
+    }
+
+    /**
      * The name of a block from the name of a variable of a template (grid_info is grid-info, directory_info is itself).
      *
      * @return string|null null when no block is called so
