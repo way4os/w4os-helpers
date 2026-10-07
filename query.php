@@ -665,7 +665,7 @@ function avatar_publish_update($method_name, $params, $app_data)
     if ($result === 'invalid') {
         osXmlDie('Bad request: avatar_id is not an avatar', 400);
     }
-    osXmlResponse($result === 'ok', $result === 'ok' ? '' : 'This avatar has no profile');
+    osXmlResponse($result === 'ok', $result === 'ok' ? '' : 'This avatar has no profile', []);
 }
 
 $tmp_dir = get_writable_tmp_dir();
