@@ -67,7 +67,8 @@ switch ($service) {
 
         // Read what the simulator tells, here and not by a request to this same site: its own PHP may not trust its certificate
         ossearch_answer_sent(); // make sure simulator doesn't pause start process
-        sleep(2); // leave simulator start process some time before querying it
+        // A simulator registers while it starts and keeps the snapshot it makes: read when its regions are loaded, not before
+        sleep(30);
         ossearch_parse();
         ossearch_host_again($host, $port);
         touch(get_writable_tmp_dir() . '/ossearch-parsed');
