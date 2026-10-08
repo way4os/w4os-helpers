@@ -2,8 +2,8 @@
 /**
  * profile-publish.php
  *
- * The "show in search" box of a profile. What OpenSimulator shows the viewer is the first two flags of the user account
- * (UserFlags, read by the simulator, kept one hour), but the profile service of Robust, which gets the box with the rest of the
+ * The "show in search" box of a profile. What OpenSimulator shows the viewer is the first flag of the user account
+ * (its first flag, UserFlags, read by the simulator, kept one hour), but the profile service of Robust, which gets the box with the rest of the
  * profile, never writes them. So the OpenSimSearch module tells it to the search too (avatar_publish_update, query.php), which
  * writes them, for a caller that holds the secure session of the avatar.
  *
@@ -31,16 +31,15 @@ function helpers_has_session($avatar, $secure, $session = 'opensim_get_avatar_se
 }
 
 /**
- * Write the "show in search" box of a profile: the first two flags of the account, which are what OpenSimulator shows the
- * viewer and keeps (the rest of the flags is left as it is).
+ * Write the "show in search" box of a profile: the first flag of the account, which is what OpenSimulator shows the viewer and
+ * keeps. The other flags of the account (identified, transacted, age verified...) are not the user's choice here: left as they are.
  *
  * @param  object $db     the database of the user accounts service (prepareAndExecute)
  * @param  string $avatar the UUID of the avatar
  * @param  mixed  $allow  the profile is shown in search
- * @param  mixed  $mature the shown profile is mature
  * @return string ok, invalid (not an avatar) or missing (not an account of the grid)
  */
-function helpers_profile_publish($db, $avatar, $allow, $mature)
+function helpers_profile_publish($db, $avatar, $allow)
 {
     if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', (string) $avatar)) {
         return 'invalid';
@@ -50,7 +49,7 @@ function helpers_profile_publish($db, $avatar, $allow, $mature)
     if (!$row) {
         return 'missing';
     }
-    $flags = ((int) ($row[0]['UserFlags'] ?? 0) & ~3) | (filter_var($allow, FILTER_VALIDATE_BOOLEAN) ? 1 : 0) | (filter_var($mature, FILTER_VALIDATE_BOOLEAN) ? 2 : 0);
+    $flags = ((int) ($row[0]['UserFlags'] ?? 0) & ~1) | (filter_var($allow, FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
     $db->prepareAndExecute('UPDATE UserAccounts SET UserFlags = :flags WHERE PrincipalID = :id', ['flags' => $flags, 'id' => $avatar]);
 
     return 'ok';

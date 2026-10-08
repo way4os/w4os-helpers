@@ -54,26 +54,26 @@ describe('The caller that may tell it', function () {
 describe('The box of a profile', function () {
     $avatar = 'aaaaaaaa-0000-4000-8000-000000000001';
 
-    test('is written in the first two flags of the account, as they are 1 and 2, the others are kept', function () use ($avatar) {
+    test('is written in the first flag of the account, as 1, every other flag is kept (age verified is 32)', function () use ($avatar) {
         $written = [];
 
-        // 0x0c = two flags of the account that are not ours (identified, transacted), 2 = mature: published, not mature
-        expect(helpers_profile_publish(accounts_db([$avatar => 0x0e], $written), $avatar, true, 'false'))->toBe('ok');
-        expect(helpers_profile_publish(accounts_db([$avatar => 0x0d], $written), $avatar, 'true', true))->toBe('ok');
-        expect(helpers_profile_publish(accounts_db([$avatar => 0x0f], $written), $avatar, false, false))->toBe('ok');
+        // 0x2e = mature (2), identified (4), transacted (8), age verified (32): none is ours but the first
+        expect(helpers_profile_publish(accounts_db([$avatar => 0x2e], $written), $avatar, true))->toBe('ok');
+        expect(helpers_profile_publish(accounts_db([$avatar => 0x2f], $written), $avatar, 'true'))->toBe('ok');
+        expect(helpers_profile_publish(accounts_db([$avatar => 0x2f], $written), $avatar, false))->toBe('ok');
         expect($written)->toBe([
-            ['flags' => 0x0d, 'id' => $avatar],
-            ['flags' => 0x0f, 'id' => $avatar],
-            ['flags' => 0x0c, 'id' => $avatar],
+            ['flags' => 0x2f, 'id' => $avatar],
+            ['flags' => 0x2f, 'id' => $avatar],
+            ['flags' => 0x2e, 'id' => $avatar],
         ]);
     });
 
     test('is not written for what is not an account of the grid, nor for what is not an avatar', function () use ($avatar) {
         $written = [];
 
-        expect(helpers_profile_publish(accounts_db([], $written), $avatar, true, true))
+        expect(helpers_profile_publish(accounts_db([], $written), $avatar, true))
             ->toBe('missing')
-            ->and(helpers_profile_publish(accounts_db([$avatar => 0], $written), "x' OR '1'='1", true, true))
+            ->and(helpers_profile_publish(accounts_db([$avatar => 0], $written), "x' OR '1'='1", true))
             ->toBe('invalid')
             ->and($written)
             ->toBe([]);
