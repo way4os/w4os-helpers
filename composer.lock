@@ -73,7 +73,7 @@
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "a24ff313883e92be0b2249bab56fe5a575f2895d"
+                "reference": "147ac9dcba1d7587b085b9a4fe2344579694dc55"
             },
             "require": {
                 "ext-curl": "*",
@@ -1051,16 +1051,16 @@
         },
         {
             "name": "magicoli/build-tools",
-            "version": "0.1.2",
+            "version": "0.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/magicoli/build-tools.git",
-                "reference": "c8cb6588af519afb8c307a54f4634a0df9fc5104"
+                "reference": "ff58191f0eebb1cb6e42f533bf0cc49057e09246"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/magicoli/build-tools/zipball/c8cb6588af519afb8c307a54f4634a0df9fc5104",
-                "reference": "c8cb6588af519afb8c307a54f4634a0df9fc5104",
+                "url": "https://api.github.com/repos/magicoli/build-tools/zipball/ff58191f0eebb1cb6e42f533bf0cc49057e09246",
+                "reference": "ff58191f0eebb1cb6e42f533bf0cc49057e09246",
                 "shasum": ""
             },
             "require": {
@@ -1085,9 +1085,9 @@
             "description": "Build, release and publish a project: Debian packages, zip, GitHub release, apt repository.",
             "support": {
                 "issues": "https://github.com/magicoli/build-tools/issues",
-                "source": "https://github.com/magicoli/build-tools/tree/0.1.2"
+                "source": "https://github.com/magicoli/build-tools/tree/0.1.6"
             },
-            "time": "2026-10-05T21:50:02+00:00"
+            "time": "2026-10-06T06:38:34+00:00"
         },
         {
             "name": "magicoli/pest-failure-summary",
@@ -4701,16 +4701,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.4.1",
+            "version": "2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70"
+                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/2ccb7c2e821038c03a3e6e1700c570c158c55f70",
-                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/8a163706bbcac613733dba03f51e13b5eb1bb819",
+                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819",
                 "shasum": ""
             },
             "require": {
@@ -4761,9 +4761,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/2.4.1"
+                "source": "https://github.com/webmozarts/assert/tree/2.5.0"
             },
-            "time": "2026-06-15T15:31:57+00:00"
+            "time": "2026-10-05T23:14:19+00:00"
         }
     ],
     "aliases": [],
