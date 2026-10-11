@@ -1,66 +1,71 @@
 ## Changelog
 
-### Unreleased
+### 3.0.0-beta.6
 
-- update: the functions the engine has (destinations, teleport links, region lookups, XML answers and errors, currency, XML-RPC polyfill) are the engine's, the helpers keep only what is theirs
-- new: the top bar has a menu of the pages the site serves (home, destinations, directory, health), the current one marked
-- update: the ini files are read with the files they include (`Include-`) and their constants, as the OpenSim executables do
-- fix: no default currency key: without `MoneyScriptAccessKey` (`[MoneyServer]` of `MoneyServer.ini`) the currency is not served, bad configuration
-- update: the health page uses the engine's `OpenSim_Health`: sections and settings as in the ini files, each API asked both ways
-- update: health is one table by config file, cert, time and result aligned on the right, nothing said of what is not defined
-- update: health starts with what the grid says (get_grid_info), compares it with the config, calls each service without data and with valid data
-- update: the ini files are read by the engine's `OpenSim_Config`, the helpers keep the grid, the constants and the routes
-- new: the web search page (`search` of the grid info): places, land for sale, events, classifieds, people, a link a viewer follows for each place
-- new: the page of an avatar at `web_profile_url`: what its profile publishes, its picks, its classifieds; a 404 for one that is not there
-- new: the popular places block, the search form on the home page
-- fix: the search registry is read by the helpers when a simulator registers (not by a request to their own address, which their PHP may not trust) again 90 s later (its regions are not all loaded when it registers), then when a host is due, by the search (once a minute at most): no cron job needed
-- fix: a registration (`DATA_SRV_`) that points to `query.php` no longer takes the place of the search at that address: the script an address names answers it
-- update: the web search is `search` of `[GridInfoService]`, `SearchURL` of `[LoginService]` stands for it; health compares both
-- new: public pages `grid_info` and `grid_status` (ONLINE or OFFLINE) under the helpers, `GridInfoURL` and `GridStatusURL` in `[Helpers]`
-- update: `/profile` without a name and the address of the helpers itself answer 418, not a page
-- fix: the search never makes its `regions` table in the database of Robust (it took the place of Robust's); `regionsregister` unless a search table of that name is already there
-- fix: a simulator that registers is let go at once (length and closed connection when the server has no fastcgi_finish_request), it was held while its snapshot was read, which came out empty
-- new: `avatar_publish_update` (query.php): the "show in search" box of a profile, which OpenSimulator never writes, told by the OpenSimSearch module and written in the first flag of the user account (what the simulator shows; the other flags are left as they are), for a caller that holds the secure session of the avatar; the web profile shows what it publishes when that box is on
-- fix: a simulator that registers is read after 30 s, not 2: the snapshot it makes while it starts, without its land, is the one it keeps
-- fix: a search request without flags or without the day and category is answered, not a 500
-- update: a wrong call gets its code (400, 404, 405, 503 for a missing configuration), never a 500 on purpose
-- update: currency.php and landtool.php serve any economy module but BetaGridLikeMoneyModule, no `Currency*` setting
-- update: the Gloebit sandbox is `[Gloebit] GLBEnvironment`; the rate is 4 for 1000 unless the module's addon says
-- update: an address of the grid is served when its host (and its port, if it gives one) are the ones of the page served
-- update: the profile address is `web_profile_url` of the grid info (`[AGENT_NAME]`), also `Firstname-Lastname`
-- fix: the home page shows the destination guide, the block is `destination_guide`
-- update: one source of truth, the settings are read from Robust.ini, OpenSim.ini and the simulators' ini, in their format (README)
-- update: `Helpers.ini`, same format, holds the settings that have no official place, in `[Helpers]`, and a web host's reduced copy
-- update: each query uses the database of its service (accounts, grid users, presence, regions, offline messages, profiles)
-- update: the routes are the addresses the grid gives to its services, on this site only: no ghost service for one set elsewhere
-- removed: `helpers.ini` with its own copy of the grid name, the addresses and the database, `[Urls]`, `[robust_db]`
-- new: one layout for every page, with the main content of the page between a left sidebar and a right one
-- new: blocks (grid info, grid status, message of the day) are variables of the templates (`{{ grid_info }}`), and alone at `<prefix>/blocks/<name>`
-- new: the pages show the content alone to a viewer (the splash page has its sidebars), a browser has the top bar and the footer too
-- new: `/health` lists the addresses of the grid and the services of the helpers, with their status (`?format=json` for a monitor)
-- new: `/profile/<first>.<last>`, `/profile/<first>-<last>` and `/@<first>.<last>` are routed to the profile page
-- update: the files of the pages are in `assets/` (`<prefix>/assets/`: `css`, `js`, `images`), the scripts of pages in `pages/`
-- update: `directory_info.php` is a page of the grid layout, one query per grid
-- removed: the page system of the former wizard (`init.php`, `class-grid.php`, `class-page.php`, `class-form.php`...), nothing used it
-- fix: `directory_info.php` failed on its second visit (an empty cache was read back as text)
-- fix: `eventsparser.php` failed on the first event (`opensim_latin1_only()` did not exist)
-- new: `guide_source` in `helpers.ini` gives the destinations of the guide (a file of the grid folder, a path or a URL)
-- fix: `guide.php` shows nothing behind the router, and its pages show what the file holds as text
-- fix: `textgen.php` reads `size` (the font size was never read), `inpage`, and says when it has no Imagick
-- fix: `directory_info.php` and the locale warned on a request without `Accept-Language` or without grids
-- fix: with a money server, every transfer failed (an invalid lock, two functions that did not exist)
-- fix: buying currency for a land no longer takes the whole balance
-- fix: `currency.php` failed without `currency_rate` (10 for 1000 now) and on a refused purchase
-- fix: Gloebit offers the pack that covers the amount; the balance needs the secure session
-- fix: `landtool.php` answers a negative amount or a declined transaction, instead of nothing
-- fix: `offline.php/SaveMessage/` and `/RetrieveMessages/` were a 404 behind the router: no offline message
-- fix: a simulator that cannot be reached is asked again later, more and more late, not at every run
-- fix: a parcel without picture or group got the ones of the parcel before it in the search tables
-- fix: the search by name gives the second page (`query_start` is a string), and sorts places by traffic
-- fix: an answer of the search without result still has its (empty) list of data, which the module reads
-- fix: without ext-xmlrpc, `query.php`, `currency.php` and `landtool.php` answered with two XML documents
-- fix: through the router, the scripts did not see their global variables: `query.php` and `register.php` failed
-- removed: `SEARCH_REGISTRARS`, dead code (the simulators register with their `DATA_SRV_*`)
+Freeze current state before refactor
+
+- fix(search): a registering simulator is read after 30 s, when its regions are loaded: the snapshot it makes while starting is the one it keeps
+- fix(profile): only the show in search flag of the account is written, the other flags are not the user's choice
+- docs(changelog): show in search is the flags of the user account
+- fix(profile): show in search is the first flag of the user account, which is what OpenSimulator shows and keeps, not a column of the profile
+- fix(search): a simulator that could not be read keeps its backoff, it is not read again in 90 s
+- fix(search): a simulator that registers is read again 90 s later, its regions are not all loaded when it registers
+- fix(search): avatar_publish_update needs the secure session of the avatar, not the address of the caller
+- fix(search): avatar_publish_update answers as the other calls do, a struct with success and errorMessage
+- feat(search): avatar_publish_update, the show in search box of a profile that Robust ignores, written for the simulators of the grid only
+- fix(search): a registering simulator is let go at once, not held while its snapshot is read (it was read empty); the search reads the hosts that are due once a minute
+- docs(changelog): the regions table of the search, the search requests without flags
+- fix(search): the table of the regions of the search is never the regions table of Robust, whether Robust has made it or not yet
+- fix(search): a search request without flags or without the day|category pieces is answered, not a 500
+- feat(pages): the web search, the page of an avatar, the popular places; fix: the search registry is read in process, and by the search every ten minutes
+- docs(changelog): the script an address names answers it
+- fix(routes): the script an address names answers it, a registration that points to query.php no longer takes the place of the search
+- feat(health): an address is shown as the config says it and linked as it was asked; docs: the web search settings as tested with Firestorm
+- feat(config): search_url, search of the grid info first, SearchURL of the login service when the grid has only that
+- feat(pages): public pages grid_info and grid_status (ONLINE, OFFLINE) under the helpers, GridInfoURL and GridStatusURL in [Helpers]; fix(health): the profile with an avatar name is in the config section
+- refactor(config): the ini files are read by the engine's OpenSim_Config; feat(health): what the grid says first, compared with the config, each service called without data and with valid data
+- feat(health): one aligned table by config file, cert, time and result on the right, franker colors
+- feat(health): the health page asks the engine's checks; wrong calls get their code (418, 405, 400, 404, 503), never a 500 on purpose
+- refactor(functions): the helpers use the engine's functions (destinations, teleport links, regions, XML answers, currency, XML-RPC polyfill) and keep only what is theirs
+- fix(health): the avatar the profile is asked for is the first account that is not the services of the grid
+- fix(currency)!: no default key, without MoneyScriptAccessKey the currency is not served (bad configuration); fix(health): 404 and any error in red, orange for an untrusted certificate, the key row, the profile without a name expects a bad request
+- fix(health): curl ignores the certificate and the page reports it, the profile is asked with the name of the owner and without; /helpers is a public page and health keeps its own address; the script key is only the MoneyServer's
+- fix(config): the ini files are read with their includes and constants, MoneyScriptAccessKey only in [MoneyServer] of MoneyServer.ini; fix(health): sections and settings as in the ini files, links, final HTTP code or error code, every address of [GridInfoService]; the address of the helpers answers
+- feat(pages): the menu lists the pages the site serves, health also under the helpers path; fix(currency): each grid has its own script key (MoneyServer's, Helpers.ini's, or made of its database password)
+- docs(economy): what currency.php and landtool.php do with a module, and who sends to the page of Gloebit
+- fix(economy): currency.php and landtool.php serve any module but the beta one, Gloebit adds through its region and sends to its page when it cannot; default rate 4 for 1000, UseUTCTime back
+- feat(economy): the currency is what the economy module says (Gloebit, BetaGridLike), the settings of Gloebit are read, a currency sold elsewhere is never added; web_profile_url routes the profiles
+- fix(routes): an address of the grid is served when its host (and its port, if it gives one) are the ones of the page served
+- fix(guide): the block is destination_guide, as the setting is called: the home page shows it
+- fix(config): a key given twice in a section is read as OpenSimulator reads it, the first one
+- feat(config)!: the helpers read the official settings of OpenSim.ini and Robust.ini, Helpers.ini holds what has no place there; routes from the addresses of the grid on this site; each query on the database of its service
+- fix(guide): the title of a category is its name
+- feat(pages): templates in layouts, pages and components with suffixes, a theme folder that replaces them and the assets, the guide and directory_info as blocks of the layout (3-6-3), styles in the head
+- feat(guide): an empty guide tells the one who runs the grid why, in the log and in the page source; docs(layout): the templates, the blocks, the assets
+- feat(health): the addresses of the grid itself are asked at /get_grid_info
+- feat(pages): one layout with a left and a right sidebar, blocks as variables of the templates, a health page, the routes of the profiles; assets in assets/
+- feat(pages): blocks (grid info, grid status) and a layout that adapts to viewers and browsers; static files in static/, page scripts in pages/
+- feat(guide): a guide_source that is a file name is looked for in the folder of the grid
+- fix(search): the cache gives back what was stored, an empty list included
+- test(helpers): the destinations, the teleport links, UUIDs, the price of the currency and the guide, with no OpenSim at all
+- fix(events): opensim_latin1_only, which eventsparser calls, exists
+- fix(scripts): guide through the router and from helpers.ini, textgen size and download, directory_info without grids
+- docs(changelog): the currency fixes, shorter
+- fix(currency): the balances table is locked with a valid query
+- fix(currency): the region of a transaction is looked up in the database of the grid
+- fix(currency): the transactions of a money server get an id, the purchase for a land debits nothing
+- fix(currency): a default rate, the Gloebit pack, the balance for who has the session, the answers of landtool
+- docs(changelog): the offline messages behind the router
+- fix(router): a script called with what OpenSimulator adds to it (offline.php/SaveMessage/) is served, and gets it as PATH_INFO
+- docs(changelog): the delay of the unreachable simulators
+- fix(search): a simulator that cannot be reached is asked again later, as the code says, not at every run
+- docs(changelog): the fixes of the search
+- fix(search): a parcel without picture or group does not get the ones of the parcel before it
+- fix(search): the second page and the sort by traffic: the page is a number for the SQL, the order is not a parameter
+- fix(search): an answer without a result still has its list of data, which the module reads
+- fix(xmlrpc): the polyfill leaves the printing to the methods, as the extension does: one answer, not two
+- fix(router): a script runs in the global scope, as with a web server, the entry includes it
+- refactor(search): remove SEARCH_REGISTRARS, dead code: a simulator registers to several search services with its DATA_SRV_*
 
 ### 3.0.0-beta.5
 
