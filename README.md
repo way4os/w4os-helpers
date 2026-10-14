@@ -28,7 +28,7 @@ Some projects based on this library:
 
 ## Requirements
 
-PHP 8.2 or newer, with the `curl`, `dom`, `filter`, `gettext`, `intl`, `json`, `mbstring`, `pdo`, `session` and `simplexml` extensions, plus those of [opensim-engine](https://github.com/magicoli/opensim-engine). `imagick` is needed by `textgen.php` only.
+PHP 8.2 or newer, with the `curl`, `dom`, `filter`, `intl`, `json`, `mbstring`, `pdo`, `session` and `simplexml` extensions, plus those of [opensim-engine](https://github.com/magicoli/opensim-engine). `gettext` is recommended, for the translations: without it the messages stay in English. `imagick` is needed by `textgen.php` only.
 
 On Debian and Ubuntu: `sudo apt install php-cli php-curl php-intl php-mbstring php-mysql php-xml`, and `php-imagick` for `textgen.php`.
 

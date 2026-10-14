@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- update: `gettext` is recommended, not required: without it the messages stay in English
+
 ### 3.0.0-beta.6
 
 Freeze current state before refactor

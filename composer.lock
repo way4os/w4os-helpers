@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7bf1518be6565ea906292faa8c2b5fc1",
+    "content-hash": "3d3cdf6292e2ccfd030af02f4012d20f",
     "packages": [
         {
             "name": "laminas/laminas-escaper",
@@ -143,12 +143,11 @@
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "99719ede0ee66ab2cf7fad2920a4df2c994354c6"
+                "reference": "2d6d78ab98a2458328106b756f17f170681bfb69"
             },
             "require": {
                 "ext-curl": "*",
                 "ext-filter": "*",
-                "ext-gettext": "*",
                 "ext-intl": "*",
                 "ext-json": "*",
                 "ext-mbstring": "*",
@@ -174,6 +173,7 @@
                 "squizlabs/php_codesniffer": "^4.0"
             },
             "suggest": {
+                "ext-gettext": "To translate the messages; without it they stay in English",
                 "ezyang/htmlpurifier": "For advanced HTML sanitization if rich content is needed"
             },
             "type": "library",
@@ -186,6 +186,7 @@
                     "legacy/"
                 ],
                 "files": [
+                    "includes/functions-gettext.php",
                     "includes/functions-escaping.php"
                 ]
             },
@@ -4981,7 +4982,6 @@
         "ext-curl": "*",
         "ext-dom": "*",
         "ext-filter": "*",
-        "ext-gettext": "*",
         "ext-intl": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
