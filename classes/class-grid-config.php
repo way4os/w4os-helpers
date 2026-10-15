@@ -85,6 +85,48 @@ class OpenSim_Helpers_GridConfig
     }
 
     /**
+     * The config of the grid in the form the engine reads, to ask its models (OpenSim\Models\Avatar...): the files of the grid when
+     * the helpers read them, else the databases the constants of includes/config.php give.
+     *
+     * @return \OpenSim\Config\GridConfig
+     */
+    public static function engine_config()
+    {
+        return self::$current['config'] ?? self::config_from_constants(get_defined_constants(true)['user'] ?? []);
+    }
+
+    /**
+     * A config for the engine from the constants of the historic includes/config.php: Robust's database, the one of each service that
+     * has its own, and the search and the offline messages when they are not Robust's.
+     *
+     * @param  array<string,mixed> $constants
+     * @return \OpenSim\Config\GridConfig
+     */
+    public static function config_from_constants($constants)
+    {
+        $string = static fn($host, $name, $user, $password) => sprintf('Data Source=%s;Database=%s;User ID=%s;Password=%s;Old Guids=true;', $host, $name, $user, $password);
+        $of = static fn($prefix) => isset($constants["{$prefix}_DB_HOST"], $constants["{$prefix}_DB_NAME"])
+            ? $string($constants["{$prefix}_DB_HOST"], $constants["{$prefix}_DB_NAME"], $constants["{$prefix}_DB_USER"] ?? '', $constants["{$prefix}_DB_PASS"] ?? '')
+            : null;
+        $tree = [];
+        $robust = $of('OPENSIM');
+        if ($robust !== null) {
+            $tree['Robust']['DatabaseService']['ConnectionString'] = $robust;
+        }
+        foreach ((array) ($constants['OPENSIM_DB_SERVICES'] ?? []) as $section => $own) {
+            $tree['Robust'][$section]['ConnectionString'] = $string($own['hostname'] ?? '', $own['prefix'] ?? '', $own['user'] ?? '', $own['password'] ?? '');
+        }
+        if (($search = $of('SEARCH')) !== null && $search !== $robust) {
+            $tree['Helpers']['Helpers']['SearchConnectionString'] = $search;
+        }
+        if (($offline = $of('OFFLINE')) !== null && $offline !== $robust) {
+            $tree['Robust']['Messaging']['ConnectionString'] = $offline;
+        }
+
+        return new \OpenSim\Config\GridConfig($tree);
+    }
+
+    /**
      * The opensim.conf to read: OPENSIM_CONF (constant or environment), else the one of the system.
      *
      * @return string|null

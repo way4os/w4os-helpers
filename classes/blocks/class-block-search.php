@@ -131,11 +131,14 @@ class OpenSim_Helpers_Block_Search
 
                 return array_map(fn($row) => ['title' => (string) $row['name'], 'detail' => trim($row['parcelname'] . ($row['region'] === '' ? '' : ', ' . $row['region']), ', '), 'text' => trim((string) $row['description']), 'url' => null], $rows);
             case 'people':
-                $db = function_exists('db_for') ? db_for('UserAccountService') : null;
-                $rows = self::rows($db, "SELECT FirstName, LastName FROM UserAccounts WHERE active = 1 AND NOT (FirstName = 'GRID' AND LastName = 'SERVICES') AND CONCAT(FirstName, ' ', LastName) LIKE :q ORDER BY FirstName, LastName LIMIT $limit", ['q' => $like]);
+                try {
+                    $people = \OpenSim\Models\Avatar::all(OpenSim_Helpers_GridConfig::engine_config(), ['search' => $q, 'filters' => ['active' => 'yes', 'technical' => 'no'], 'perPage' => (int) $limit])->array();
+                } catch (\OpenSim\Models\ChannelUnavailable $e) {
+                    $people = [];
+                }
                 $profile = OpenSim_Helpers_View::page_path('profile');
 
-                return array_map(fn($row) => ['title' => $row['FirstName'] . ' ' . $row['LastName'], 'detail' => '', 'text' => '', 'url' => $profile === null ? null : rtrim($profile, '/') . '/' . rawurlencode($row['FirstName'] . '.' . $row['LastName'])], $rows);
+                return array_map(fn($person) => ['title' => $person['name'], 'detail' => '', 'text' => '', 'url' => $profile === null ? null : rtrim($profile, '/') . '/' . rawurlencode($person['firstName'] . '.' . $person['lastName'])], $people);
         }
 
         return [];

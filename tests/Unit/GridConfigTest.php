@@ -530,3 +530,26 @@ describe('The routes', function () {
             ->not->toHaveKeys(['/helpers/guide.php', '/helpers/motd.php', '/welcome']);
     });
 });
+
+describe('The config for the engine', function () {
+    test('is made from the constants of includes/config.php: Robust, the services that have their own, the search and the offline messages', function () {
+        $config = OpenSim_Helpers_GridConfig::config_from_constants([
+            'OPENSIM_DB_HOST' => 'localhost', 'OPENSIM_DB_NAME' => 'robust', 'OPENSIM_DB_USER' => 'os', 'OPENSIM_DB_PASS' => 'pw',
+            'OPENSIM_DB_SERVICES' => ['UserAccountService' => ['hostname' => 'db2', 'prefix' => 'accounts', 'user' => 'acc', 'password' => 'pw2']],
+            'SEARCH_DB_HOST' => 'localhost', 'SEARCH_DB_NAME' => 'search', 'SEARCH_DB_USER' => 'os', 'SEARCH_DB_PASS' => 'pw',
+            'OFFLINE_DB_HOST' => 'localhost', 'OFFLINE_DB_NAME' => 'robust', 'OFFLINE_DB_USER' => 'os', 'OFFLINE_DB_PASS' => 'pw',
+        ]);
+
+        expect(\OpenSim\Data\Database::Robust->connection($config)->database)->toBe('robust')
+            ->and(\OpenSim\Data\Database::service($config, 'UserAccountService')->database)->toBe('accounts')
+            ->and(\OpenSim\Data\Database::service($config, 'UserAccountService')->host)->toBe('db2')
+            ->and(\OpenSim\Data\Database::Search->connection($config)->database)->toBe('search')
+            ->and(\OpenSim\Data\Database::Offline->connection($config)->database)->toBe('robust');
+    });
+
+    test('has nothing without a database', function () {
+        $config = OpenSim_Helpers_GridConfig::config_from_constants([]);
+
+        expect(\OpenSim\Data\Database::Robust->connection($config))->toBeNull();
+    });
+});

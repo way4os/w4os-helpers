@@ -153,11 +153,13 @@ class OpenSim_Helpers_Block_Health
      */
     private static function owner()
     {
-        $db = function_exists('db_for') ? db_for('UserAccountService') : null;
-        $statement = $db ? $db->prepareAndExecute("SELECT FirstName, LastName FROM UserAccounts WHERE NOT (FirstName = 'GRID' AND LastName = 'SERVICES') ORDER BY Created, FirstName LIMIT 1", []) : false;
-        $row = $statement ? $statement->fetch(PDO::FETCH_NUM) : false;
+        try {
+            $owner = \OpenSim\Models\Avatar::all(OpenSim_Helpers_GridConfig::engine_config(), ['sort' => 'created', 'perPage' => 1, 'filters' => ['technical' => 'no']])->first();
+        } catch (\OpenSim\Models\ChannelUnavailable $e) {
+            return null;
+        }
 
-        return $row ? "$row[0].$row[1]" : null;
+        return $owner ? $owner->detail()['firstName'] . '.' . $owner->detail()['lastName'] : null;
     }
 
     /** The database of Robust, the one every query starts from. */

@@ -4,17 +4,14 @@
  * its name, since when it is a member, what it published (its text, its languages, its web page), its picks and its
  * classifieds. A profile that is not published shows its name and the date of its account, nothing else.
  *
- * The profile is the one of the profile service of Robust (UserProfilesService: the tables userprofile, userpicks and
- * classifieds), the avatar is an account of the grid (UserAccounts). The page of an avatar that does not exist is a 404.
+ * The avatar and its profile are read by the engine (OpenSim\Models\Avatar: the account of the grid, the profile service of Robust
+ * with its picks and its classifieds). The page of an avatar that does not exist is a 404.
  *
  * @package     magicoli/opensim-helpers
  * @license     AGPLv3
  */
 class OpenSim_Helpers_Block_Profile
 {
-    /** The account of the services of the grid, which makes no profile. */
-    const SERVICES = ['GRID', 'SERVICES'];
-
     /**
      * @param  array<string,mixed> $args `name`: First.Last, the way the address of a profile says it
      * @return array<string,mixed>
@@ -23,27 +20,41 @@ class OpenSim_Helpers_Block_Profile
     {
         $name = (string) ($args['name'] ?? '');
         [$first, $last] = array_pad(explode('.', explode('@', $name)[0], 2), 2, '');
-        $accounts = function_exists('db_for') ? db_for('UserAccountService') : null;
-        $profiles = function_exists('db_for') ? db_for('UserProfilesService') : null;
-        $fetch = static function ($db, $sql, $params) {
-            $statement = $db ? $db->prepareAndExecute($sql, $params) : false;
-
-            return $statement ? $statement->fetchAll(PDO::FETCH_ASSOC) : [];
-        };
-
-        $account = $fetch($accounts, 'SELECT PrincipalID, FirstName, LastName, Created, UserTitle, UserFlags FROM UserAccounts WHERE FirstName = :first AND LastName = :last AND active = 1', ['first' => $first, 'last' => $last])[0] ?? null;
-        if ($account === null || ($account['FirstName'] === self::SERVICES[0] && $account['LastName'] === self::SERVICES[1])) {
+        $config = OpenSim_Helpers_GridConfig::engine_config();
+        try {
+            $avatar = \OpenSim\Models\Avatar::find($config, "$first.$last");
+        } catch (\OpenSim\Models\ChannelUnavailable $e) {
+            $avatar = null;
+        }
+        // The account of the services of the grid, or one that is not active, has no page
+        if ($avatar === null || $avatar->isTechnical() || !$avatar->isEnabled()) {
             return self::missing($name);
         }
-        $id = $account['PrincipalID'];
-        $profile = $fetch($profiles, 'SELECT * FROM userprofile WHERE useruuid = :id', ['id' => $id])[0] ?? [];
-        $picks = $fetch($profiles, "SELECT name, description, simname, posglobal, gatekeeper FROM userpicks WHERE creatoruuid = :id AND enabled = 'true' ORDER BY sortorder, name", ['id' => $id]);
-        $classifieds = $fetch($profiles, 'SELECT name, description, simname, parcelname, creationdate, expirationdate FROM classifieds WHERE creatoruuid = :id AND expirationdate > :now ORDER BY creationdate DESC', ['id' => $id, 'now' => time()]);
+        $detail = $avatar->detail();
+        $account = [
+            'PrincipalID' => $detail['id'],
+            'FirstName' => $detail['firstName'],
+            'LastName' => $detail['lastName'],
+            'Created' => $detail['created'],
+            'UserTitle' => $detail['title'],
+            'UserFlags' => $detail['flags'],
+        ];
+        $profile = [
+            'profilePartner' => (string) $detail['partner'],
+            'profileAboutText' => $detail['about'],
+            'profileFirstText' => $detail['firstLife'],
+            'profileWantToText' => $detail['wants'],
+            'profileSkillsText' => $detail['skills'],
+            'profileLanguages' => $detail['languages'],
+            'profileURL' => $detail['profileUrl'],
+        ];
         $partner = null;
-        if (!empty($profile['profilePartner']) && $profile['profilePartner'] !== NULL_KEY) {
-            $row = $fetch($accounts, 'SELECT FirstName, LastName FROM UserAccounts WHERE PrincipalID = :id', ['id' => $profile['profilePartner']])[0] ?? null;
-            $partner = $row ? ['name' => $row['FirstName'] . ' ' . $row['LastName'], 'url' => self::url($row['FirstName'], $row['LastName'])] : null;
+        if ($detail['partner'] !== null) {
+            $other = \OpenSim\Models\Avatar::find($config, $detail['partner']);
+            $partner = $other ? ['name' => $other->name(), 'url' => self::url($other->detail()['firstName'], $other->detail()['lastName'])] : null;
         }
+        $picks = $avatar->picks();
+        $classifieds = $avatar->classifieds();
 
         return self::build($account, $profile, $picks, $classifieds, $partner);
     }
