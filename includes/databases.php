@@ -1,84 +1,12 @@
 <?php
 /**
- * New database class using PDO, replaces DB class using mysqli
+ * The databases of the helpers, opened with OSPDO (the class of the engine).
  *
  * @package     magicoli/opensim-helpers
  * @author      Gudule Lapointe <gudule@speculoos.world>
  * @link            https://github.com/magicoli/opensim-helpers
  * @license     AGPLv3
  */
-
-class OSPDO extends PDO
-{
-    public $connected = false;
-
-    public function __construct($dsn, $username = null, $password = null, $driver_options = null)
-    {
-        try {
-            @parent::__construct($dsn, $username, $password, $driver_options);
-            $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->connected = true;
-        } catch (PDOException $e) {
-            error_log("Could not connect to database $dsn as $username");
-            // error_log($e);
-            $this->connected = false;
-        }
-    }
-
-    /**
-     * Prepare SQL query, execute with params and log error if any
-     *
-     * @param  string $query
-     * @param  array  $options  options passed to prepare()
-     * @param  array  $params     substitute markers passed to execute()
-     * @return PDOstatement if success, false on error
-     */
-    public function prepareAndExecute($query, $params = null, $options = [])
-    {
-        $trace = debug_backtrace()[0];
-        $trace = $trace['file'] . ':' . $trace['line'];
-
-        try {
-            $statement = $this->prepare($query, $options);
-            $result = $statement->execute($params);
-        } catch (PDOException $e) {
-            error_log(
-                'Error ' .
-                    $e->getCode() .
-                    ' ' .
-                    $e->getMessage() .
-                    ' query ' .
-                    print_r($query, true) .
-                    ' params ' .
-                    print_r($params, true) .
-                    ' ' .
-                    $trace,
-            );
-            return false;
-        }
-        // $statement = $this->prepare( $query, $options );
-        // $result    = $statement->execute( $params );
-
-        if ($result) {
-            return $statement;
-        }
-
-        error_log('Error ' . $statement->errorCode() . ' ' . $statement->errorInfo()[2] . ' ' . $trace);
-        return false;
-    }
-
-    public function insert($table, $values)
-    {
-        foreach ($values as $field => $value) {
-            $markers[] = ':' . $field;
-        }
-        $markers = implode(',', $markers);
-        $fields = implode(',', array_keys($values));
-        $sql = "INSERT INTO $table ($fields) VALUES ($markers)";
-        $statement = $this->prepare($sql);
-        return $statement->execute($values);
-    }
-}
 
 function tableExists($pdo, $tables)
 {

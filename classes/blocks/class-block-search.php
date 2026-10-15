@@ -102,7 +102,7 @@ class OpenSim_Helpers_Block_Search
     public static function find($kind, $q)
     {
         global $SearchDB;
-        if (empty($SearchDB) && class_exists('OSPDO') && is_file(dirname(__DIR__, 2) . '/includes/search.php')) {
+        if (empty($SearchDB) && defined('SEARCH_DB_HOST') && defined('SEARCH_DB_NAME') && defined('SEARCH_DB_USER') && defined('SEARCH_DB_PASS') && is_file(dirname(__DIR__, 2) . '/includes/search.php')) {
             require_once dirname(__DIR__, 2) . '/includes/search.php';
         }
         $like = self::like($q);
