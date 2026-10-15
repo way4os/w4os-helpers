@@ -28,7 +28,7 @@ function economy_run(string $code, array $constants = [])
     return json_decode($out, true);
 }
 
-describe('The price of the currency', function () {
+describe('price of the currency', function () {
     test('follows the rate of the grid (real currency for an amount of virtual currency)', function () {
         $cost = fn($amount, $rate, $per) => economy_run("currency_virtual_to_real($amount)", [
             'CURRENCY_RATE' => $rate,
@@ -51,7 +51,7 @@ describe('The price of the currency', function () {
     });
 });
 
-describe('The confirm value', function () {
+describe('confirm value', function () {
     test('is made with the key of the grid and the address of the caller', function () {
         $confirm = fn($key, $ip) => economy_run("currency_get_confirm_value('$ip')", ['CURRENCY_SCRIPT_KEY' => $key]);
 

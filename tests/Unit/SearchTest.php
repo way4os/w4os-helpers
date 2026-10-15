@@ -40,7 +40,7 @@ function search_db(array &$asked): object
     };
 }
 
-describe('The tables of the search', function () {
+describe('tables of the search', function () {
     test('never take the regions table of Robust, made before or after the search', function () {
         expect(helpers_search_region_table(false, false))
             ->toBe('regionsregister')
@@ -52,7 +52,7 @@ describe('The tables of the search', function () {
     });
 });
 
-describe('The search of the web', function () {
+describe('search of the web', function () {
     beforeEach(function () {
         unset($_SERVER['PATH_INFO']);
         $GLOBALS['SearchDB'] = null;

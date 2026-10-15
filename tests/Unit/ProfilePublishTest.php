@@ -30,7 +30,7 @@ function accounts_db(array $accounts, array &$written): object
     };
 }
 
-describe('The caller that may tell it', function () {
+describe('caller that may tell it', function () {
     $session = fn($avatar) => $avatar === 'aaaaaaaa-0000-4000-8000-000000000001' ? ['secureID' => 'B0B0B0B0-0000-4000-8000-000000000002'] : [];
 
     test('holds the secure session of an avatar who is in the grid', function () use ($session) {
@@ -51,7 +51,7 @@ describe('The caller that may tell it', function () {
     });
 });
 
-describe('The box of a profile', function () {
+describe('box of a profile', function () {
     $avatar = 'aaaaaaaa-0000-4000-8000-000000000001';
 
     test('is written in the first flag of the account, as 1, every other flag is kept (age verified is 32)', function () use ($avatar) {

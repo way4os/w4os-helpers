@@ -60,7 +60,7 @@ describe('Who asks', function () {
     });
 });
 
-describe('The URLs of the helpers', function () {
+describe('URLs of the helpers', function () {
     test('start at the path of the helpers, /helpers by default', function () {
         expect(OpenSim_Helpers_View::base_path())
             ->toBe('/helpers')
@@ -71,7 +71,7 @@ describe('The URLs of the helpers', function () {
     });
 });
 
-describe('The theme of the grid', function () {
+describe('theme of the grid', function () {
     test('replaces a template of the helpers, and adds its own', function () {
         $_SERVER['HTTP_USER_AGENT'] = FIREFOX;
         $themed = OpenSim_Helpers_View::page('themed');
@@ -98,7 +98,7 @@ describe('The theme of the grid', function () {
     });
 });
 
-describe('The home page', function () {
+describe('home page', function () {
     test('shows the destination guide, the message of an empty one included, the search form alone, and no place when none has traffic', function () {
         $_SERVER['HTTP_USER_AGENT'] = FIREFOX;
         ini_set('error_log', '/dev/null');
@@ -116,7 +116,7 @@ describe('The home page', function () {
     });
 });
 
-describe('The columns of a page', function () {
+describe('columns of a page', function () {
     test('are all there for a browser, with the top bar and the footer', function () {
         $_SERVER['HTTP_USER_AGENT'] = FIREFOX;
         $html = OpenSim_Helpers_View::page('home');
@@ -152,7 +152,7 @@ describe('The columns of a page', function () {
     });
 });
 
-describe('The main content of a page', function () {
+describe('main content of a page', function () {
     test('is the block of the same name, when the grid has no template for it', function () {
         $_SERVER['HTTP_USER_AGENT'] = FIREFOX;
         $_SERVER['HTTP_USER_AGENT'] = FIRESTORM;
@@ -198,7 +198,7 @@ describe('A template', function () {
     });
 });
 
-describe('The menu', function () {
+describe('menu', function () {
     $labels = OpenSim_Helpers_View::labels();
 
     test('has the pages the site serves, at the address of each, in a fixed order', function () use ($labels) {
@@ -232,7 +232,7 @@ describe('The menu', function () {
     });
 });
 
-describe('The health block', function () {
+describe('health block', function () {
     test('is one table: the files and the sections are rows of it, the cert, the time and the result are columns on the right, in this order', function () {
         $html = OpenSim_Helpers_View::render('components/health-block.twig', [
             'title' => 'Health',

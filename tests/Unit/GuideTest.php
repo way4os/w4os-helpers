@@ -38,7 +38,7 @@ function guide_block(string $content, array $args = []): string
     return $html;
 }
 
-describe('The destinations of a text', function () {
+describe('destinations of a text', function () {
     test('are by category, in the order of the file', function () {
         $destinations = OpenSim_Helpers_Guide::parse(GUIDE_FILE);
 
@@ -49,15 +49,23 @@ describe('The destinations of a text', function () {
     });
 
     test('can be in the older format, the grid and the region in the 4th and 5th columns', function () {
-        expect(OpenSim_Helpers_Guide::parse(GUIDE_FILE)['Places to see'][1]['url'])->toBe('http://other.example:8002/Old Region/10/20/30');
+        expect(OpenSim_Helpers_Guide::parse(GUIDE_FILE)['Places to see'][1]['url'])->toBe(
+            'http://other.example:8002/Old Region/10/20/30',
+        );
     });
 
     test('have the place in the region of a third column of numbers', function () {
-        expect(OpenSim_Helpers_Guide::parse(GUIDE_FILE)['Places to see'][3]['url'])->toBe('testgrid.example:8002:Residences/128/128/30');
+        expect(OpenSim_Helpers_Guide::parse(GUIDE_FILE)['Places to see'][3]['url'])->toBe(
+            'testgrid.example:8002:Residences/128/128/30',
+        );
     });
 
     test('leave out the comments and the layout hints of a board (a dash, a pipe alone)', function () {
-        $names = array_merge(...array_values(array_map(fn($list) => array_column($list, 'name'), OpenSim_Helpers_Guide::parse(GUIDE_FILE))));
+        $names = array_merge(
+            ...array_values(
+                array_map(fn($list) => array_column($list, 'name'), OpenSim_Helpers_Guide::parse(GUIDE_FILE)),
+            ),
+        );
 
         expect($names)->not->toContain('-')->not->toContain('a comment');
     });
@@ -75,7 +83,7 @@ describe('The destinations of a text', function () {
     });
 });
 
-describe('The guide block', function () {
+describe('guide block', function () {
     test('lists the categories of the file, with their number of destinations', function () {
         $html = guide_block(GUIDE_FILE);
 
@@ -115,11 +123,14 @@ describe('The guide block', function () {
         expect($html)->toContain('Only category')->toContain('Single')->not->toContain('Back to categories');
     });
 
-    test('says there is nothing to show when the file holds no destination, and why to the one who reads the source', function () {
-        expect(guide_block("# nothing here\n\n"))
-            ->toContain('realm of destinations')
-            ->toContain('<!-- no destination: GuideSource');
-    });
+    test(
+        'says there is nothing to show when the file holds no destination, and why to the one who reads the source',
+        function () {
+            expect(guide_block("# nothing here\n\n"))
+                ->toContain('realm of destinations')
+                ->toContain('<!-- no destination: GuideSource');
+        },
+    );
 
     test('links its style and its script from the head of the page, not from its own body', function () {
         $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 Firefox/130.0';

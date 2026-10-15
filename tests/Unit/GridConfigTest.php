@@ -105,7 +105,7 @@ describe('Finding the grid', function () {
     });
 });
 
-describe('The settings', function () {
+describe('settings', function () {
     test('are the official ones: the name of the grid, its address, its web site', function () {
         [$conf] = grid_config_tree();
 
@@ -274,7 +274,7 @@ describe('The settings', function () {
     });
 });
 
-describe('The addon of a module', function () {
+describe('addon of a module', function () {
     /** Load the Gloebit addon against the config of a test grid, in its own process: it defines constants. */
     function gloebit_addon(string $ini): array
     {
@@ -304,7 +304,7 @@ describe('The addon of a module', function () {
     });
 });
 
-describe('The databases', function () {
+describe('databases', function () {
     test('are Robust\'s, one for every service that says nothing', function () {
         $constants = grid_constants();
 
@@ -377,7 +377,7 @@ describe('The databases', function () {
     });
 });
 
-describe('The routes', function () {
+describe('routes', function () {
     $routes = fn(string $helpers = '', array $files = [], ?string $robust = null) => (function () use ($helpers, $files) {
         [$conf] = grid_config_tree($helpers, true, $files);
 
@@ -531,7 +531,7 @@ describe('The routes', function () {
     });
 });
 
-describe('The config for the engine', function () {
+describe('config for the engine', function () {
     test('is made from the constants of includes/config.php: Robust, the services that have their own, the search and the offline messages', function () {
         $config = OpenSim_Helpers_GridConfig::config_from_constants([
             'OPENSIM_DB_HOST' => 'localhost', 'OPENSIM_DB_NAME' => 'robust', 'OPENSIM_DB_USER' => 'os', 'OPENSIM_DB_PASS' => 'pw',

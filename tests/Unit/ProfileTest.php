@@ -9,7 +9,7 @@ require_once dirname(__DIR__, 2) . '/classes/class-view.php';
 require_once dirname(__DIR__, 2) . '/classes/class-blocks.php';
 require_once dirname(__DIR__, 2) . '/classes/class-router.php';
 
-describe('The profile of an avatar', function () {
+describe('profile of an avatar', function () {
     $account = ['FirstName' => 'Jane', 'LastName' => 'Doe', 'Created' => 1700000000, 'UserTitle' => 'Builder', 'UserFlags' => 1];
     $profile = [
         'profileAboutText' => "Builds things.\nLikes trains.",

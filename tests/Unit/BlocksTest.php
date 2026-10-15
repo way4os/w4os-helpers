@@ -117,7 +117,7 @@ describe('Block motd', function () {
     });
 });
 
-describe('The blocks', function () {
+describe('blocks', function () {
     test('give nothing for a block that does not exist', function () {
         expect(OpenSim_Helpers_Blocks::data('nothing'))
             ->toBeNull()
@@ -126,7 +126,7 @@ describe('The blocks', function () {
     });
 });
 
-describe('The cache', function () {
+describe('cache', function () {
     test('keeps a value for a while, then makes a new one', function () {
         $dir = sys_get_temp_dir() . '/cache-' . bin2hex(random_bytes(4));
         $made = 0;

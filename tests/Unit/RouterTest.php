@@ -258,7 +258,7 @@ describe('What the router does not serve', function () {
     });
 });
 
-describe('The pages of the search and of the profiles', function () {
+describe('pages of the search and of the profiles', function () {
     test('are pages that answer, and an avatar that is not there is a page that says so with a 404', function () {
         [$process, $port] = router_server(['/' => '@home', '/profile' => '@profile', '/search' => '@search']);
         $profile = router_ask($port, '/profile/Nobody.Here');
