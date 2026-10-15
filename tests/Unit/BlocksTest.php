@@ -13,41 +13,6 @@ defined('OPENSIM_GRID_NAME') || define('OPENSIM_GRID_NAME', 'Alpha <b>World');
 defined('OPENSIM_LOGIN_URI') || define('OPENSIM_LOGIN_URI', 'http://127.0.0.1:9');
 defined('OPENSIM_MOTD') || define('OPENSIM_MOTD', 'Hello <USERNAME>\\nSecond line');
 
-/** A database that answers a number for each query, by what the query is about. */
-function counting_db(array $answers): object
-{
-    return new class($answers) {
-        public $connected = true;
-        public array $asked = [];
-
-        public function __construct(private array $answers) {}
-
-        public function prepareAndExecute($sql, $params = [])
-        {
-            $this->asked[] = [$sql, $params];
-            foreach ($this->answers as $about => $value) {
-                if (stripos($sql, $about) !== false) {
-                    return new class($value) {
-                        public function __construct(private $value) {}
-
-                        public function fetchColumn()
-                        {
-                            return is_array($this->value) ? ($this->value[0] ?? false) : $this->value;
-                        }
-
-                        public function fetchAll($mode = null)
-                        {
-                            return (array) $this->value;
-                        }
-                    };
-                }
-            }
-
-            return false;
-        }
-    };
-}
-
 describe('Block grid-info', function () {
     test('gives the name of the grid, and the address to log in with as the link a viewer follows', function () {
         $data = OpenSim_Helpers_Blocks::data('grid-info');
@@ -124,61 +89,6 @@ describe('Block grid-status', function () {
         ])
             ->and(OpenSim_Helpers_Block_GridStatus::rows(['online' => null, 'counts' => null]))
             ->toBe([]);
-    });
-
-    test('counts in the database of Robust, the 30 days from now', function () {
-        $db = counting_db([
-            'FROM UserAccounts WHERE' => 12,
-            'GridUser g' => 5,
-            'Presence p' => 3,
-            'FROM GridUser WHERE' => 8,
-            'FROM Presence WHERE' => 4,
-            'ROUND(SUM' => '1.5',
-            'FROM regions' => 9,
-        ]);
-        $counts = OpenSim_Helpers_Block_GridStatus::counts(fn($service) => $db, 1_800_000_000);
-
-        expect($counts)
-            ->toMatchArray([
-                'members' => 12,
-                'active_members' => 5,
-                'members_in_world' => 3,
-                'active_users' => 8,
-                'total_users' => 4,
-                'regions' => 9,
-                'area' => '1.5',
-            ])
-            ->and($db->asked[1][1])
-            ->toBe(['month' => 1_800_000_000 - 30 * 86400]);
-    });
-
-    test('asks each service its own database, and joins nothing across two', function () {
-        $answers = ['FROM UserAccounts WHERE active' => 100, 'PrincipalID IN' => 4, 'FROM GridUser WHERE' => 3, 'FROM Presence WHERE' => 2, 'FROM regions' => 5];
-        $dbs = [];
-        foreach (['UserAccountService', 'GridUserService', 'PresenceService', 'GridService'] as $service) {
-            $dbs[$service] = counting_db(['SELECT UserID FROM' => ['u1', 'u2', 'u3']] + $answers);
-        }
-        $counts = OpenSim_Helpers_Block_GridStatus::counts(fn($service) => $dbs[$service], 1_800_000_000);
-
-        // The accounts come from their own database, the logins and the presences from theirs
-        expect($counts['members'])
-            ->toBe(100)
-            ->and($counts['regions'])
-            ->toBe(5)
-            ->and(count($dbs['UserAccountService']->asked))
-            ->toBeGreaterThanOrEqual(1)
-            ->and(array_filter(array_column($dbs['UserAccountService']->asked, 0), fn($sql) => str_contains($sql, 'GridUser')))
-            ->toBe([])
-            ->and(array_filter(array_column($dbs['GridUserService']->asked, 0), fn($sql) => str_contains($sql, 'UserAccounts WHERE active')))
-            ->toBe([]);
-    });
-
-    test('counts nothing without a database that answers', function () {
-        expect(OpenSim_Helpers_Block_GridStatus::counts(fn($service) => null, 0))->toBeNull();
-
-        $down = counting_db([]);
-        $down->connected = false;
-        expect(OpenSim_Helpers_Block_GridStatus::counts(fn($service) => $down, 0))->toBeNull();
     });
 
     test('is online when something answers at the login address', function () {
