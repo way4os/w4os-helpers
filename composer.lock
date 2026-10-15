@@ -143,7 +143,7 @@
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "cec93817948b1bdc660c6ac6360e74fdf3b83a3c"
+                "reference": "e21afacdcdeb582f6480ee57230cc2a292736f11"
             },
             "require": {
                 "ext-curl": "*",

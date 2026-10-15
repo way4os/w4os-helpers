@@ -20,7 +20,7 @@ require_once 'includes/bootstrap.php';
 helpers_require_method('POST', true);
 require_once 'includes/databases.php';
 
-// The messages are in the database of the offline messages (Robust's unless OfflineIMService has its own), the mail
+// The messages are in the database of the offline messages (Robust's unless [Messaging] of the Robust config has its own), the mail
 // preferences of the users in the one of their profiles (UserProfilesService)
 if (empty($OfflineDB)) {
     osXmlDie('Bad configuration: the database of the offline messages is not available', 503);

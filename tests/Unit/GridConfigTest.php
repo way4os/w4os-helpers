@@ -323,7 +323,7 @@ describe('The databases', function () {
             <<<'INI'
             [UserAccountService]
             ConnectionString = "Data Source=db2;Database=accounts;User ID=acc;Password=pw2;"
-            [OfflineIMService]
+            [Messaging]
             ConnectionString = "Data Source=db3;Database=offline;User ID=off;Password=pw3;"
             INI
             ,
@@ -343,7 +343,7 @@ describe('The databases', function () {
             ->and($constants['OPENSIM_DB_NAME'])
             ->toBe('alpha_robust')
             ->and(array_keys($constants['OPENSIM_DB_SERVICES']))
-            ->toBe(['UserAccountService', 'OfflineIMService'])
+            ->toBe(['UserAccountService', 'Messaging'])
             ->and($constants['OPENSIM_DB_SERVICES']['UserAccountService']['password'])
             ->toBe('pw2');
     });

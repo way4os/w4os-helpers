@@ -75,7 +75,7 @@ function db_for($service = null)
     return $handles[$key];
 }
 
-// The offline messages are those of the OfflineIMService of Robust: its database, Robust's unless it has its own
+// The offline messages are those of the OfflineIMService of Robust, whose database is the one of [Messaging], Robust's unless it has its own
 if (defined('OFFLINE_DB_HOST') && defined('OFFLINE_DB_NAME') && defined('OFFLINE_DB_USER') && defined('OFFLINE_DB_PASS')) {
     $OfflineDB =
         defined('OPENSIM_DB_HOST') &&

@@ -386,15 +386,28 @@ class OpenSim_Helpers_GridConfig
      * it has one, else the one of [DatabaseService]. Only the Robust config and Helpers.ini have services.
      *
      * @param  array  $settings what settings() gave
-     * @param  string $service  the section (UserAccountService, GridUserService, OfflineIMService...)
+     * @param  string $service  the section (UserAccountService, GridUserService...)
      * @return array{hostname:?string,prefix:?string,user:?string,password:?string}
      */
     public static function connection_for($settings, $service)
     {
-        $config = $settings['config'];
-        $string = $config->find($service, 'ConnectionString') ?? $config->find('DatabaseService', 'ConnectionString');
+        return self::as_connection(\OpenSim\Data\Database::service($settings['config'], $service));
+    }
 
-        return self::connection((string) $string);
+    /**
+     * The settings of a database from a connection of the engine.
+     *
+     * @param  \OpenSim\Config\ConnectionString|null $connection
+     * @return array{hostname:?string,prefix:?string,user:?string,password:?string}
+     */
+    private static function as_connection($connection)
+    {
+        return [
+            'hostname' => $connection?->source,
+            'prefix' => $connection?->database,
+            'user' => $connection?->user,
+            'password' => $connection?->password,
+        ];
     }
 
     /**
@@ -447,17 +460,18 @@ class OpenSim_Helpers_GridConfig
             }
         }
 
-        // The databases: Robust's, each service that has its own, and the ones of the helpers (the search registry, the
-        // currency) which are Robust's unless Helpers.ini gives them another
-        $default = self::connection_for($settings, 'DatabaseService');
+        // The databases (see \OpenSim\Data\Database): Robust's, and the ones of the helpers (the search registry, the currency, the
+        // offline messages) which are Robust's unless the config gives them another
+        $robust = \OpenSim\Data\Database::Robust->connection($config);
         $databases = [
-            'ROBUST' => $default,
-            'OPENSIM' => $default,
-            'SEARCH' => isset($helpers['SearchConnectionString']) ? self::connection($helpers['SearchConnectionString']) : $default,
-            'CURRENCY' => $default,
-            'OFFLINE' => self::connection_for($settings, 'OfflineIMService'),
+            'ROBUST' => $robust,
+            'OPENSIM' => $robust,
+            'SEARCH' => \OpenSim\Data\Database::Search->connection($config),
+            'CURRENCY' => \OpenSim\Data\Database::Economy->connection($config) ?? $robust,
+            'OFFLINE' => \OpenSim\Data\Database::Offline->connection($config),
         ];
         foreach ($databases as $prefix => $connection) {
+            $connection = self::as_connection($connection);
             $constants["{$prefix}_DB_HOST"] = $connection['hostname'];
             $constants["{$prefix}_DB_NAME"] = $connection['prefix'];
             $constants["{$prefix}_DB_USER"] = $connection['user'];
