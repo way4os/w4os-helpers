@@ -1,9 +1,9 @@
 # The web helpers of an OpenSimulator grid, built by dev/build.sh (or apt-package) from build/opensim-helpers, prepared
 # by packaging/build. ${VERSION} comes from build-tools.
-# A webroot in /usr/share/opensim-helpers, to be served by a web server (nothing is enabled by installing it): index.php
-# is its single entry. Its settings are the constants of includes/config.php, made by hand from includes/config.example.php
-# (or provided by what installs the helpers). The projects of the family it needs are their own packages
-# (opensim-engine, opensim-rest-php), linked into its vendor folder.
+# A Slim 4 application in /usr/share/opensim-helpers, to be served by a web server (nothing is enabled by installing it): the
+# document root is its public folder, whose index.php is the single entry. Its settings are the config of the grid (Robust.ini,
+# OpenSim.ini, Helpers.ini), read by the engine. The projects of the family it needs are their own packages (opensim-engine,
+# opensim-rest-php), linked into its vendor folder.
 name: opensim-helpers
 arch: all
 platform: linux
