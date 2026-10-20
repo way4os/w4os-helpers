@@ -48,9 +48,11 @@ final class App
         $app->get('/welcome', Page::class);
         $app->get('/get_grid_info', GridInfo::class);
         $app->get('/health', Health::class);
-        // The services of a fixed format, and the API itself, are the engine's
-        $app->map(['GET', 'POST'], '/{service:offline(?:\.php)?/.+|offline-messages/.+|query(?:\.php)?|register(?:\.php)?|search/query|search/register|currency\.php|landtool\.php|motd(?:\.php)?|textgen\.php|text-images}', Engine::class);
+        // The API of the engine
         $app->any('/api[/{path:.*}]', static fn($request) => Engine::handler($request, '/api')->handle($request));
+
+        // The services the grid is configured with (see Engine::paths()): whatever no other route took
+        $app->map(['GET', 'POST'], '/{path:.*}', Engine::class);
 
         return $app;
     }

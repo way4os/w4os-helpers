@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use OpenSim\Config\Layout;
 use OpenSim\Helpers\App;
+use OpenSim\Helpers\Http\Action\Engine;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\Environment;
 use Slim\Psr7\Factory\ServerRequestFactory;
@@ -37,7 +38,7 @@ test('home page and grid info are served', function () {
     expect(simplexml_load_string((string) $info->getBody()))->not->toBeFalse();
 });
 
-test('fixed-format services and the API are the engine\'s', function () {
+test('the API is the engine\'s', function () {
     $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
     $app = App::create(static fn(string $nick) => $grid);
 
@@ -45,12 +46,13 @@ test('fixed-format services and the API are the engine\'s', function () {
     expect($api->getStatusCode())->toBe(200);
     expect(json_decode((string) $api->getBody(), true))->toHaveKey('paths');
 
-    // The former address of the offline messages reaches the engine: the grid has no such database, the answer is its XML failure
-    $offline = $app->handle(
-        (new ServerRequestFactory())
-            ->createServerRequest('POST', '/offline.php/SaveMessage/')
-            ->withBody((new Slim\Psr7\Factory\StreamFactory())->createStream('<x/>')),
-    );
-    expect($offline->getStatusCode())->toBeIn([404, 503]);
-    expect((string) $offline->getBody())->toContain('<?xml');
+});
+
+test('a service is found at the address the grid has for it', function () {
+    $paths = ['query' => '/q.php', 'offline' => '/helpers/off', 'currency' => '/eco/currency.php'];
+
+    expect(Engine::target($paths, '/q.php'))->toBe('/search/query');
+    expect(Engine::target($paths, '/helpers/off/SaveMessage/'))->toBe('/offline-messages/SaveMessage');
+    expect(Engine::target($paths, '/eco/currency.php'))->toBe('/currency.php');
+    expect(Engine::target($paths, '/query.php'))->toBeNull();
 });

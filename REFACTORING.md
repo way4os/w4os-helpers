@@ -58,7 +58,7 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       requests to the app without a web server. Old files stay untouched and unused.
 - [x] 2. Grid info and pages shell: `/get_grid_info` (engine), Twig `View` with the existing layouts/pages/components, `/` and `/welcome`.
 - [x] 3. Fixed-format services: the engine already serves them (`Api\Handler`): offline, search query/register, currency, landtool, motd,
-      text images. `Action\Engine` maps the former addresses (`offline.php/SaveMessage/`, `query.php`, `textgen.php`...) to the engine's; the whole
+      text images. `Action\Engine` routes the addresses the grid is configured with (`Grid::searchApi/registerUrl/offlineUrl/motdUrl`, `economy()` + `currency.php`/`landtool.php`, never hardcoded names) to the engine's; the whole
       API is mounted at `/api` (so `/api/openapi.json`). `parser`/`eventsparser` are engine tasks (`POST /api/tasks/{id}/runs`), no helper script.
       Left for step 6: check each former argument still works (`textgen` args, `motd` username, `query` gk) against real requests.
 - [ ] 4. Pages: search, profile, guide/destinations, popular places, directory info, health (engine `OpenSim_Health`).
