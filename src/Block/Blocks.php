@@ -13,6 +13,9 @@ final class Blocks
         'motd' => MotdBlock::class,
         'health' => HealthBlock::class,
         'destination_guide' => DestinationGuideBlock::class,
+        'popular_places' => PopularPlacesBlock::class,
+        'directory_info' => DirectoryInfoBlock::class,
+        'search' => SearchBlock::class,
     ];
 
     public const LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];

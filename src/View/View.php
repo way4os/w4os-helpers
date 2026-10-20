@@ -29,7 +29,7 @@ final class View
     {
         $data = Blocks::data($name, $grid, $args);
 
-        return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data);
+        return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels()]);
     }
 
     /** @param array<string,mixed> $args the arguments of the request, for the block the page is */
@@ -58,10 +58,24 @@ final class View
             'main' => new Markup($main, 'UTF-8'),
             'sidebars' => false,
             'menu' => [],
-            'labels' => ['skip' => _('Skip to content'), 'powered_by' => 'opensim-helpers'],
+            'labels' => self::labels(),
             'stylesheet' => '',
             'assets' => ['css' => [], 'js' => []],
             'logo_url' => '',
         ]);
+    }
+
+    /** @return array<string,string> the words of the templates */
+    public static function labels(): array
+    {
+        return [
+            'skip' => _('Skip to content'),
+            'powered_by' => 'opensim-helpers',
+            'search' => _('Search'),
+            'search_for' => _('Search for'),
+            'search_all' => _('All'),
+            'search_nothing' => _('Nothing found.'),
+            'search_empty' => _('Type something to look for.'),
+        ];
     }
 }

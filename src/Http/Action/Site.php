@@ -65,7 +65,11 @@ final class Site
                 return $response->withStatus(401)->withHeader('WWW-Authenticate', 'Bearer');
             }
         }
-        $html = $this->view->page($page, $grid, $request->getHeaderLine('User-Agent'), $request->getQueryParams());
+        // The topic of the search is in the path: /search/places/
+        if ($page === 'search' && preg_match('#/([a-z]+)$#', $path, $m) === 1) {
+            $query['topic'] ??= $m[1];
+        }
+        $html = $this->view->page($page, $grid, $request->getHeaderLine('User-Agent'), $query);
         $response->getBody()->write($html);
 
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
@@ -90,7 +94,7 @@ final class Site
                 continue;
             }
             $address = '/' . trim($address, '/');
-            if ($path === $address || ($page === 'profile' && str_starts_with($path, "$address/"))) {
+            if ($path === $address || (in_array($page, ['profile', 'search'], true) && str_starts_with($path, "$address/"))) {
                 return $page;
             }
         }

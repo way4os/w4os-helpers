@@ -1,0 +1,164 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OpenSim\Helpers\Block;
+
+use OpenSim\Models\Avatar;
+use OpenSim\Models\Grid;
+
+/** The web search: places, land, events, classifieds and people. */
+final class SearchBlock implements Block
+{
+    public const TOPICS = ['places', 'land', 'events', 'classifieds', 'people'];
+    public const LIMIT = 30;
+
+    public function data(Grid $grid, array $args = []): array
+    {
+        $search = new SearchData($grid);
+        $q = trim((string) ($args['q'] ?? ''));
+        $topic = in_array($args['topic'] ?? '', self::TOPICS, true) ? $args['topic'] : '';
+        // On a page of its own it shows results; embedded in another page it is the form alone, until it is used
+        $embedded = !isset($args['level']) && $q === '';
+        $kinds = $embedded ? [] : ($topic === '' ? self::TOPICS : [$topic]);
+        $groups = [];
+        foreach ($kinds as $kind) {
+            // Nobody lists the people of a grid: only a name asked for gives some
+            if ($kind === 'people' && $q === '') {
+                continue;
+            }
+            $items = $this->find($search, $kind, $q);
+            $items === [] ||
+                ($groups[] = ['topic' => $kind, 'title' => self::title($kind), 'items' => $items, 'url' => self::url($grid, $kind, $q)]);
+        }
+
+        return [
+            'title' => _('Search'),
+            'form' => true,
+            'embedded' => $embedded,
+            'action' => self::page($grid),
+            'q' => $q,
+            'topic' => $topic,
+            'topics' => array_map(
+                fn(string $kind): array => ['topic' => $kind, 'title' => self::title($kind), 'url' => self::url($grid, $kind, $q), 'current' => $kind === $topic],
+                self::TOPICS,
+            ),
+            'all_url' => self::url($grid, '', $q),
+            'groups' => $groups,
+        ];
+    }
+
+    private static function page(Grid $grid): string
+    {
+        return rtrim((string) parse_url((string) $grid->searchUrl(), PHP_URL_PATH), '/') ?: '/search';
+    }
+
+    private static function url(Grid $grid, string $topic, string $q): string
+    {
+        return self::page($grid) . ($topic === '' ? '' : "/$topic/") . ($q === '' ? '' : '?q=' . rawurlencode($q));
+    }
+
+    private static function title(string $kind): string
+    {
+        return [
+            'places' => _('Places'),
+            'land' => _('Land for sale'),
+            'events' => _('Events'),
+            'classifieds' => _('Classifieds'),
+            'people' => _('People'),
+        ][$kind];
+    }
+
+    /** @return list<array<string,mixed>> */
+    private function find(SearchData $search, string $kind, string $q): array
+    {
+        $like = ['q' => '%' . addcslashes($q, '%_\\') . '%'];
+        $params = $q === '' ? [] : $like;
+        $regions = $search->regions();
+        $limit = self::LIMIT;
+        switch ($kind) {
+            case 'places':
+                $where = $q === '' ? '' : 'WHERE p.parcelname LIKE :q OR p.description LIKE :q OR r.regionname LIKE :q';
+                $rows = $search->rows(
+                    "SELECT p.parcelname AS name, p.description, p.landingpoint, p.gatekeeperURL AS gatekeeper, p.dwell, r.regionname AS region FROM parcels AS p LEFT JOIN $regions AS r ON r.regionUUID = p.regionUUID $where ORDER BY p.dwell DESC, p.parcelname LIMIT $limit",
+                    $params,
+                );
+
+                return array_map(fn($row) => $this->place($search, $row, '', $row['description']), $rows);
+            case 'land':
+                $where = $q === '' ? '' : 'WHERE s.parcelname LIKE :q OR r.regionname LIKE :q';
+                $rows = $search->rows(
+                    "SELECT s.parcelname AS name, s.area, s.saleprice, s.landingpoint, s.gatekeeperURL AS gatekeeper, r.regionname AS region FROM parcelsales AS s LEFT JOIN $regions AS r ON r.regionUUID = s.regionUUID $where ORDER BY s.saleprice, s.parcelname LIMIT $limit",
+                    $params,
+                );
+
+                return array_map(
+                    fn($row) => $this->place($search, $row, sprintf('%s m², %s', number_format((int) $row['area']), number_format((int) $row['saleprice']))),
+                    $rows,
+                );
+            case 'events':
+                // The events that are not over
+                $where = 'WHERE e.dateUTC + e.duration * 60 > :now' . ($q === '' ? '' : ' AND (e.name LIKE :q OR e.description LIKE :q OR e.simname LIKE :q)');
+                $rows = $search->rows(
+                    "SELECT e.name, e.description, e.dateUTC, e.duration, e.simname AS region, e.landingpoint, e.gatekeeperURL AS gatekeeper FROM events AS e $where ORDER BY e.dateUTC LIMIT $limit",
+                    ['now' => time()] + $params,
+                );
+
+                return array_map(
+                    fn($row) => $this->place($search, $row, date('Y-m-d H:i', (int) $row['dateUTC']) . ' UTC, ' . sprintf(_('%d min'), (int) $row['duration']), $row['description']),
+                    $rows,
+                );
+            case 'classifieds':
+                $where = 'WHERE expirationdate > :now' . ($q === '' ? '' : ' AND (name LIKE :q OR description LIKE :q OR parcelname LIKE :q OR simname LIKE :q)');
+                $rows = $search->rows(
+                    "SELECT name, description, simname AS region, parcelname FROM classifieds $where ORDER BY creationdate DESC LIMIT $limit",
+                    ['now' => time()] + $params,
+                );
+
+                return array_map(
+                    fn($row) => [
+                        'title' => (string) $row['name'],
+                        'detail' => trim($row['parcelname'] . ($row['region'] === '' ? '' : ', ' . $row['region']), ', '),
+                        'text' => trim((string) $row['description']),
+                        'url' => null,
+                    ],
+                    $rows,
+                );
+            case 'people':
+                if ($search->config === null) {
+                    return [];
+                }
+                try {
+                    $people = Avatar::all($search->config, ['search' => $q, 'filters' => ['active' => 'yes', 'technical' => 'no'], 'perPage' => $limit])->array();
+                } catch (\OpenSim\Exceptions\ChannelUnavailable) {
+                    $people = [];
+                }
+                $profile = rtrim((string) preg_replace('#/?\[AGENT_NAME\].*$#', '', (string) parse_url((string) $search->grid->address('web-profile'), PHP_URL_PATH)), '/');
+
+                return array_map(
+                    fn($p) => [
+                        'title' => $p['name'],
+                        'detail' => '',
+                        'text' => '',
+                        'url' => $profile === '' ? null : "$profile/" . rawurlencode($p['firstName'] . '.' . $p['lastName']),
+                    ],
+                    $people,
+                );
+        }
+
+        return [];
+    }
+
+    /** @param array<string,mixed> $row */
+    private function place(SearchData $search, array $row, string $detail, mixed $text = ''): array
+    {
+        $region = (string) ($row['region'] ?? '');
+
+        return [
+            'title' => (string) $row['name'],
+            'detail' => trim($region !== '' && $detail !== '' ? "$region · $detail" : $region . $detail),
+            'text' => trim((string) $text),
+            'url' => $search->hop((string) ($row['gatekeeper'] ?? ''), $region, (string) ($row['landingpoint'] ?? '')),
+        ];
+    }
+}
