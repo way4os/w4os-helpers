@@ -53,7 +53,7 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
 
 ## Steps
 
-- [ ] 1. Skeleton: `slim/slim`, `slim/psr7`, `php-di/php-di` in composer.json; `public/index.php`, `src/App.php`, container,
+- [x] 1. Skeleton: `slim/slim`, `slim/psr7`, `php-di/php-di` in composer.json; `public/index.php`, `src/App.php`, container,
       `GridMiddleware`, `ErrorMiddleware`; route `GET /health` answering from the engine; Pest Feature test helper that sends PSR-7
       requests to the app without a web server. Old files stay untouched and unused.
 - [ ] 2. Grid info and pages shell: `/get_grid_info` (engine), Twig `View` with the existing layouts/pages/components, `/` and `/welcome`.

@@ -23,7 +23,11 @@
         "phpxmlrpc/phpxmlrpc": "^4.11",
         "magicoli/opensim-rest-php": "@dev",
         "magicoli/opensim-engine": "@dev",
-        "twig/twig": "^3.8"
+        "twig/twig": "^3.8",
+        "slim/slim": "^4",
+        "slim/psr7": "^1",
+        "php-di/php-di": "^7",
+        "php-di/slim-bridge": "^3"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
@@ -69,5 +73,15 @@
             "pestphp/pest-plugin": true
         }
     },
-    "prefer-stable": true
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "OpenSim\\Helpers\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OpenSim\\Helpers\\Tests\\": "tests/"
+        }
+    }
 }
