@@ -57,8 +57,10 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       `GridMiddleware`, `ErrorMiddleware`; route `GET /health` answering from the engine; Pest Feature test helper that sends PSR-7
       requests to the app without a web server. Old files stay untouched and unused.
 - [x] 2. Grid info and pages shell: `/get_grid_info` (engine), Twig `View` with the existing layouts/pages/components, `/` and `/welcome`.
-- [ ] 3. Fixed-format services, one commit each, with their Feature tests built from the old scripts' behavior:
-      `offline`, `register`, `query` (+ search registry/parser), `motd`, `landtool`, `currency` (+ addons), `parser`, `eventsparser`, `textgen`.
+- [x] 3. Fixed-format services: the engine already serves them (`Api\Handler`): offline, search query/register, currency, landtool, motd,
+      text images. `Action\Engine` maps the former addresses (`offline.php/SaveMessage/`, `query.php`, `textgen.php`...) to the engine's; the whole
+      API is mounted at `/api` (so `/api/openapi.json`). `parser`/`eventsparser` are engine tasks (`POST /api/tasks/{id}/runs`), no helper script.
+      Left for step 6: check each former argument still works (`textgen` args, `motd` username, `query` gk) against real requests.
 - [ ] 4. Pages: search, profile, guide/destinations, popular places, directory info, health (engine `OpenSim_Health`).
 - [ ] 5. Config: `Helpers.ini` through the engine; remove `includes/` and `classes/`; delete the old scripts.
 - [ ] 6. OpenAPI: one document for the helpers (paths above, fixed formats included), served at `/openapi.json`, same generator style as

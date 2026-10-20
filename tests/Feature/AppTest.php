@@ -36,3 +36,21 @@ test('home page and grid info are served', function () {
     expect($info->getStatusCode())->toBe(200);
     expect(simplexml_load_string((string) $info->getBody()))->not->toBeFalse();
 });
+
+test('fixed-format services and the API are the engine\'s', function () {
+    $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
+    $app = App::create(static fn(string $nick) => $grid);
+
+    $api = helpers_get($app, '/api/openapi.json');
+    expect($api->getStatusCode())->toBe(200);
+    expect(json_decode((string) $api->getBody(), true))->toHaveKey('paths');
+
+    // The former address of the offline messages reaches the engine: the grid has no such database, the answer is its XML failure
+    $offline = $app->handle(
+        (new ServerRequestFactory())
+            ->createServerRequest('POST', '/offline.php/SaveMessage/')
+            ->withBody((new Slim\Psr7\Factory\StreamFactory())->createStream('<x/>')),
+    );
+    expect($offline->getStatusCode())->toBeIn([404, 503]);
+    expect((string) $offline->getBody())->toContain('<?xml');
+});

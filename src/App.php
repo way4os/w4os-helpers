@@ -6,6 +6,7 @@ namespace OpenSim\Helpers;
 
 use DI\Bridge\Slim\Bridge;
 use OpenSim\Config\Layout;
+use OpenSim\Helpers\Http\Action\Engine;
 use OpenSim\Helpers\Http\Action\GridInfo;
 use OpenSim\Helpers\Http\Action\Health;
 use OpenSim\Helpers\Http\Action\Page;
@@ -47,6 +48,9 @@ final class App
         $app->get('/welcome', Page::class);
         $app->get('/get_grid_info', GridInfo::class);
         $app->get('/health', Health::class);
+        // The services of a fixed format, and the API itself, are the engine's
+        $app->map(['GET', 'POST'], '/{service:offline(?:\.php)?/.+|offline-messages/.+|query(?:\.php)?|register(?:\.php)?|search/query|search/register|currency\.php|landtool\.php|motd(?:\.php)?|textgen\.php|text-images}', Engine::class);
+        $app->any('/api[/{path:.*}]', static fn($request) => Engine::handler($request, '/api')->handle($request));
 
         return $app;
     }
