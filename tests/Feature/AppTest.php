@@ -24,3 +24,15 @@ test('health answers for the grid found', function () {
 test('no grid is a 503', function () {
     expect(helpers_get(App::create(static fn(string $nick) => null), '/health')->getStatusCode())->toBe(503);
 });
+
+test('home page and grid info are served', function () {
+    $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
+    $app = App::create(static fn(string $nick) => $grid);
+
+    $home = helpers_get($app, '/');
+    expect($home->getStatusCode())->toBe(200);
+    expect($home->getHeaderLine('Content-Type'))->toContain('text/html');
+    $info = helpers_get($app, '/get_grid_info');
+    expect($info->getStatusCode())->toBe(200);
+    expect(simplexml_load_string((string) $info->getBody()))->not->toBeFalse();
+});

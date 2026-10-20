@@ -6,10 +6,13 @@ namespace OpenSim\Helpers;
 
 use DI\Bridge\Slim\Bridge;
 use OpenSim\Config\Layout;
+use OpenSim\Helpers\Http\Action\GridInfo;
 use OpenSim\Helpers\Http\Action\Health;
+use OpenSim\Helpers\Http\Action\Page;
 use OpenSim\Helpers\Http\Middleware\GridMiddleware;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\Environment;
+use OpenSim\Helpers\View\View;
 use Slim\App as SlimApp;
 
 /** The helpers as a Slim application: the grid is found by the middleware, every endpoint is an action. */
@@ -32,11 +35,17 @@ final class App
             return Grid::find($environment, $nick);
         };
 
-        $app = Bridge::create();
+        $container = new \DI\Container([
+            View::class => static fn() => new View(dirname(__DIR__) . '/templates'),
+        ]);
+        $app = Bridge::create($container);
         $app->addRoutingMiddleware();
         $app->add(new GridMiddleware($grids));
         $app->addErrorMiddleware(false, true, true);
 
+        $app->get('/', Page::class);
+        $app->get('/welcome', Page::class);
+        $app->get('/get_grid_info', GridInfo::class);
         $app->get('/health', Health::class);
 
         return $app;
