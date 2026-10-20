@@ -34,6 +34,7 @@ test('the home page and a block are served, the health is closed, the rest is no
     expect(helpers_get($app, '/blocks/motd')->getStatusCode())->toBe(200);
     expect(helpers_get($app, '/blocks/nothing')->getStatusCode())->toBe(404);
     expect(helpers_get($app, '/health')->getStatusCode())->toBe(401);
+    expect(helpers_get($app, '/get_grid_info')->getStatusCode())->toBe(200);
     expect(helpers_get($app, '/nothing-here')->getStatusCode())->toBe(404);
 });
 

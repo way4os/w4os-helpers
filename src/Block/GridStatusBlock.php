@@ -10,19 +10,30 @@ use OpenSim\Runtime\GridMonitor;
 /** The state of the grid at a glance, from the monitor of the engine. */
 final class GridStatusBlock implements Block
 {
+    /** The keyword the viewers read (Firestorm takes the state of the grid from it): not translated. Null when the machine cannot tell. */
+    public static function keyword(array $monitor): ?string
+    {
+        return [
+            GridMonitor::OK => 'ONLINE',
+            GridMonitor::DEGRADED => 'DEGRADED',
+            GridMonitor::DOWN => 'OFFLINE',
+        ][$monitor['level']] ?? null;
+    }
+
     public function data(Grid $grid, array $args = []): array
     {
         $monitor = GridMonitor::of($grid);
         $rows = [];
-        if ($monitor['level'] !== GridMonitor::UNKNOWN) {
-            // A keyword the viewers read (Firestorm takes the state of the grid from it): not translated
-            $rows[] = ['label' => _('Status'), 'value' => $monitor['level'] === GridMonitor::DOWN ? 'OFFLINE' : 'ONLINE'];
-        }
-        $rows[] = ['label' => _('Regions'), 'value' => number_format($monitor['regions']['online']) . ' / ' . number_format($monitor['regions']['total'])];
+        $keyword = self::keyword($monitor);
+        $keyword === null || ($rows[] = ['label' => _('Status'), 'value' => $keyword]);
+        $rows[] = [
+            'label' => _('Regions'),
+            'value' => number_format($monitor['regions']['online']) . ' / ' . number_format($monitor['regions']['total']),
+        ];
         foreach ((array) ($monitor['users'] ?? []) as $label => $count) {
             $rows[] = ['label' => ucfirst(str_replace('_', ' ', (string) $label)), 'value' => number_format((float) $count)];
         }
 
-        return ['title' => _('Grid Status'), 'rows' => $rows];
+        return ['title' => _('Grid Status'), 'rows' => $rows, 'monitor' => $monitor];
     }
 }

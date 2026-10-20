@@ -25,6 +25,7 @@ final class Site
         'welcome' => 'splash',
         'guide' => 'destination_guide',
         'grid-status' => 'grid_status',
+        'grid-status-rss' => 'grid_status_rss',
         'web-profile' => 'profile',
     ];
 
@@ -39,12 +40,23 @@ final class Site
         /** @var Grid $grid */
         $grid = $request->getAttribute('grid');
         $path = '/' . trim($request->getUri()->getPath(), '/');
+        if ($path === '/get_grid_info') {
+            return (new GridInfo())($request, $response);
+        }
         if (preg_match('#^/blocks/([\w-]+)$#', $path, $m) === 1) {
             return $this->block($response, $grid, $m[1], $request->getQueryParams());
         }
         $page = $this->page($grid, $path);
         if ($page === null) {
             return $response->withStatus(404);
+        }
+        if ($page === 'grid_status_rss') {
+            return GridStatus::respondRss($response, $grid);
+        }
+        // A viewer takes one line of text from the status
+        $query = $request->getQueryParams();
+        if ($page === 'grid_status' && (($query['format'] ?? '') === 'text' || str_contains($request->getHeaderLine('Accept'), 'text/plain'))) {
+            return GridStatus::respondText($response, $grid);
         }
         // The health is for who manages the grid
         if ($page === 'health') {
