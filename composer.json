@@ -20,7 +20,6 @@
         "ext-pdo": "*",
         "ext-session": "*",
         "ext-simplexml": "*",
-        "phpxmlrpc/phpxmlrpc": "^4.11",
         "magicoli/opensim-rest-php": "@dev",
         "magicoli/opensim-engine": "@dev",
         "twig/twig": "^3.8",

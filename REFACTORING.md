@@ -76,7 +76,7 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       Still to do: `tests/Packaging/check` in a container (not run), and the document root of the web server presets of the engine
       (`webroot-helpers`: `docroot = /var/www/html`) must become `/usr/share/opensim-helpers/public` (engine tests expect the former).
 - [x] 8. Docs: README (practical questions), DEVELOPERS.md (layout above), CHANGELOG one line.
-- [ ] 9. Cleanup: phpcs, `composer update magicoli/opensim-engine`, full suite, remove this file's "Steps" or tick all.
+- [x] 9. Cleanup: phpcs, `composer update magicoli/opensim-engine`, full suite, remove this file's "Steps" or tick all.
 
 ## Notes for whoever resumes
 
