@@ -68,7 +68,7 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       - [x] grid_status as text + RSS (DEGRADED from the monitor; MAINTENANCE not produced yet); `/get_grid_info` kept on purpose (a viewer keeps what it says, not the first address)
       - [x] blocks search, profile, popular_places, directory_info (search database through `Connections::pdo`; SQL still here, to move to the engine models later)
       - [x] menu, assets (theme of the grid first, `/assets/...`), logo, sidebars, theme templates (`<grid>/theme/templates`)
-- [ ] 5. Config: `Helpers.ini` through the engine; remove `includes/` and `classes/`; delete the old scripts.
+- [x] 5. Config: `Helpers.ini` through the engine; remove `includes/` and `classes/`; delete the old scripts.
 - [ ] 6. OpenAPI: one document for the helpers (paths above, fixed formats included), served at `/openapi.json`, same generator style as
       `opensim-engine/dev/api-docs.php`; test that every route is documented.
 - [ ] 7. Packaging: `packaging/opensim-helpers.yaml` (docroot `public/`), web server snippet presets in the engine point to
