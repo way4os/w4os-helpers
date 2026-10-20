@@ -7,9 +7,7 @@ namespace OpenSim\Helpers;
 use DI\Bridge\Slim\Bridge;
 use OpenSim\Config\Layout;
 use OpenSim\Helpers\Http\Action\Engine;
-use OpenSim\Helpers\Http\Action\GridInfo;
-use OpenSim\Helpers\Http\Action\Health;
-use OpenSim\Helpers\Http\Action\Page;
+use OpenSim\Helpers\Http\Action\Site;
 use OpenSim\Helpers\Http\Middleware\GridMiddleware;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\Environment;
@@ -44,15 +42,11 @@ final class App
         $app->add(new GridMiddleware($grids));
         $app->addErrorMiddleware(false, true, true);
 
-        $app->get('/', Page::class);
-        $app->get('/welcome', Page::class);
-        $app->get('/get_grid_info', GridInfo::class);
-        $app->get('/health', Health::class);
         // The API of the engine
         $app->any('/api[/{path:.*}]', static fn($request) => Engine::handler($request, '/api')->handle($request));
 
         // The services the grid is configured with (see Engine::paths()): whatever no other route took
-        $app->map(['GET', 'POST'], '/{path:.*}', Engine::class);
+        $app->map(['GET', 'POST'], '/{path:.*}', Site::class);
 
         return $app;
     }

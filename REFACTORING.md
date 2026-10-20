@@ -61,7 +61,13 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       text images. `Action\Engine` routes the addresses the grid is configured with (`Grid::searchApi/registerUrl/offlineUrl/motdUrl`, `economy()` + `currency.php`/`landtool.php`, never hardcoded names) to the engine's; the whole
       API is mounted at `/api` (so `/api/openapi.json`). `parser`/`eventsparser` are engine tasks (`POST /api/tasks/{id}/runs`), no helper script.
       Left for step 6: check each former argument still works (`textgen` args, `motd` username, `query` gk) against real requests.
-- [ ] 4. Pages: search, profile, guide/destinations, popular places, directory info, health (engine `OpenSim_Health`).
+- [ ] 4. Pages, as the engine's OpenAPI (`docs/api/openapi.json`) describes them: `/search`, `/welcome`, `/guide`, `/profile/{name}`, `/health`
+      (management: Bearer API key), `/grid_status` (HTML or text, keyword ONLINE/OFFLINE/DEGRADED/MAINTENANCE), `/grid_status.rss`. Addresses are the
+      grid's (`Grid::address(<service key>)`), never fixed; `/get_grid_info` is Robust's, not ours. Blocks read the engine models.
+      - [x] `Site` dispatcher (engine services, then pages, `/blocks/{name}`), blocks grid-info, grid-status, motd, destination_guide, health
+      - [ ] grid_status as text + RSS; keyword DEGRADED/MAINTENANCE from the monitor
+      - [ ] blocks search, profile (user's uncommitted edits already committed), popular_places, directory_info (search DB through `Connections::pdo`)
+      - [ ] menu, assets (css/js/images), logo, sidebars in the layout
 - [ ] 5. Config: `Helpers.ini` through the engine; remove `includes/` and `classes/`; delete the old scripts.
 - [ ] 6. OpenAPI: one document for the helpers (paths above, fixed formats included), served at `/openapi.json`, same generator style as
       `opensim-engine/dev/api-docs.php`; test that every route is documented.

@@ -9,6 +9,7 @@ use OpenSim\Api\Handler;
 use OpenSim\Config\Layout;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\Environment;
+use OpenSim\Security\ApiKeys;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Factory\ResponseFactory;
@@ -34,12 +35,15 @@ final class Engine
     /** The engine, as a PSR-15 handler for the grid of the request. */
     public static function handler(ServerRequestInterface $request, string $base = ''): Handler
     {
+        $environment = Environment::system(Layout::load());
+
         return new Handler(
-            new Api(Environment::system(Layout::load())),
+            new Api($environment),
             new ResponseFactory(),
             new StreamFactory(),
             $base,
             grid: $request->getAttribute('grid')->nick(),
+            authenticator: ApiKeys::for($environment),
         );
     }
 
@@ -93,13 +97,13 @@ final class Engine
         return null;
     }
 
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    /** The answer of the engine to a service of the grid, null when the path is none. */
+    public function answer(ServerRequestInterface $request): ?ResponseInterface
     {
         $target = self::target(self::paths($request->getAttribute('grid')), $request->getUri()->getPath());
-        if ($target === null) {
-            return $response->withStatus(404);
-        }
 
-        return self::handler($request)->handle($request->withUri($request->getUri()->withPath($target)));
+        return $target === null
+            ? null
+            : self::handler($request)->handle($request->withUri($request->getUri()->withPath($target)));
     }
 }
