@@ -66,7 +66,7 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       grid's (`Grid::address(<service key>)`), never fixed; `/get_grid_info` is Robust's, not ours. Blocks read the engine models.
       - [x] `Site` dispatcher (engine services, then pages, `/blocks/{name}`), blocks grid-info, grid-status, motd, destination_guide, health
       - [x] grid_status as text + RSS (DEGRADED from the monitor; MAINTENANCE not produced yet); `/get_grid_info` kept on purpose (a viewer keeps what it says, not the first address)
-      - [ ] blocks search, profile (user's uncommitted edits already committed), popular_places, directory_info (search DB through `Connections::pdo`)
+      - [x] blocks search, profile, popular_places, directory_info (search database through `Connections::pdo`; SQL still here, to move to the engine models later)
       - [ ] menu, assets (css/js/images), logo, sidebars in the layout
 - [ ] 5. Config: `Helpers.ini` through the engine; remove `includes/` and `classes/`; delete the old scripts.
 - [ ] 6. OpenAPI: one document for the helpers (paths above, fixed formats included), served at `/openapi.json`, same generator style as

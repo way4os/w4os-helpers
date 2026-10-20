@@ -55,3 +55,10 @@ test('a service is found at the address the grid has for it', function () {
     expect(Engine::target($paths, '/eco/currency.php'))->toBe('/currency.php');
     expect(Engine::target($paths, '/query.php'))->toBeNull();
 });
+
+test('a profile that does not exist says so', function () {
+    $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
+    $data = OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['name' => 'Nobody.Here']);
+
+    expect($data['found'])->toBeFalse();
+});

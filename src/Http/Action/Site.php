@@ -65,6 +65,10 @@ final class Site
                 return $response->withStatus(401)->withHeader('WWW-Authenticate', 'Bearer');
             }
         }
+        // The name of a profile follows the address of the profiles: /profile/First.Last
+        if ($page === 'profile') {
+            $query['name'] = rawurldecode(substr($path, (int) strrpos($path, '/') + 1));
+        }
         // The topic of the search is in the path: /search/places/
         if ($page === 'search' && preg_match('#/([a-z]+)$#', $path, $m) === 1) {
             $query['topic'] ??= $m[1];
@@ -72,7 +76,7 @@ final class Site
         $html = $this->view->page($page, $grid, $request->getHeaderLine('User-Agent'), $query);
         $response->getBody()->write($html);
 
-        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+        return $response->withStatus($this->view->found() ? 200 : 404)->withHeader('Content-Type', 'text/html; charset=utf-8');
     }
 
     /** The page a path asks: the home page, the health, or the one the grid has an address for. */

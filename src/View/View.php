@@ -17,6 +17,13 @@ final class View
 
     private Twig $twig;
     private FilesystemLoader $loader;
+    private bool $found = true;
+
+    /** Whether what the last block shown is about exists (a profile that does not is a 404). */
+    public function found(): bool
+    {
+        return $this->found;
+    }
 
     public function __construct(string $templates)
     {
@@ -28,6 +35,7 @@ final class View
     public function block(string $name, Grid $grid, array $args = []): string
     {
         $data = Blocks::data($name, $grid, $args);
+        $this->found = (($data['found'] ?? true) !== false);
 
         return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels()]);
     }
@@ -76,6 +84,17 @@ final class View
             'search_all' => _('All'),
             'search_nothing' => _('Nothing found.'),
             'search_empty' => _('Type something to look for.'),
+            'profile_not_found' => _('This profile does not exist.'),
+            'member_since' => _('Member since'),
+            'profile_private' => _('This profile is not published.'),
+            'partner' => _('Partner'),
+            'languages' => _('Languages'),
+            'wants' => _('Wants to'),
+            'skills' => _('Skills'),
+            'web' => _('Web'),
+            'first_life' => _('First life'),
+            'picks' => _('Picks'),
+            'classifieds' => _('Classifieds'),
         ];
     }
 }
