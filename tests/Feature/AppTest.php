@@ -62,3 +62,13 @@ test('a profile that does not exist says so', function () {
 
     expect($data['found'])->toBeFalse();
 });
+
+test('the assets are served, the theme first, and only known types', function () {
+    $app = helpers_app();
+
+    $css = helpers_get($app, '/assets/css/page.css');
+    expect($css->getStatusCode())->toBe(200);
+    expect($css->getHeaderLine('Content-Type'))->toBe('text/css');
+    expect(helpers_get($app, '/assets/../composer.json')->getStatusCode())->toBe(404);
+    expect(helpers_get($app, '/assets/css/missing.css')->getStatusCode())->toBe(404);
+});

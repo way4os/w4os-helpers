@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\View;
 
+use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Models\Grid;
 use Twig\Environment as Twig;
@@ -19,14 +20,21 @@ final class View
     private FilesystemLoader $loader;
     private bool $found = true;
 
+    /** @var array{css:list<string>,js:list<string>} the files the blocks shown need, for the head of the layout */
+    private array $files = ['css' => [], 'js' => []];
+
+    /** The files each block needs. */
+    private const BLOCK_FILES = ['destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']]];
+
     /** Whether what the last block shown is about exists (a profile that does not is a 404). */
     public function found(): bool
     {
         return $this->found;
     }
 
-    public function __construct(string $templates)
+    public function __construct(string $templates, private string $assets = '')
     {
+        $this->assets = $assets !== '' ? $assets : dirname($templates) . '/assets';
         $this->loader = new FilesystemLoader($templates);
         $this->twig = new Twig($this->loader, ['autoescape' => 'html']);
     }
@@ -35,6 +43,9 @@ final class View
     public function block(string $name, Grid $grid, array $args = []): string
     {
         $data = Blocks::data($name, $grid, $args);
+        foreach (self::BLOCK_FILES[$name] ?? [] as $kind => $files) {
+            $this->files[$kind] = array_values(array_unique(array_merge($this->files[$kind], $files)));
+        }
         $this->found = (($data['found'] ?? true) !== false);
 
         return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels()]);
@@ -43,6 +54,8 @@ final class View
     /** @param array<string,mixed> $args the arguments of the request, for the block the page is */
     public function page(string $page, Grid $grid, string $agent, array $args = []): string
     {
+        $theme = self::theme($grid);
+        $theme === null || !is_dir("$theme/templates") || $this->loader->prependPath("$theme/templates");
         $block = Blocks::name($page);
         $template = "pages/$page-page.twig";
         if ($this->loader->exists($template)) {
@@ -59,18 +72,70 @@ final class View
             $main = $block === null ? '' : $this->block($block, $grid, $args + ['level' => 'h1']);
         }
 
+        $viewer = preg_match(self::VIEWER_PATTERN, $agent) === 1;
+        $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
+        $config = is_dir($grid->directory()) ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']) : null;
+        $logo = $config?->find('Helpers', 'LogoURL');
+        foreach (['svg', 'png'] as $ext) {
+            $logo ??= $this->asset($grid, "images/logos/logo.$ext") === null ? null : "$prefix/assets/images/logos/logo.$ext";
+        }
+        $stylesheet = $this->asset($grid, 'css/page.css');
+
         return $this->twig->render('layouts/base-layout.twig', [
             'grid_name' => $grid->name(),
-            'viewer' => preg_match(self::VIEWER_PATTERN, $agent) === 1,
+            'viewer' => $viewer,
             'slug' => $page,
             'main' => new Markup($main, 'UTF-8'),
-            'sidebars' => false,
-            'menu' => [],
+            'sidebars' => !$viewer || $page === 'splash',
+            'grid_info' => new Markup($this->block('grid-info', $grid), 'UTF-8'),
+            'grid_status' => new Markup($this->block('grid-status', $grid), 'UTF-8'),
+            'motd' => new Markup($this->block('motd', $grid), 'UTF-8'),
+            'news' => '',
+            'menu' => $this->menu($grid, $prefix),
             'labels' => self::labels(),
-            'stylesheet' => '',
-            'assets' => ['css' => [], 'js' => []],
-            'logo_url' => '',
+            'stylesheet' => "$prefix/assets/css/page.css" . ($stylesheet === null ? '' : '?v=' . filemtime($stylesheet)),
+            'assets' => array_map(
+                fn(array $files): array => array_map(fn(string $file): string => "$prefix/assets/$file", $files),
+                $this->files,
+            ),
+            'logo_url' => $logo,
         ]);
+    }
+
+    /** The folder of the theme of the grid, where what it holds replaces the files of the helpers (`templates/`, `assets/`). */
+    public static function theme(Grid $grid): ?string
+    {
+        $dir = $grid->directory() . '/theme';
+
+        return $grid->directory() !== '' && is_dir($dir) ? $dir : null;
+    }
+
+    /** The file of the assets a path names: the theme's, else the helpers'. Null when there is none. */
+    public function asset(Grid $grid, string $file): ?string
+    {
+        if (str_contains($file, '..')) {
+            return null;
+        }
+        foreach ([self::theme($grid) === null ? null : self::theme($grid) . '/assets', $this->assets] as $dir) {
+            if ($dir !== null && is_file("$dir/$file")) {
+                return "$dir/$file";
+            }
+        }
+
+        return null;
+    }
+
+    /** @return list<array{slug:string,label:string,url:string}> the pages of the menu, at the address the grid gives them */
+    private function menu(Grid $grid, string $prefix): array
+    {
+        $guide = (string) parse_url((string) $grid->address('guide'), PHP_URL_PATH);
+        $items = [
+            ['home', _('Home'), $prefix . '/'],
+            ['destination_guide', _('Guide'), $guide !== '' ? $guide : $prefix . '/guide'],
+            ['directory_info', _('Directory'), $prefix . '/directory_info'],
+        ];
+
+        return array_map(static fn(array $i): array => ['slug' => $i[0], 'label' => $i[1], 'url' => $i[2]], $items);
     }
 
     /** @return array<string,string> the words of the templates */

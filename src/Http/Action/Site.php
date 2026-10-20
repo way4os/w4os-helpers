@@ -43,6 +43,9 @@ final class Site
         if ($path === '/get_grid_info') {
             return (new GridInfo())($request, $response);
         }
+        if (preg_match('#^/assets/(.+)$#', $path, $m) === 1) {
+            return $this->asset($response, $grid, $m[1]);
+        }
         if (preg_match('#^/blocks/([\w-]+)$#', $path, $m) === 1) {
             return $this->block($response, $grid, $m[1], $request->getQueryParams());
         }
@@ -88,6 +91,9 @@ final class Site
         if ($path === '/health') {
             return 'health';
         }
+        if ($path === '/directory_info') {
+            return 'directory_info';
+        }
         $prefix = (string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH);
         foreach (self::PAGES as $service => $page) {
             $address = (string) parse_url((string) $grid->address($service), PHP_URL_PATH);
@@ -123,5 +129,34 @@ final class Site
         $response->getBody()->write($this->view->block($name, $grid, $query));
 
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    private const MIME = [
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+        'ico' => 'image/x-icon',
+        'css' => 'text/css',
+        'js' => 'text/javascript',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+        'otf' => 'font/otf',
+    ];
+
+    /** A file of the assets: the theme of the grid first, then the helpers'. */
+    private function asset(ResponseInterface $response, Grid $grid, string $file): ResponseInterface
+    {
+        $path = $this->view->asset($grid, $file);
+        $mime = self::MIME[strtolower(pathinfo($file, PATHINFO_EXTENSION))] ?? null;
+        if ($path === null || $mime === null) {
+            return $response->withStatus(404);
+        }
+        $response->getBody()->write((string) file_get_contents($path));
+
+        return $response->withHeader('Content-Type', $mime)->withHeader('Cache-Control', 'public, max-age=86400');
     }
 }
