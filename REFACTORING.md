@@ -69,8 +69,9 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       - [x] blocks search, profile, popular_places, directory_info (search database through `Connections::pdo`; SQL still here, to move to the engine models later)
       - [x] menu, assets (theme of the grid first, `/assets/...`), logo, sidebars, theme templates (`<grid>/theme/templates`)
 - [x] 5. Config: `Helpers.ini` through the engine; remove `includes/` and `classes/`; delete the old scripts.
-- [ ] 6. OpenAPI: one document for the helpers (paths above, fixed formats included), served at `/openapi.json`, same generator style as
-      `opensim-engine/dev/api-docs.php`; test that every route is documented.
+- [x] 6. OpenAPI: the engine's document is the contract (pages and services included, served at `/api/openapi.json`); the pages the helpers add
+      (`/directory_info`, `/blocks/{name}`, `/assets/{file}`) were documented in the engine; a test checks every served page is in it.
+      Still to check on real requests: the former arguments (`textgen`, `motd` username, `query` gk).
 - [ ] 7. Packaging: `packaging/opensim-helpers.yaml` (docroot `public/`), web server snippet presets in the engine point to
       `public/index.php`; `dev/build.sh` still builds; `tests/Packaging` green.
 - [ ] 8. Docs: README (practical questions), DEVELOPERS.md (layout above), CHANGELOG one line.

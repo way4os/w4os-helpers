@@ -72,3 +72,10 @@ test('the assets are served, the theme first, and only known types', function ()
     expect(helpers_get($app, '/assets/../composer.json')->getStatusCode())->toBe(404);
     expect(helpers_get($app, '/assets/css/missing.css')->getStatusCode())->toBe(404);
 });
+
+test('every page the site serves is in the OpenAPI document of the engine', function () {
+    $paths = array_keys(OpenSim\Api\Contract::document()['paths']);
+    $served = ['/search', '/welcome', '/guide', '/profile/{name}', '/health', '/directory_info', '/grid_status', '/grid_status.rss', '/get_grid_info', '/blocks/{name}', '/assets/{file}'];
+
+    expect(array_values(array_diff($served, $paths)))->toBe([]);
+});
