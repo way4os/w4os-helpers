@@ -23,7 +23,7 @@ class OpenSim_Helpers_Block_Profile
         $config = OpenSim_Helpers_GridConfig::engine_config();
         try {
             $avatar = \OpenSim\Models\Avatar::find($config, "$first.$last");
-        } catch (\OpenSim\Models\ChannelUnavailable $e) {
+        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
             $avatar = null;
         }
         // The account of the services of the grid, or one that is not active, has no page

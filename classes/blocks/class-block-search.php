@@ -133,7 +133,7 @@ class OpenSim_Helpers_Block_Search
             case 'people':
                 try {
                     $people = \OpenSim\Models\Avatar::all(OpenSim_Helpers_GridConfig::engine_config(), ['search' => $q, 'filters' => ['active' => 'yes', 'technical' => 'no'], 'perPage' => (int) $limit])->array();
-                } catch (\OpenSim\Models\ChannelUnavailable $e) {
+                } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
                     $people = [];
                 }
                 $profile = OpenSim_Helpers_View::page_path('profile');

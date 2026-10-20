@@ -155,7 +155,7 @@ class OpenSim_Helpers_Block_Health
     {
         try {
             $owner = \OpenSim\Models\Avatar::all(OpenSim_Helpers_GridConfig::engine_config(), ['sort' => 'created', 'perPage' => 1, 'filters' => ['technical' => 'no']])->first();
-        } catch (\OpenSim\Models\ChannelUnavailable $e) {
+        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
             return null;
         }
 
