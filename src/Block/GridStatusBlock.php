@@ -20,6 +20,12 @@ final class GridStatusBlock implements Block
         ][$monitor['level']] ?? null;
     }
 
+    /** An area in square kilometers, with its unit: two decimals under 100 km² (a region of 256 m is 0.07 km²). */
+    public static function area(float $squareKilometers): string
+    {
+        return number_format($squareKilometers, $squareKilometers < 100 ? 2 : 0) . ' km²';
+    }
+
     public function data(Grid $grid, array $args = []): array
     {
         $monitor = GridMonitor::of($grid);
@@ -31,7 +37,9 @@ final class GridStatusBlock implements Block
             'value' => number_format($monitor['regions']['online']) . ' / ' . number_format($monitor['regions']['total']),
         ];
         foreach ((array) ($monitor['users'] ?? []) as $label => $count) {
-            $rows[] = ['label' => ucfirst(str_replace('_', ' ', (string) $label)), 'value' => number_format((float) $count)];
+            $rows[] = $label === 'area'
+                ? ['label' => _('Area'), 'value' => self::area((float) $count)]
+                : ['label' => ucfirst(str_replace('_', ' ', (string) $label)), 'value' => number_format((float) $count)];
         }
 
         return ['title' => _('Grid Status'), 'rows' => $rows, 'monitor' => $monitor];
