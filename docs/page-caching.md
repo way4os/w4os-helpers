@@ -1,6 +1,6 @@
 # Page caching: what w4os got wrong
 
-This repository is the source of the first cause (master and 3.x; the opensim-kit branch has no `session_start()` any more). Found in the server performance audit of 2026-11-14 on speculoos.world (WordPress, w4os 3.0.1-dev with the bundled opensim-helpers, WPML, Salient). The home page takes about 0.8 s and no page cache can keep it.
+This repository is the source of the first cause (master and 3.x; the charm-dev branch has no `session_start()` any more). Found in the server performance audit of 2026-11-14 on speculoos.world (WordPress, w4os 3.0.1-dev with the bundled opensim-helpers, WPML, Salient). The home page takes about 0.8 s and no page cache can keep it.
 
 ## Causes
 
