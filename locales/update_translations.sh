@@ -1,10 +1,11 @@
 #!/bin/bash
 
-find * -iname "*.php" | egrep -v -e vendor -e node_modules | xargs -d"\n" xgettext --from-code=UTF-8 -o locales/messages.pot
+# The texts of the code that runs (src: build/ is a copy of it)
+find src -iname "*.php" | sort | xargs xgettext --from-code=UTF-8 --add-comments -o locales/messages.pot
 
 pot=locales/messages.pot
 
-for lang in fr_FR de_DE cy_GB it_IT pt_BR
+for lang in fr_FR de_DE cy_GB it_IT nl_NL pt_BR
 do
   file="locales/$lang/LC_MESSAGES/messages.po"
 

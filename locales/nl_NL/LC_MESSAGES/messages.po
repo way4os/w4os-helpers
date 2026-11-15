@@ -1,0 +1,167 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: opensim-helpers\n"
+"Language: nl_NL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Destinations Guide"
+msgstr "Gids voor bestemmingen"
+
+msgid "This is a work in progress, please be indulgent."
+msgstr "Dit is nog een work in progress, wees alsjeblieft geduldig."
+
+msgid "%s destinations"
+msgstr "bestemmingen van %s"
+
+msgid "Back to categories"
+msgstr "Terug naar categorieën"
+
+msgid "%d region"
+msgid_plural "%d regions"
+msgstr[0] "%d regio"
+msgstr[1] "%d regio’s"
+
+msgid "%d parcel"
+msgid_plural "%d parcels"
+msgstr[0] "%d perceel"
+msgstr[1] "%d percelen"
+
+msgid "Directory Info"
+msgstr "Gidsinformatie"
+
+msgid "%d grid"
+msgid_plural "%d grids"
+msgstr[0] "%d grid"
+msgstr[1] "%d grids"
+
+msgid "Grid Name"
+msgstr "Grid Naam"
+
+msgid "Login URI"
+msgstr "Login-URI"
+
+msgid "Grid Information"
+msgstr "Gridinformatie"
+
+msgid "Members"
+msgstr "Leden"
+
+msgid "Active members (30 days)"
+msgstr "Actieve leden (30 dagen)"
+
+msgid "Members in world"
+msgstr "Leden op grid"
+
+msgid "Active users (30 days)"
+msgstr "Actieve gebruikers (30 dagen)"
+
+msgid "Users in world"
+msgstr "Gebruikers in de wereld"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Regions"
+msgstr "Regio's"
+
+msgid "Area"
+msgstr "Oppervlakte"
+
+msgid "Grid Status"
+msgstr "Gridstatus"
+
+msgid "Health"
+msgstr "Gezondheid"
+
+msgid "Certificate"
+msgstr "Certificaat"
+
+msgid "Message of the day"
+msgstr "Bericht van de dag"
+
+msgid "traveler"
+msgstr "reiziger"
+
+msgid "Popular places"
+msgstr "Populaire plaatsen"
+
+msgid "Profile not found"
+msgstr "Profiel niet gevonden"
+
+msgid "Search"
+msgstr "Zoeken"
+
+msgid "Places"
+msgstr "Plaatsen"
+
+msgid "Land for sale"
+msgstr "Land te koop"
+
+msgid "Events"
+msgstr "Evenementen"
+
+msgid "Classifieds"
+msgstr "Advertenties"
+
+msgid "People"
+msgstr "Personen"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "Guide"
+msgstr "Gids"
+
+msgid "Directory"
+msgstr "Gids"
+
+msgid "Skip to content"
+msgstr "Naar de inhoud"
+
+msgid "Search for"
+msgstr "Zoeken naar"
+
+msgid "All"
+msgstr "Alles"
+
+msgid "Nothing found."
+msgstr "Niets gevonden."
+
+msgid "Type something to look for."
+msgstr "Typ iets om te zoeken."
+
+msgid "This profile does not exist."
+msgstr "Dit profiel bestaat niet."
+
+msgid "Member since"
+msgstr "Lid sinds"
+
+msgid "This profile is not published on the web."
+msgstr "Dit profiel is niet op het web gepubliceerd."
+
+msgid "Partner"
+msgstr "Partner"
+
+msgid "Languages"
+msgstr "Talen"
+
+msgid "Wants to"
+msgstr "Wil graag"
+
+msgid "Skills"
+msgstr "Vaardigheden"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "First life"
+msgstr "Het echte leven"
+
+msgid "Picks"
+msgstr "Favorieten"

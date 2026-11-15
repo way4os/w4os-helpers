@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 09:30-0400\n"
+"POT-Creation-Date: 2026-11-15 19:10-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,133 +18,224 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: classes/blocks/class-block-grid-info.php:17
-msgid "Grid Name"
+#: src/Block/DestinationGuideBlock.php:15
+msgid "Destinations Guide"
 msgstr ""
 
-#: classes/blocks/class-block-grid-info.php:20
-msgid "Login URI"
+#: src/Block/DestinationGuideBlock.php:15
+msgid "This is a work in progress, please be indulgent."
 msgstr ""
 
-#: classes/blocks/class-block-grid-info.php:27
-msgid "Grid Information"
+#: src/Block/DestinationGuideBlock.php:20
+msgid ""
+"The realm of destinations you seek has eluded our grasp, spirited away by "
+"elusive knomes. Rally the grid managers, let them venture forth to curate a "
+"grand tapestry of remarkable places for your exploration!"
 msgstr ""
 
-#: classes/blocks/class-block-grid-status.php:33
-msgid "Grid Status"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:46
-msgid "Status"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:46
-msgid "Online"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:46
-msgid "Offline"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:50
-msgid "Members"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:51
-msgid "Active members (30 days)"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:52
-msgid "Members in world"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:54
-msgid "Active users (30 days)"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:55
-msgid "Total users in world"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:57
-msgid "Regions"
-msgstr ""
-
-#: classes/blocks/class-block-grid-status.php:58
-msgid "Total area"
-msgstr ""
-
-#: classes/class-view.php:65
-msgid "Home"
-msgstr ""
-
-#: classes/class-view.php:66
-msgid "Destinations"
-msgstr ""
-
-#: classes/class-view.php:67
-msgid "Powered by OpenSimulator Helpers"
-msgstr ""
-
-#: classes/class-view.php:68
-msgid "Skip to main content"
-msgstr ""
-
-#: pages/directory_info.php:52
-msgid "Directory Info"
-msgstr ""
-
-#: pages/directory_info.php:57
+#: src/Block/DestinationGuideBlock.php:34
 #, php-format
-msgid "%d grid"
-msgid_plural "%d grids"
-msgstr[0] ""
-msgstr[1] ""
+msgid "%s destinations"
+msgstr ""
 
-#: pages/directory_info.php:58 pages/directory_info.php:64
+#: src/Block/DestinationGuideBlock.php:47
+msgid "Back to categories"
+msgstr ""
+
+#: src/Block/DirectoryInfoBlock.php:32 src/Block/DirectoryInfoBlock.php:47
 #, php-format
 msgid "%d region"
 msgid_plural "%d regions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: pages/directory_info.php:59 pages/directory_info.php:65
+#: src/Block/DirectoryInfoBlock.php:33 src/Block/DirectoryInfoBlock.php:48
 #, php-format
 msgid "%d parcel"
 msgid_plural "%d parcels"
 msgstr[0] ""
 msgstr[1] ""
 
-#: pages/guide.php:105 pages/guide.php:148
-msgid "Destinations Guide"
+#: src/Block/DirectoryInfoBlock.php:42
+msgid "Directory Info"
 msgstr ""
 
-#: pages/guide.php:151 pages/guide.php:189
-msgid "This is a work in progress, please be indulgent."
-msgstr ""
-
-#: pages/guide.php:172
+#: src/Block/DirectoryInfoBlock.php:46
 #, php-format
-msgid "%s destinations"
+msgid "%d grid"
+msgid_plural "%d grids"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Block/GridInfoBlock.php:15
+msgid "Grid Name"
 msgstr ""
 
-#: pages/guide.php:187
-msgid "Back to categories"
+#: src/Block/GridInfoBlock.php:19
+msgid "Login URI"
 msgstr ""
 
-#: pages/guide.php:212
+#: src/Block/GridInfoBlock.php:25
+msgid "Grid Information"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:45
+msgid "Members"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:46
+msgid "Active members (30 days)"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:47
+msgid "Members in world"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:48
+msgid "Active users (30 days)"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:49
+msgid "Users in world"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:58
+msgid "Status"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:61
+msgid "Regions"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:70
+msgid "Area"
+msgstr ""
+
+#: src/Block/GridStatusBlock.php:74
+msgid "Grid Status"
+msgstr ""
+
+#: src/Block/HealthBlock.php:32
+msgid "Health"
+msgstr ""
+
+#: src/Block/HealthBlock.php:35
+msgid "Certificate"
+msgstr ""
+
+#: src/Block/MotdBlock.php:14
+msgid "Message of the day"
+msgstr ""
+
+#: src/Block/MotdBlock.php:14
+msgid "traveler"
+msgstr ""
+
+#: src/Block/PopularPlacesBlock.php:34
+msgid "Popular places"
+msgstr ""
+
+#: src/Block/ProfileBlock.php:26
+msgid "Profile not found"
+msgstr ""
+
+#: src/Block/SearchBlock.php:36 src/View/View.php:150
+msgid "Search"
+msgstr ""
+
+#: src/Block/SearchBlock.php:64
+msgid "Places"
+msgstr ""
+
+#: src/Block/SearchBlock.php:65
+msgid "Land for sale"
+msgstr ""
+
+#: src/Block/SearchBlock.php:66
+msgid "Events"
+msgstr ""
+
+#: src/Block/SearchBlock.php:67 src/View/View.php:165
+msgid "Classifieds"
+msgstr ""
+
+#: src/Block/SearchBlock.php:68
+msgid "People"
+msgstr ""
+
+#: src/Block/SearchBlock.php:108
 #, php-format
-msgid "%s people"
+msgid "%d min"
 msgstr ""
 
-#: pages/guide.php:215
-#, php-format
-msgid "traffic %s"
+#: src/View/View.php:136
+msgid "Home"
 msgstr ""
 
-#: pages/guide.php:235
-msgid ""
-"The realm of destinations you seek has eluded our grasp, spirited away by "
-"elusive knomes. Rally the grid managers, let them venture forth to curate a "
-"grand tapestry of remarkable places for your exploration!"
+#: src/View/View.php:137
+msgid "Guide"
+msgstr ""
+
+#: src/View/View.php:138
+msgid "Directory"
+msgstr ""
+
+#: src/View/View.php:148
+msgid "Skip to content"
+msgstr ""
+
+#: src/View/View.php:151
+msgid "Search for"
+msgstr ""
+
+#: src/View/View.php:152
+msgid "All"
+msgstr ""
+
+#: src/View/View.php:153
+msgid "Nothing found."
+msgstr ""
+
+#: src/View/View.php:154
+msgid "Type something to look for."
+msgstr ""
+
+#: src/View/View.php:155
+msgid "This profile does not exist."
+msgstr ""
+
+#: src/View/View.php:156
+msgid "Member since"
+msgstr ""
+
+#: src/View/View.php:157
+msgid "This profile is not published on the web."
+msgstr ""
+
+#: src/View/View.php:158
+msgid "Partner"
+msgstr ""
+
+#: src/View/View.php:159
+msgid "Languages"
+msgstr ""
+
+#: src/View/View.php:160
+msgid "Wants to"
+msgstr ""
+
+#: src/View/View.php:161
+msgid "Skills"
+msgstr ""
+
+#: src/View/View.php:162
+msgid "Web"
+msgstr ""
+
+#: src/View/View.php:163
+msgid "First life"
+msgstr ""
+
+#: src/View/View.php:164
+msgid "Picks"
 msgstr ""

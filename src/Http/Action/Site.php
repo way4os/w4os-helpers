@@ -6,6 +6,7 @@ namespace OpenSim\Helpers\Http\Action;
 
 use OpenSim\Config\Layout;
 use OpenSim\Helpers\Block\Blocks;
+use OpenSim\Helpers\I18n;
 use OpenSim\Helpers\View\View;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\Environment;
@@ -33,6 +34,8 @@ final class Site
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+        // The language of the visitor: the one a page asks (?lang=fr), else the one of the browser
+        I18n::use((string) ($request->getQueryParams()['lang'] ?? $request->getHeaderLine('Accept-Language')));
         $answer = $this->engine->answer($request);
         if ($answer !== null) {
             return $answer;

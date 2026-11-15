@@ -1,52 +1,167 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: gpt-po v1.0.7\n"
-"Language-Team: \n"
+"Project-Id-Version: opensim-helpers\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: guide.php:88 guide.php:128
 msgid "Destinations Guide"
 msgstr "Guide des destinations"
 
-#: guide.php:129 guide.php:153 locale.php:71
 msgid "This is a work in progress, please be indulgent."
 msgstr "Ceci est un travail en cours, veuillez faire preuve d'indulgence."
 
-#: guide.php:138
-#, php-format
 msgid "%s destinations"
-msgstr "%s destinations"
+msgstr "destinations de %s"
 
-#: guide.php:151 locale.php:73
 msgid "Back to categories"
 msgstr "Retour aux catégories"
 
-#: guide.php:167
-#, php-format
-msgid "%s people"
-msgstr "%s personnes"
+msgid "%d region"
+msgid_plural "%d regions"
+msgstr[0] "%d région"
+msgstr[1] "%d régions"
 
-#: guide.php:170
-#, php-format
-msgid "traffic %s"
-msgstr "trafic %s"
+msgid "%d parcel"
+msgid_plural "%d parcels"
+msgstr[0] "%d parcelle"
+msgstr[1] "%d parcelles"
 
-#: guide.php:181
-msgid ""
-"The realm of destinations you seek has eluded our grasp, spirited away by elusive knomes. Rally the grid managers, let "
-"them venture forth to curate a grand tapestry of remarkable places for your exploration!"
-msgstr ""
-"Le royaume des destinations que vous recherchez nous échappe, emporté par des lutins insaisissables. Rassemblez les "
-"gestionnaires de la grille, laissez-les s'aventurer pour créer une grande fresque de lieux remarquables à explorer !"
+msgid "Directory Info"
+msgstr "Infos de l’annuaire"
+
+msgid "%d grid"
+msgid_plural "%d grids"
+msgstr[0] "%d grille"
+msgstr[1] "%d grilles"
+
+msgid "Grid Name"
+msgstr "Nom de la grille"
+
+msgid "Login URI"
+msgstr "URI de connexion"
+
+msgid "Grid Information"
+msgstr "Informations sur la grille"
+
+msgid "Members"
+msgstr "Membres"
+
+msgid "Active members (30 days)"
+msgstr "Membres actifs (30 jours)"
+
+msgid "Members in world"
+msgstr "Membres sur la grille"
+
+msgid "Active users (30 days)"
+msgstr "Utilisateurs actifs (30 jours)"
+
+msgid "Users in world"
+msgstr "Utilisateurs dans le monde"
+
+msgid "Status"
+msgstr "Statut"
+
+msgid "Regions"
+msgstr "Régions"
+
+msgid "Area"
+msgstr "Superficie"
+
+msgid "Grid Status"
+msgstr "Statut de la grille"
+
+msgid "Health"
+msgstr "Santé"
+
+msgid "Certificate"
+msgstr "Certificat"
+
+msgid "Message of the day"
+msgstr "Message du jour"
+
+msgid "traveler"
+msgstr "voyageur"
+
+msgid "Popular places"
+msgstr "Lieux populaires"
+
+msgid "Profile not found"
+msgstr "Profil introuvable"
+
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Places"
+msgstr "Lieux"
+
+msgid "Land for sale"
+msgstr "Terrains à vendre"
+
+msgid "Events"
+msgstr "Événements"
+
+msgid "Classifieds"
+msgstr "Petites annonces"
+
+msgid "People"
+msgstr "Personnes"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "Guide"
+msgstr "Guide"
+
+msgid "Directory"
+msgstr "Annuaire"
+
+msgid "Skip to content"
+msgstr "Aller au contenu"
+
+msgid "Search for"
+msgstr "Rechercher"
+
+msgid "All"
+msgstr "Tout"
+
+msgid "Nothing found."
+msgstr "Aucun résultat."
+
+msgid "Type something to look for."
+msgstr "Tapez ce que vous cherchez."
+
+msgid "This profile does not exist."
+msgstr "Ce profil n’existe pas."
+
+msgid "Member since"
+msgstr "Membre depuis"
+
+msgid "This profile is not published on the web."
+msgstr "Ce profil n’est pas publié sur le web."
+
+msgid "Partner"
+msgstr "Partenaire"
+
+msgid "Languages"
+msgstr "Langues"
+
+msgid "Wants to"
+msgstr "J'aimerais"
+
+msgid "Skills"
+msgstr "Compétences"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "First life"
+msgstr "Vie réelle"
+
+msgid "Picks"
+msgstr "Favoris"

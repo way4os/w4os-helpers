@@ -1,52 +1,173 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: gpt-po v1.0.7\n"
-"Language-Team: \n"
+"Project-Id-Version: opensim-helpers\n"
 "Language: cy_GB\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0.1\n"
+"Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n==2) ? 1 : (n != 8 && n != 11) ? 2 : 3;\n"
 
-#: guide.php:88 guide.php:128
 msgid "Destinations Guide"
-msgstr "Canllaw Cyrchfannau"
+msgstr "Teithlyddau Cyfeiriadau"
 
-#: guide.php:129 guide.php:154
 msgid "This is a work in progress, please be indulgent."
-msgstr "Gwaith ar y gweill yw hwn, cewch fod yn amyneddgar."
+msgstr "Mae hyn yn waith ar y gweill, fodlonwch os gwelwch yn dda."
 
-#: guide.php:139
-#, php-format
 msgid "%s destinations"
 msgstr "%s cyfeiriadau"
 
-#: guide.php:152
 msgid "Back to categories"
-msgstr "Yn ôl i gategorïau"
+msgstr "Nôl i gategorïau"
 
-#: guide.php:168
-#, php-format
-msgid "%s people"
-msgstr "%s pobl"
+msgid "%d region"
+msgid_plural "%d regions"
+msgstr[0] "%d rhanbarth"
+msgstr[1] "%d ranbarth"
+msgstr[2] "%d rhanbarth"
+msgstr[3] "%d rhanbarth"
 
-#: guide.php:170
-#, php-format
-msgid "traffic %s"
-msgstr "llywio %s"
+msgid "%d parcel"
+msgid_plural "%d parcels"
+msgstr[0] "%d llain"
+msgstr[1] "%d llain"
+msgstr[2] "%d llain"
+msgstr[3] "%d llain"
 
-#: guide.php:182
-msgid ""
-"The realm of destinations you seek has eluded our grasp, spirited away by elusive knomes. Rally the grid managers, let "
-"them venture forth to curate a grand tapestry of remarkable places for your exploration!"
-msgstr ""
-"I ddiffodd ein gafael ar y ddaear o gyrchfeydd a hoffech, clywir hwynt yn taro drwy 'nawdd y tylwyth teg. Ysgogi'r "
-"rheolwyr grid, gadewch iddynt anterth i guradu tapistry mawr o leoliadau rhyfeddol ar gyfer eich archwilio!"
+msgid "Directory Info"
+msgstr "Gwybodaeth y cyfeiriadur"
+
+msgid "%d grid"
+msgid_plural "%d grids"
+msgstr[0] "%d grid"
+msgstr[1] "%d grid"
+msgstr[2] "%d grid"
+msgstr[3] "%d grid"
+
+msgid "Grid Name"
+msgstr "Enw'r Grid"
+
+msgid "Login URI"
+msgstr "Mewngofnodi URI"
+
+msgid "Grid Information"
+msgstr "Gwybodaeth Grid"
+
+msgid "Members"
+msgstr "Aelodau"
+
+msgid "Active members (30 days)"
+msgstr "Aelodau gweithredol (30 diwrnod)"
+
+msgid "Members in world"
+msgstr "Aelodau yn y byd"
+
+msgid "Active users (30 days)"
+msgstr "Defnyddwyr gweithredol (30 diwrnod)"
+
+msgid "Users in world"
+msgstr "Defnyddwyr yn y byd"
+
+msgid "Status"
+msgstr "Statws"
+
+msgid "Regions"
+msgstr "Rhanbarthau"
+
+msgid "Area"
+msgstr "Arwynebedd"
+
+msgid "Grid Status"
+msgstr "Statws grid"
+
+msgid "Health"
+msgstr "Iechyd"
+
+msgid "Certificate"
+msgstr "Tystysgrif"
+
+msgid "Message of the day"
+msgstr "Neges y dydd"
+
+msgid "traveler"
+msgstr "teithiwr"
+
+msgid "Popular places"
+msgstr "Lleoedd poblogaidd"
+
+msgid "Profile not found"
+msgstr "Proffil heb ei ganfod"
+
+msgid "Search"
+msgstr "Chwilio"
+
+msgid "Places"
+msgstr "Lleoedd"
+
+msgid "Land for sale"
+msgstr "Tir ar werth"
+
+msgid "Events"
+msgstr "Digwyddiadau"
+
+msgid "Classifieds"
+msgstr "Hysbysebion"
+
+msgid "People"
+msgstr "Pobl"
+
+msgid "%d min"
+msgstr "%d mun"
+
+msgid "Home"
+msgstr "Hafan"
+
+msgid "Guide"
+msgstr "Canllaw"
+
+msgid "Directory"
+msgstr "Cyfeiriadur"
+
+msgid "Skip to content"
+msgstr "Neidio i’r cynnwys"
+
+msgid "Search for"
+msgstr "Chwilio am"
+
+msgid "All"
+msgstr "Cy_GB"
+
+msgid "Nothing found."
+msgstr "Dim wedi’i ganfod."
+
+msgid "Type something to look for."
+msgstr "Teipiwch rywbeth i chwilio amdano."
+
+msgid "This profile does not exist."
+msgstr "Nid yw’r proffil hwn yn bodoli."
+
+msgid "Member since"
+msgstr "Aelod ers"
+
+msgid "This profile is not published on the web."
+msgstr "Nid yw’r proffil hwn wedi’i gyhoeddi ar y we."
+
+msgid "Partner"
+msgstr "Partner"
+
+msgid "Languages"
+msgstr "Ieithoedd"
+
+msgid "Wants to"
+msgstr "Eisiau"
+
+msgid "Skills"
+msgstr "Sgiliau"
+
+msgid "Web"
+msgstr "Gwe"
+
+msgid "First life"
+msgstr "Bywyd go iawn"
+
+msgid "Picks"
+msgstr "Dewisiadau"

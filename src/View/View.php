@@ -6,6 +6,7 @@ namespace OpenSim\Helpers\View;
 
 use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Block\Blocks;
+use OpenSim\Helpers\I18n;
 use OpenSim\Models\Grid;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
@@ -42,6 +43,8 @@ final class View
     /** A block as an HTML fragment. @param array<string,mixed> $args */
     public function block(string $name, Grid $grid, array $args = []): string
     {
+        // A block a site makes in its own language (`lang`): the helpers are a library there, no request tells it
+        isset($args['lang']) && I18n::use((string) $args['lang']);
         $data = Blocks::data($name, $grid, $args);
         foreach (self::BLOCK_FILES[$name] ?? [] as $kind => $files) {
             $this->files[$kind] = array_values(array_unique(array_merge($this->files[$kind], $files)));
