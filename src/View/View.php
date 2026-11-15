@@ -151,7 +151,7 @@ final class View
             'search_empty' => _('Type something to look for.'),
             'profile_not_found' => _('This profile does not exist.'),
             'member_since' => _('Member since'),
-            'profile_private' => _('This profile is not published.'),
+            'profile_private' => _('This profile is not published on the web.'),
             'partner' => _('Partner'),
             'languages' => _('Languages'),
             'wants' => _('Wants to'),
