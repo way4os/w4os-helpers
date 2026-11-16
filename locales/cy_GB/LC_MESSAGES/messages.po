@@ -148,8 +148,8 @@ msgstr "Nid yw’r proffil hwn yn bodoli."
 msgid "Member since"
 msgstr "Aelod ers"
 
-msgid "This profile is not published on the web."
-msgstr "Nid yw’r proffil hwn wedi’i gyhoeddi ar y we."
+msgid "This profile is not public."
+msgstr "Nid yw’r proffil hwn yn gyhoeddus."
 
 msgid "Partner"
 msgstr "Partner"

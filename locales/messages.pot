@@ -213,7 +213,7 @@ msgid "Member since"
 msgstr ""
 
 #: src/View/View.php:171
-msgid "This profile is not published on the web."
+msgid "This profile is not public."
 msgstr ""
 
 #: src/View/View.php:172

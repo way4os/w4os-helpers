@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (profile): a profile that is not published says "This profile is not public.", in every language
 - fix (install): the helpers write their tasks and their cache where the web server can, `/var/cache/opensim-helpers/{tasks,cache}`, made by the package for `www-data` (HelpersLayout), when the folders of the install are not writable and nothing else is given; they take `OPENSIM_TASKS_ROOT`, `OPENSIM_CACHE_ROOT` and the other `OPENSIM_*` the web server gives; the health page tells both folders
 - fix (search): the search index fills by itself: the API of the engine has the search tasks of the grid, and once the answer is sent (`fastcgi_finish_request`) a simulator that registered is read and the tasks that are due run, on every visit (`Engine::finish()`, the pseudo cron of the engine); no cron needed
 - fix (search): the search of people finds only the avatars who published their profile ("show in search" in the viewer), as the web profile already did

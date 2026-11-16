@@ -142,8 +142,8 @@ msgstr "Questo profilo non esiste."
 msgid "Member since"
 msgstr "Membro dal"
 
-msgid "This profile is not published on the web."
-msgstr "Questo profilo non è pubblicato sul web."
+msgid "This profile is not public."
+msgstr "Questo profilo non è pubblico."
 
 msgid "Partner"
 msgstr "Partner"
