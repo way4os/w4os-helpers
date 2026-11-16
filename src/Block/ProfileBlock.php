@@ -58,25 +58,12 @@ final class ProfileBlock implements Block
             'classifieds' => [],
         ];
         if ($published) {
+            // What the viewer shows of each (the engine's Avatar::place()): picture, place, teleport link
             foreach ($avatar->picks() as $pick) {
-                $region = (string) ($pick['simname'] ?? '');
-                $position = self::position((string) ($pick['posglobal'] ?? ''));
-                $data['picks'][] = [
-                    'name' => (string) $pick['name'],
-                    'description' => trim((string) $pick['description']),
-                    'picture' => self::picture($pick['snapshotuuid'] ?? null),
-                    'place' => $region . ($position === null ? '' : ' (' . implode(', ', $position) . ')'),
-                    'url' => $position === null || $region === '' ? null : $search->hop((string) ($pick['gatekeeper'] ?? ''), $region, implode('/', $position)),
-                ];
+                $data['picks'][] = self::item($pick);
             }
             foreach ($avatar->classifieds() as $ad) {
-                $data['classifieds'][] = [
-                    'name' => (string) $ad['name'],
-                    'description' => trim((string) $ad['description']),
-                    'picture' => self::picture($ad['snapshotuuid'] ?? null),
-                    'place' => trim(($ad['parcelname'] ?? '') . (empty($ad['simname']) ? '' : ', ' . $ad['simname']), ', '),
-                    'until' => date('Y-m-d', (int) $ad['expirationdate']),
-                ];
+                $data['classifieds'][] = self::item($ad) + ['until' => date('Y-m-d', (int) $ad['expirationdate'])];
             }
         }
 
@@ -108,22 +95,21 @@ final class ProfileBlock implements Block
     }
 
     /**
-     * The position of a pick in its region: its position is global, the one in the region is the rest of the division by 256.
+     * A pick or a classified as the viewer shows it, from what the engine gives of it: the place is "parcel, region (x, y, z)".
      *
-     * @return ?list<int> x, y, z; null when it has none
+     * @param array<string,mixed> $row
+     * @return array{name:string, description:string, picture:string, place:string, url:?string}
      */
-    private static function position(string $posglobal): ?array
+    private static function item(array $row): array
     {
-        if (preg_match('/<?\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/', $posglobal, $m) !== 1) {
-            return null;
-        }
+        $position = is_array($row['position'] ?? null) ? ' (' . implode(', ', $row['position']) . ')' : '';
 
-        return [(int) fmod((float) $m[1], 256), (int) fmod((float) $m[2], 256), (int) $m[3]];
-    }
-
-    /** The picture of a pick or a classified: its asset, the placeholder of the engine when it has none. */
-    private static function picture(mixed $uuid): string
-    {
-        return trim((string) $uuid, '0-') !== '' ? (string) $uuid : WebAssets::PLACEHOLDER;
+        return [
+            'name' => (string) ($row['name'] ?? ''),
+            'description' => trim((string) ($row['description'] ?? '')),
+            'picture' => (string) ($row['picture'] ?? '') ?: WebAssets::PLACEHOLDER,
+            'place' => implode(', ', array_filter([$row['parcel'] ?? null, $row['region'] ?? null])) . (($row['region'] ?? null) === null ? '' : $position),
+            'url' => $row['teleport'] ?? null,
+        ];
     }
 }

@@ -20,7 +20,7 @@ function profile_grid(): Grid
     $pdo->exec("CREATE TABLE GridUser (UserID VARCHAR(255) PRIMARY KEY, HomeRegionID CHAR(36), LastRegionID CHAR(36), Online CHAR(5) DEFAULT 'false', Login CHAR(16) DEFAULT '0', Logout CHAR(16) DEFAULT '0')");
     $pdo->exec('CREATE TABLE userprofile (useruuid CHAR(36) PRIMARY KEY, profileImage CHAR(36), profileAboutText TEXT, profileURL VARCHAR(255), profilePartner CHAR(36), profileWantToText TEXT, profileSkillsText TEXT, profileLanguages TEXT, profileFirstImage CHAR(36), profileFirstText TEXT, profileWantToMask INT DEFAULT 0, profileSkillsMask INT DEFAULT 0)');
     $pdo->exec('CREATE TABLE userpicks (pickuuid CHAR(36), creatoruuid CHAR(36), name TEXT, description TEXT, snapshotuuid CHAR(36), simname TEXT, posglobal TEXT, gatekeeper TEXT, enabled TEXT, sortorder INT)');
-    $pdo->exec("INSERT INTO userpicks VALUES ('99999999-9999-4999-8999-999999999999', '11111111-1111-4111-8111-111111111111', 'Welcome', '', '00000000-0000-0000-0000-000000000000', 'Welcome', '<256128.5, 256128.2, 26>', '', 'true', 0)");
+    $pdo->exec("INSERT INTO userpicks VALUES ('99999999-9999-4999-8999-999999999999', '11111111-1111-4111-8111-111111111111', 'Welcome', '', '00000000-0000-0000-0000-000000000000', 'Welcome', '<256128.5, 256128.2, 26>', 'http://demo.example.org:8002', 'true', 0)");
     $pdo->exec('CREATE TABLE classifieds (creatoruuid CHAR(36), name TEXT, description TEXT, simname TEXT, parcelname TEXT, creationdate INT, expirationdate INT)');
     $pdo->exec("INSERT INTO UserAccounts (PrincipalID, FirstName, LastName, Email, Created, UserFlags) VALUES
         ('11111111-1111-4111-8111-111111111111', 'Ada', 'Love', 'ada@example.org', 1700000000, 1),
