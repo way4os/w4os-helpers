@@ -38,7 +38,7 @@ afterEach(fn() => Connections::using(null));
 describe('The block of a profile', function () {
     test('shows every section of the viewer, in its order, as tabs; an empty one says so', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
-        preg_match_all('/<a href="#profile-([a-z-]+)">([^<]+)</', $html, $tabs);
+        preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
 
         expect($tabs[1])->toBe(['second-life', 'web', 'interests', 'picks', 'classifieds', 'first-life'])
             ->and($tabs[2])->toBe(['2nd Life', 'Web', 'Interests', 'Picks', 'Classifieds', '1st Life'])
@@ -74,7 +74,7 @@ describe('The block of a profile', function () {
 
     test('names its tabs as the catalog of the engine does, in the language of the page', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'fr']);
-        preg_match_all('/<a href="#profile-([a-z-]+)">([^<]+)</', $html, $tabs);
+        preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
         OpenSim\Helpers\I18n::use('en');
 
         expect($tabs[2])->toBe(['Vie SL', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie RL'])

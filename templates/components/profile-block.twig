@@ -11,8 +11,9 @@
                it, every section shows, one after the other #}
             {% set titles = {'second-life': labels.second_life, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'first-life': labels.first_life} %}
             {% if sections|length > 1 %}
-                <nav class="profile-tabs" aria-label="{{ labels.profile_sections }}">
-                    <ul>{% for id in sections %}<li><a href="#profile-{{ id }}">{{ titles[id] }}</a></li>{% endfor %}</ul>
+                {# The classes of the tabs of Grav's Form plugin (form-tabs, tabs-nav, tab__link, active): a site's theme draws them as its forms' tabs #}
+                <nav class="profile-tabs form-tabs" aria-label="{{ labels.profile_sections }}">
+                    <ul class="tabs-nav">{% for id in sections %}<li><a class="tab__link" href="#profile-{{ id }}"><span>{{ titles[id] }}</span></a></li>{% endfor %}</ul>
                 </nav>
             {% endif %}
             {% if 'second-life' in sections %}
@@ -87,6 +88,7 @@
                 function select(index, focus) {
                     for (var i = 0; i < tabs.length; i++) {
                         tabs[i].setAttribute('aria-selected', i === index ? 'true' : 'false');
+                        tabs[i].className = 'tab__link' + (i === index ? ' active' : '');
                         tabs[i].tabIndex = i === index ? 0 : -1;
                         panels[i].hidden = i !== index;
                     }

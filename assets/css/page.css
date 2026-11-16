@@ -59,10 +59,11 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 .profile-meta { color: var(--muted); margin-top: 0; }
 .profile-details dt { font-weight: 600; margin-top: .5rem; }
 .profile-details dd { margin: 0 0 0 1rem; }
-/* The sections of a profile as the viewer's tabs (links to each without the script) */
-.profile-tabs ul { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: .25rem 1rem; list-style: none; margin: 1rem 0; padding: 0; border-bottom: 1px solid var(--muted); }
-.profile-tabs a { display: inline-block; padding: .25rem 0; text-decoration: none; white-space: nowrap; }
-.profile-tabs a[aria-selected="true"] { font-weight: 600; border-bottom: 2px solid currentColor; }
+/* The sections of a profile as the viewer's tabs (links to each without the script), spaced as Grav's form tabs */
+.profile-tabs .tabs-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; list-style: none; margin: 1rem 0 1.5rem; padding: 0; border-bottom: 1px solid var(--line); }
+.profile-tabs .tab__link { display: inline-block; padding: .75rem 1.25rem; margin-bottom: -1px; color: var(--muted); font-weight: 500; text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; }
+.profile-tabs .tab__link:hover { color: var(--fg); }
+.profile-tabs .tab__link.active { color: var(--fg); border-bottom-color: var(--accent); }
 .search-results { padding-left: 1.25rem; }
 .search-results li { margin: .5rem 0; }
 .search-form { display: flex; gap: .5rem; margin: 0 0 .75rem; }
