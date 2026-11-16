@@ -28,10 +28,14 @@ final class GridMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        // The helpers may be served under a path of the site (/helpers): the routes do not know it
-        $prefix = (string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH);
+        // The helpers are served under their base path (/helpers by default): the routes do not know it. What is outside it is the
+        // site's, never the helpers'
+        $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         $uri = $request->getUri();
-        if ($prefix !== '' && ($uri->getPath() === $prefix || str_starts_with($uri->getPath(), "$prefix/"))) {
+        if ($prefix !== '') {
+            if ($uri->getPath() !== $prefix && !str_starts_with($uri->getPath(), "$prefix/")) {
+                return new Response(404);
+            }
             $request = $request->withUri($uri->withPath(substr($uri->getPath(), strlen($prefix)) ?: '/'));
         }
 

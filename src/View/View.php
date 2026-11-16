@@ -78,7 +78,7 @@ final class View
             $main = $block === null ? '' : $this->block($block, $grid, $args + ['level' => 'h1']);
         }
 
-        $viewer = preg_match(self::VIEWER_PATTERN, $agent) === 1;
+        $viewer = self::isViewer($agent);
         $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         $config = is_dir($grid->directory()) ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']) : null;
         $logo = $config?->find('Helpers', 'LogoURL');
@@ -106,6 +106,12 @@ final class View
             ),
             'logo_url' => $logo,
         ]);
+    }
+
+    /** Whether a request comes from a viewer (its user agent): a page then shows its content alone. For the sites too. */
+    public static function isViewer(string $userAgent): bool
+    {
+        return preg_match(self::VIEWER_PATTERN, $userAgent) === 1;
     }
 
     /** The folder of the theme of the grid, where what it holds replaces the files of the helpers (`templates/`, `assets/`). */

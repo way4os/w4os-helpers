@@ -15,8 +15,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Whatever is asked of the site: first the services of the simulators and the viewers (the engine's, see Engine), then the pages, at
- * the addresses the grid gives them (`search`, `welcome`, `guide`, `GridStatus`... of its config), the home page, the blocks alone.
+ * Whatever is asked of the helpers under their base: first the services of the simulators and the viewers (the engine's, see Engine),
+ * then the pages whose address the grid puts under the base (`search`, `welcome`, `guide`, `GridStatus`... of its config), the home
+ * page, the blocks alone. A page the grid puts elsewhere is the site's: asked at its default path here, it is a redirect there.
  */
 final class Site
 {
@@ -54,7 +55,10 @@ final class Site
         }
         $page = $this->page($grid, $path);
         if ($page === null) {
-            return $response->withStatus(404);
+            // A page the site serves, asked at the helpers' default path: there
+            $to = $this->redirect($grid, $path, $request->getUri()->getQuery());
+
+            return $to === null ? $response->withStatus(404) : $response->withStatus(302)->withHeader('Location', $to);
         }
         if ($page === 'grid_status_rss') {
             return GridStatus::respondRss($response, $grid);
@@ -85,7 +89,20 @@ final class Site
         return $response->withStatus($this->view->found() ? 200 : 404)->withHeader('Content-Type', 'text/html; charset=utf-8');
     }
 
-    /** The page a path asks: the home page, the health, or the one the grid has an address for. */
+    /** The path of each page under the base of the helpers when the grid gives none. */
+    private const DEFAULT_PATHS = [
+        'search' => ['/search'],
+        'welcome' => ['/welcome'],
+        'guide' => ['/guide', '/guide.php'],
+        'grid-status' => ['/grid_status'],
+        'grid-status-rss' => ['/grid_status.rss'],
+        'web-profile' => ['/profile'],
+    ];
+
+    /**
+     * The page a path under the base of the helpers asks: the home page, the health, the directory, or a page whose address the grid
+     * puts under the base. A page the grid puts elsewhere (on the site) is not the helpers' (see redirect()).
+     */
     private function page(Grid $grid, string $path): ?string
     {
         if ($path === '/') {
@@ -97,22 +114,68 @@ final class Site
         if ($path === '/directory_info') {
             return 'directory_info';
         }
-        $prefix = (string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH);
         foreach (self::PAGES as $service => $page) {
-            $address = (string) parse_url((string) $grid->address($service), PHP_URL_PATH);
-            // The address of a profile has the name in it, which the path adds
-            $address = (string) preg_replace('#/?\[AGENT_NAME\].*$#', '', $address);
-            $address = $prefix !== '' && str_starts_with($address, "$prefix/") ? substr($address, strlen($prefix)) : $address;
-            if ($address === '' || $address === '/') {
-                continue;
-            }
-            $address = '/' . trim($address, '/');
-            if ($path === $address || (in_array($page, ['profile', 'search'], true) && str_starts_with($path, "$address/"))) {
+            $address = $this->local($grid, $service);
+            if ($address !== null && $address !== '/' && self::matches($path, $address, $page)) {
                 return $page;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Where a page asked at its default path under the base of the helpers is, when the grid gives it an address elsewhere (the
+     * site serves it): that address, the rest of the path (a name, a topic) and the query kept. Null otherwise.
+     */
+    private function redirect(Grid $grid, string $path, string $query): ?string
+    {
+        foreach (self::DEFAULT_PATHS as $service => $defaults) {
+            $address = (string) $grid->address($service);
+            if ($address === '' || $this->local($grid, $service) !== null) {
+                continue;
+            }
+            foreach ($defaults as $default) {
+                if ($path === $default || str_starts_with($path, "$default/")) {
+                    $rest = substr($path, strlen($default));
+                    $target = str_contains($address, '[AGENT_NAME]')
+                        ? str_replace('[AGENT_NAME]', ltrim($rest, '/'), $address)
+                        : rtrim($address, '/') . $rest;
+
+                    return $target . ($query !== '' ? (str_contains($target, '?') ? '&' : '?') . $query : '');
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /** The path of the address of a page under the base of the helpers (without the base), null when the grid puts it elsewhere. */
+    private function local(Grid $grid, string $service): ?string
+    {
+        $address = (string) $grid->address($service);
+        if ($address === '') {
+            return null;
+        }
+        $base = (string) $grid->helpersUrl();
+        $baseHost = strtolower((string) parse_url($base, PHP_URL_HOST));
+        $host = strtolower((string) parse_url($address, PHP_URL_HOST));
+        if ($baseHost !== '' && $host !== '' && $host !== $baseHost) {
+            return null;
+        }
+        $prefix = rtrim((string) parse_url($base, PHP_URL_PATH), '/');
+        // The address of a profile has the name in it, which the path adds
+        $path = (string) preg_replace('#/?\[AGENT_NAME\].*$#', '', (string) parse_url($address, PHP_URL_PATH));
+        if ($prefix !== '' && $path !== $prefix && !str_starts_with($path, "$prefix/")) {
+            return null;
+        }
+
+        return '/' . trim(substr($path, strlen($prefix)), '/');
+    }
+
+    private static function matches(string $path, string $address, string $page): bool
+    {
+        return $path === $address || (in_array($page, ['profile', 'search'], true) && str_starts_with($path, "$address/"));
     }
 
     /**
