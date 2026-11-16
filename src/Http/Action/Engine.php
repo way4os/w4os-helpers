@@ -6,10 +6,11 @@ namespace OpenSim\Helpers\Http\Action;
 
 use OpenSim\Api\Api;
 use OpenSim\Api\Handler;
-use OpenSim\Config\Layout;
+use OpenSim\Config\GridConfig;
 use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
+use OpenSim\Scheduling\Scheduler;
 use OpenSim\Security\ApiKeys;
+use OpenSim\Services\SearchTasks;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Factory\ResponseFactory;
@@ -19,9 +20,18 @@ use Slim\Psr7\Factory\StreamFactory;
  * The services of the simulators and the viewers (offline messages, search query and register, currency, land tool, message of the
  * day) are served by the engine, at the addresses the grid is configured with (Robust.ini, OpenSim.ini, the economy it gives its
  * viewers). Only `currency.php` and `landtool.php` have a fixed name, under an economy address the grid chooses.
+ *
+ * What waits for the answer is done once it is sent (`public/index.php` calls finish()): a simulator that registered in the search
+ * is read, and the tasks of the grid that are due run (its search tasks: the pseudo cron of the engine, on every visit).
  */
 final class Engine
 {
+    /** @var list<Api> the APIs of this request, whose work waits for the answer */
+    private static array $apis = [];
+
+    /** The grid of this request, whose tasks are due even when it asked no API */
+    private static ?Grid $served = null;
+
     /** @var array<string,string> the path of each service in the engine, by the way the grid names it */
     private const TARGETS = [
         'query' => '/search/query',
@@ -35,16 +45,58 @@ final class Engine
     /** The engine, as a PSR-15 handler for the grid of the request. */
     public static function handler(ServerRequestInterface $request, string $base = ''): Handler
     {
-        $environment = Environment::system(Layout::load());
+        $grid = $request->getAttribute('grid');
 
         return new Handler(
-            new Api($environment),
+            self::api($grid),
             new ResponseFactory(),
             new StreamFactory(),
             $base,
-            grid: $request->getAttribute('grid')->nick(),
-            authenticator: ApiKeys::for($environment),
+            grid: $grid->nick(),
+            authenticator: ApiKeys::for($grid->environment()),
         );
+    }
+
+    /** The API of the engine for a grid, with its tasks; what it leaves for after the answer is done by finish(). */
+    public static function api(Grid $grid): Api
+    {
+        $api = new Api($grid->environment(), self::scheduler($grid));
+        self::$apis[] = $api;
+
+        return $api;
+    }
+
+    /** The tasks of a grid: its search tasks (the snapshots of the simulators, the events), when it has a search database. */
+    public static function scheduler(Grid $grid): Scheduler
+    {
+        $scheduler = Scheduler::for($grid->environment());
+        if (is_dir($grid->directory())) {
+            SearchTasks::add($scheduler, $grid->environment(), GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']));
+        }
+
+        return $scheduler;
+    }
+
+    /** The grid this request serves, whose tasks finish() runs when they are due. */
+    public static function serving(?Grid $grid): void
+    {
+        self::$served = $grid;
+    }
+
+    /**
+     * What waits for the answer, once it is sent: what the APIs of the request left (a simulator that registered is read), then the
+     * tasks that are due, the ones of the grid served when the request asked no API.
+     */
+    public static function finish(): void
+    {
+        $apis = self::$apis;
+        self::$apis = [];
+        if ($apis === [] && self::$served !== null) {
+            $apis = [new Api(self::$served->environment(), self::scheduler(self::$served))];
+        }
+        foreach ($apis as $api) {
+            $api->finish();
+        }
     }
 
     /**
