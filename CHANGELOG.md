@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (search): the search of people finds only the avatars who published their profile ("show in search" in the viewer), as the web profile already did
 - feature (blocks): `new_users`, the people who joined last (5, `count` up to 50), as the recent users of w4os: the newest active avatars of the engine, never a model, the account of the services or an account without an email; the name links to the profile, the email is not shown
 - refactor: Slim 4 application (public/index.php, src/); the former scripts are gone
 - update: `gettext` is recommended, not required: without it the messages stay in English

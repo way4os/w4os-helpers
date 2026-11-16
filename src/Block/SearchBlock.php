@@ -129,7 +129,8 @@ final class SearchBlock implements Block
                     return [];
                 }
                 try {
-                    $people = Avatar::all($search->config, ['search' => $q, 'filters' => ['active' => 'yes', 'technical' => 'no'], 'perPage' => $limit])->array();
+                    // Only who published their profile ("show in search" in the viewer), as the search of the viewers does
+                    $people = Avatar::all($search->config, ['search' => $q, 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => $limit])->array();
                 } catch (\OpenSim\Exceptions\ChannelUnavailable) {
                     $people = [];
                 }
