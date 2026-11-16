@@ -163,14 +163,5 @@ msgstr "Eisiau"
 msgid "Skills"
 msgstr "Sgiliau"
 
-msgid "Web"
-msgstr "Gwe"
-
-msgid "First life"
-msgstr "Bywyd go iawn"
-
-msgid "Picks"
-msgstr "Dewisiadau"
-
 msgid "Recent users"
 msgstr "Defnyddwyr diweddar"

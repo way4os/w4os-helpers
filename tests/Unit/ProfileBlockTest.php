@@ -40,10 +40,19 @@ describe('The block of a profile', function () {
         preg_match_all('/<a href="#profile-([a-z-]+)">([^<]+)</', $html, $tabs);
 
         expect($tabs[1])->toBe(['second-life', 'interests', 'first-life'])
-            ->and($tabs[2])->toBe(['2nd Life', 'Interests', 'First life'])
+            ->and($tabs[2])->toBe(['2nd Life', 'Interests', '1st Life'])
             ->and($html)->toContain('id="profile-interests"', 'Build, Meet<br>Gardens', 'Français, English', 'A painter', 'role\', \'tablist\'')
             ->not->toContain('id="profile-web"', 'id="profile-picks"');
     });
+
+    test('names its tabs as the catalog of the engine does, in the language of the page', function () {
+        $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'fr']);
+        preg_match_all('/<a href="#profile-([a-z-]+)">([^<]+)</', $html, $tabs);
+        OpenSim\Helpers\I18n::use('en');
+
+        expect($tabs[2])->toBe(['Vie SL', 'Centres d’intérêt', 'Vie RL'])
+            ->and($html)->toContain('aria-label="Sections du profil"');
+    })->skip(fn() => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false, 'the system has no French locale');
 
     test('a profile with one section has no tabs', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Bob.Plain', 'lang' => 'en']);

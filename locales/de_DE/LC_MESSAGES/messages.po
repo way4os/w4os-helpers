@@ -157,14 +157,5 @@ msgstr "Möchte"
 msgid "Skills"
 msgstr "Fertigkeiten"
 
-msgid "Web"
-msgstr "Web"
-
-msgid "First life"
-msgstr "Reales Leben"
-
-msgid "Picks"
-msgstr "Favoriten"
-
 msgid "Recent users"
 msgstr "Neue Benutzer"

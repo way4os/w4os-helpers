@@ -157,14 +157,5 @@ msgstr "Wil graag"
 msgid "Skills"
 msgstr "Vaardigheden"
 
-msgid "Web"
-msgstr "Web"
-
-msgid "First life"
-msgstr "Het echte leven"
-
-msgid "Picks"
-msgstr "Favorieten"
-
 msgid "Recent users"
 msgstr "Recente gebruikers"

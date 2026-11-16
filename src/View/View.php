@@ -158,6 +158,9 @@ final class View
     /** @return array<string,string> the words of the templates */
     public static function labels(): array
     {
+        // The texts of the catalog of the engine in the language in use, the English ones where it has none
+        $texts = \OpenSim\I18n\Catalog::messages(\OpenSim\Helpers\I18n::current()) + \OpenSim\I18n\Catalog::MESSAGES;
+
         return [
             'skip' => _('Skip to content'),
             'powered_by' => 'opensim-helpers',
@@ -173,13 +176,14 @@ final class View
             'languages' => _('Languages'),
             'wants' => _('Wants to'),
             'skills' => _('Skills'),
-            'web' => _('Web'),
-            'first_life' => _('First life'),
-            'second_life' => _('2nd Life'),
-            'interests' => _('Interests'),
-            'profile_sections' => _('Profile sections'),
-            'picks' => _('Picks'),
-            'classifieds' => _('Classifieds'),
+            // The tabs of a profile: the texts of the engine, as every site has them
+            'web' => $texts['profile_tab_web'],
+            'first_life' => $texts['profile_tab_first_life'],
+            'second_life' => $texts['profile_tab_second_life'],
+            'interests' => $texts['profile_tab_interests'],
+            'profile_sections' => $texts['profile_sections'],
+            'picks' => $texts['profile_tab_picks'],
+            'classifieds' => $texts['profile_tab_classifieds'],
         ];
     }
 }

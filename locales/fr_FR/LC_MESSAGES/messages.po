@@ -157,14 +157,5 @@ msgstr "J'aimerais"
 msgid "Skills"
 msgstr "Compétences"
 
-msgid "Web"
-msgstr "Web"
-
-msgid "First life"
-msgstr "Vie réelle"
-
-msgid "Picks"
-msgstr "Favoris"
-
 msgid "Recent users"
 msgstr "Utilisateurs récents"
