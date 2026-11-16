@@ -55,7 +55,8 @@ describe('The block of a profile', function () {
             '<dt>Born</dt><dd>2023-11-14 (',
             ' days)</dd>',
             '<dt>Account</dt><dd>Resident</dd>',
-            "location.hash === '#' + id.replace(/^profile-/, '')",
+            "asked() === '#' + id.replace(/^profile-/, '')",
+            "'#second-life': '#inworld'",
         )->not->toContain('Member since');
     });
 

@@ -81,6 +81,9 @@
                 if (!nav || !document.querySelectorAll) { return; }
                 var tabs = nav.querySelectorAll('a');
                 var panels = [];
+                // The former names of two tabs lead to theirs
+                var aliases = { '#second-life': '#inworld', '#first-life': '#real-life' };
+                function asked() { return aliases[location.hash] || location.hash; }
                 // The tab open is in the address (#interests): a reload opens it again
                 function remember(index) {
                     history.replaceState && history.replaceState(null, '', '#' + tabs[index].getAttribute('href').slice(1).replace(/^profile-/, ''));
@@ -107,7 +110,7 @@
                     panels[i].setAttribute('aria-labelledby', id + '-tab');
                     // The tab says what the section is: its heading is for the page without the tabs
                     panels[i].querySelector('h2').hidden = true;
-                    (location.hash === '#' + id || location.hash === '#' + id.replace(/^profile-/, '')) && (start = i);
+                    (asked() === '#' + id || asked() === '#' + id.replace(/^profile-/, '')) && (start = i);
                     (function (index) {
                         tabs[index].onclick = function (event) { event.preventDefault(); select(index); remember(index); };
                         tabs[index].onkeydown = function (event) {
@@ -122,7 +125,7 @@
                 window.addEventListener && window.addEventListener('hashchange', function () {
                     for (var h = 0; h < tabs.length; h++) {
                         var tab = tabs[h].getAttribute('href').slice(1);
-                        (location.hash === '#' + tab || location.hash === '#' + tab.replace(/^profile-/, '')) && select(h);
+                        (asked() === '#' + tab || asked() === '#' + tab.replace(/^profile-/, '')) && select(h);
                     }
                 });
             })(document.currentScript && document.currentScript.parentNode);
