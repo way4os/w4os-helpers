@@ -50,7 +50,8 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 
 /* The profile of an avatar, the search of the web */
 .block-profile .block-title { display: flex; align-items: center; gap: 1rem; }
-.profile-picture { flex: none; width: 6rem; height: 6rem; max-width: none; border-radius: 50%; object-fit: cover; }
+/* The pictures of a profile as the viewer shows them: the whole picture in a 4:3 frame (the viewer stretches it, it does not cut it) */
+.profile-picture { flex: none; width: 8rem; height: 6rem; max-width: none; border-radius: .4rem; object-fit: fill; }
 .profile-meta { color: var(--muted); margin-top: 0; }
 .profile-details dt { font-weight: 600; margin-top: .5rem; }
 .profile-details dd { margin: 0 0 0 1rem; }
@@ -70,10 +71,10 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 
 /* The picks and the classifieds of a profile, as in the viewer: the list, then the one picked; one under the other on a narrow screen */
 .profile-items { display: grid; grid-template-columns: minmax(8rem, 14rem) 1fr; gap: 1rem; align-items: start; }
-.profile-items-list { list-style: none; margin: 0; padding: 0; }
+.profile-items-list, .profile-items-list li { list-style: none; margin: 0; padding: 0; }
 .profile-items-list a[aria-current="true"] { font-weight: 600; }
 .profile-item { display: grid; grid-template-columns: minmax(8rem, 16rem) 1fr; gap: 1rem; margin-bottom: 1rem; }
-.profile-item-picture { width: 100%; max-width: none; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.profile-item-picture { width: 100%; max-width: none; height: auto; aspect-ratio: 4 / 3; object-fit: fill; border-radius: .4rem; }
 .profile-item h3 { margin-top: 0; }
 .profile-item-label { font-weight: 600; }
 @media (max-width: 40rem) { .profile-items, .profile-item { grid-template-columns: 1fr; } }
