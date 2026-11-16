@@ -21,8 +21,8 @@ homepage: https://github.com/GuduleLapointe/opensim-helpers
 license: AGPL-3.0-or-later
 
 depends:
-  # The first engine with everything the helpers call (1229a88: the tabs of a profile named for any grid)
-  - opensim-engine (>= 3.0.0~beta.13.441)
+  # The first engine with everything the helpers call (d02a515: the silhouette of a person)
+  - opensim-engine (>= 3.0.0~beta.13.446)
   - opensim-rest-php
   - php-curl
   - php-intl
