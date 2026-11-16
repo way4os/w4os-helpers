@@ -184,8 +184,11 @@ final class Site
             return $response->withHeader('Content-Type', 'application/json');
         }
         $response->getBody()->write($this->view->block($name, $grid, $query));
+        $response = $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+        // The notices of the block, for the zone of messages of the site that shows it
+        $notices = View::notices();
 
-        return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+        return $notices === [] ? $response : $response->withHeader('X-Helpers-Notices', (string) json_encode($notices, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     private const MIME = [

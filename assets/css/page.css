@@ -1,7 +1,7 @@
 /* The pages of the helpers: the same for a viewer (content alone) and a browser (top bar and footer too) */
-:root { --bg: #f7f7f5; --fg: #1c1c1a; --muted: #66665f; --accent: #3a5ea8; --card: #fff; --line: #deded8; }
+:root { --bg: #f7f7f5; --fg: #1c1c1a; --muted: #66665f; --accent: #3a5ea8; --card: #fff; --line: #deded8; --warning: #b45309; --error: #b91c1c; }
 @media (prefers-color-scheme: dark) {
-    :root { --bg: #151514; --fg: #ececea; --muted: #9a9a92; --accent: #8fb0f0; --card: #1f1f1d; --line: #34342f; }
+    :root { --bg: #151514; --fg: #ececea; --muted: #9a9a92; --accent: #8fb0f0; --card: #1f1f1d; --line: #34342f; --warning: #f59e0b; --error: #f87171; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
@@ -67,3 +67,9 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 .search-topics a[aria-current=page] { font-weight: 700; text-decoration: none; color: var(--fg); }
 .search-group { font-size: 1.0625rem; margin: 1.25rem 0 .25rem; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* The notices to the visitor, at the start of the content */
+.notices { margin-bottom: 1rem; }
+.notice { margin: 0 0 .5rem; padding: .5rem .75rem; background: var(--card); border-left: 4px solid var(--accent); }
+.notice-warning { border-left-color: var(--warning); }
+.notice-error { border-left-color: var(--error); }
