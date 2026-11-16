@@ -9,17 +9,17 @@
         {% elseif sections %}
             {# The sections of the viewer's profile, in the order of its tabs: links to each, made tabs by the script below; without
                it, every section shows, one after the other #}
-            {% set titles = {'second-life': labels.second_life, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'first-life': labels.first_life} %}
+            {% set titles = {'inworld': labels.inworld, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'real-life': labels.real_life} %}
             {% if sections|length > 1 %}
                 {# The classes of the tabs of Grav's Form plugin (form-tabs, tabs-nav, tab__link, active): a site's theme draws them as its forms' tabs #}
                 <nav class="profile-tabs form-tabs" aria-label="{{ labels.profile_sections }}">
                     <ul class="tabs-nav">{% for id in sections %}<li><a class="tab__link" href="#profile-{{ id }}"><span>{{ titles[id] }}</span></a></li>{% endfor %}</ul>
                 </nav>
             {% endif %}
-            {% if 'second-life' in sections %}
-                <section id="profile-second-life" class="profile-section">
-                    <h2>{{ labels.second_life }}</h2>
-                    {# As the 2nd Life tab of the viewer: the picture in its own proportions, then who the avatar is, then its about #}
+            {% if 'inworld' in sections %}
+                <section id="profile-inworld" class="profile-section">
+                    <h2>{{ labels.inworld }}</h2>
+                    {# As the viewer's tab of the avatar: the picture in its own proportions, then who the avatar is, then its about #}
                     <div class="profile-identity">
                         <img class="profile-photo" src="{{ assets }}/{{ picture }}.jpg" alt="">
                         <dl class="profile-details profile-identity-details">
@@ -64,12 +64,12 @@
                     {% include 'components/profile-items.twig' with {items: classifieds, kind: 'classified'} %}
                 </section>
             {% endif %}
-            {% if 'first-life' in sections %}
-                <section id="profile-first-life" class="profile-section">
-                    <h2>{{ labels.first_life }}</h2>
+            {% if 'real-life' in sections %}
+                <section id="profile-real-life" class="profile-section">
+                    <h2>{{ labels.real_life }}</h2>
                     <div class="profile-identity">
                         <img class="profile-photo" src="{{ assets }}/{{ first_picture }}.jpg" alt="">
-                        {% if first_life %}<div class="profile-first-life">{{ first_life|nl2br }}</div>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
+                        {% if real_life %}<div class="profile-real-life">{{ real_life|nl2br }}</div>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                     </div>
                 </section>
             {% endif %}

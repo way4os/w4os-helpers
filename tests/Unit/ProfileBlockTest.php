@@ -40,12 +40,12 @@ describe('The block of a profile', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
 
-        expect($tabs[1])->toBe(['second-life', 'web', 'interests', 'picks', 'classifieds', 'first-life'])
-            ->and($tabs[2])->toBe(['2nd Life', 'Web', 'Interests', 'Picks', 'Classifieds', '1st Life'])
+        expect($tabs[1])->toBe(['inworld', 'web', 'interests', 'picks', 'classifieds', 'real-life'])
+            ->and($tabs[2])->toBe(['In-world', 'Web', 'Interests', 'Picks', 'Classifieds', 'Real life'])
             ->and($html)->toContain('Build, Meet<br>Gardens', 'Français, English', 'A painter', 'role\', \'tablist\'', '<p class="profile-none">None.</p>');
     });
 
-    test('shows the 2nd Life tab as the viewer: the picture in its proportions, the name, key, birth with the age, account', function () {
+    test('shows the in-world tab as the viewer: the picture in its proportions, the name, key, birth with the age, account', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
 
         expect($html)->toContain(
@@ -77,14 +77,14 @@ describe('The block of a profile', function () {
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
         OpenSim\Helpers\I18n::use('en');
 
-        expect($tabs[2])->toBe(['Vie SL', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie RL'])
+        expect($tabs[2])->toBe(['Dans le monde', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie réelle'])
             ->and($html)->toContain('aria-label="Sections du profil"');
     })->skip(fn() => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false, 'the system has no French locale');
 
     test('a profile with little has every tab all the same', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Bob.Plain', 'lang' => 'en']);
 
-        expect($html)->toContain('id="profile-second-life"', 'Just me', 'profile-tabs', 'id="profile-picks"')->not->toContain('class="profile-items');
+        expect($html)->toContain('id="profile-inworld"', 'Just me', 'profile-tabs', 'id="profile-picks"')->not->toContain('class="profile-items');
     });
 
     test('shows the picks or classifieds a site gives the same way, from their API', function () {

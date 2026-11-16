@@ -40,20 +40,20 @@ final class ProfileBlock implements Block
             'title' => trim($d['firstName'] . ' ' . $d['lastName']),
             'found' => true,
             'member_since' => (int) ($d['created'] ?? 0) > 0 ? date('Y-m-d', (int) $d['created']) : '',
-            // What the 2nd Life tab of the viewer shows: the key, the age of the account in days, the account (its role)
+            // What the in-world tab shows, as the viewer's: the key, the age of the account in days, the account (its role)
             'key' => (string) ($d['uuid'] ?? ''),
             'age' => (int) ($d['created'] ?? 0) > 0 ? self::age(intdiv(max(0, time() - (int) $d['created']), 86400)) : null,
             // The groups it shows in its profile (ListInProfile), by name
             'groups' => $published ? array_column($avatar->groups(), 'name') : [],
             'role' => (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)[Catalog::roleKey((string) ($d['role'] ?? ''))] ?? ''),
-            // The picture of the first life, the placeholder of the engine when there is none
+            // The picture of the real life, the placeholder of the engine when there is none
             'first_picture' => trim((string) ($d['firstImage'] ?? ''), '0-') !== '' ? (string) $d['firstImage'] : WebAssets::PLACEHOLDER,
             'account_title' => trim((string) ($d['title'] ?? '')),
             // The picture of the profile, seen by anyone in the world: the placeholder of the engine when there is none
             'picture' => trim((string) ($d['profileImage'] ?? ''), '0-') !== '' ? (string) $d['profileImage'] : WebAssets::PLACEHOLDER,
             'published' => $published,
             'about' => $text('about'),
-            'first_life' => $text('firstLife'),
+            'real_life' => $text('firstLife'),
             'wants' => $text('wants'),
             'skills' => $text('skills'),
             'languages' => $text('languages'),
@@ -76,7 +76,7 @@ final class ProfileBlock implements Block
         }
 
         // Every section of the viewer's profile, in its order (its tabs), the empty ones too
-        $data['sections'] = ['second-life', 'web', 'interests', 'picks', 'classifieds', 'first-life'];
+        $data['sections'] = ['inworld', 'web', 'interests', 'picks', 'classifieds', 'real-life'];
 
         return $data;
     }

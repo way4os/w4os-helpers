@@ -228,13 +228,13 @@ final class View
             'skills' => _('Skills'),
             // The tabs of a profile: the texts of the engine, as every site has them
             'web' => $texts['profile_tab_web'],
-            'first_life' => $texts['profile_tab_first_life'],
-            'second_life' => $texts['profile_tab_second_life'],
+            'real_life' => $texts['profile_tab_real_life'],
+            'inworld' => $texts['profile_tab_inworld'],
             'interests' => $texts['profile_tab_interests'],
             'profile_sections' => $texts['profile_sections'],
             'picks' => $texts['profile_tab_picks'],
             'classifieds' => $texts['profile_tab_classifieds'],
-            // The 2nd Life tab of a profile, as the viewer shows it
+            // The in-world tab of a profile, as the viewer shows it
             'name' => $texts['profile_name'] ?? _('Name'),
             'key' => $texts['profile_key'] ?? _('Key'),
             'born' => $texts['born'] ?? _('Born'),
