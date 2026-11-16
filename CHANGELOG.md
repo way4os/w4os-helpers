@@ -4,6 +4,7 @@
 
 - refactor: Slim 4 application (public/index.php, src/); the former scripts are gone
 - update: `gettext` is recommended, not required: without it the messages stay in English
+- update: the logos of w4os and OpenSimulator come from opensim-engine: composer install and update refresh them in assets/images/logos (composer logos), the four sizes the engine added included
 
 ### 3.0.0-beta.6
 

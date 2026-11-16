@@ -57,7 +57,14 @@
     ],
     "minimum-stability": "dev",
     "scripts": {
-        "test": "pest"
+        "test": "pest",
+        "logos": "php -r 'if (getenv(\"COMPOSER_DEV_MODE\") === \"0\") { exit; } foreach (glob(\"vendor/magicoli/opensim-engine/share/images/logos/*.png\") ?: [] as $logo) { copy($logo, \"assets/images/logos/\" . basename($logo)); }'",
+        "post-install-cmd": [
+            "@logos"
+        ],
+        "post-update-cmd": [
+            "@logos"
+        ]
     },
     "suggest": {
         "ext-gettext": "translations of the messages, which stay in English without it",
