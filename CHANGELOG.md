@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+- fix (search): the search index fills by itself: the API of the engine has the search tasks of the grid, and once the answer is sent (`fastcgi_finish_request`) a simulator that registered is read and the tasks that are due run, on every visit (`Engine::finish()`, the pseudo cron of the engine); no cron needed
+- fix (search): the search of people finds only the avatars who published their profile ("show in search" in the viewer), as the web profile already did
+- feature (blocks): `new_users`, the people who joined last (5, `count` up to 50), as the recent users of w4os: the newest active avatars of the engine, never a model, the account of the services or an account without an email; the name links to the profile, the email is not shown
 - refactor: Slim 4 application (public/index.php, src/); the former scripts are gone
 - update: `gettext` is recommended, not required: without it the messages stay in English
 - update: the logos of w4os and OpenSimulator come from opensim-engine: composer install and update refresh them in assets/images/logos (composer logos), the four sizes the engine added included

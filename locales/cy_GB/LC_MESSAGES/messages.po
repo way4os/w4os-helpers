@@ -171,3 +171,6 @@ msgstr "Bywyd go iawn"
 
 msgid "Picks"
 msgstr "Dewisiadau"
+
+msgid "Recent users"
+msgstr "Defnyddwyr diweddar"

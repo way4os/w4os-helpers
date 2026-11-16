@@ -39,6 +39,12 @@ final class App
         ]);
         $app = Bridge::create($container);
         $app->addRoutingMiddleware();
+        // The grid served, for what waits for the answer (Engine::finish(), see public/index.php); inside GridMiddleware, which finds it
+        $app->add(static function ($request, $handler) {
+            Engine::serving($request->getAttribute('grid'));
+
+            return $handler->handle($request);
+        });
         $app->add(new GridMiddleware($grids));
         $app->addErrorMiddleware(false, true, true);
 

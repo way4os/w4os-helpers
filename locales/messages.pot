@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 19:10-0400\n"
+"POT-Creation-Date: 2026-11-16 11:50-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -131,15 +131,19 @@ msgstr ""
 msgid "traveler"
 msgstr ""
 
+#: src/Block/NewUsersBlock.php:48
+msgid "Recent users"
+msgstr ""
+
 #: src/Block/PopularPlacesBlock.php:34
 msgid "Popular places"
 msgstr ""
 
-#: src/Block/ProfileBlock.php:26
+#: src/Block/ProfileBlock.php:27
 msgid "Profile not found"
 msgstr ""
 
-#: src/Block/SearchBlock.php:36 src/View/View.php:150
+#: src/Block/SearchBlock.php:36 src/View/View.php:164
 msgid "Search"
 msgstr ""
 
@@ -155,7 +159,7 @@ msgstr ""
 msgid "Events"
 msgstr ""
 
-#: src/Block/SearchBlock.php:67 src/View/View.php:165
+#: src/Block/SearchBlock.php:67 src/View/View.php:179
 msgid "Classifieds"
 msgstr ""
 
@@ -168,74 +172,74 @@ msgstr ""
 msgid "%d min"
 msgstr ""
 
-#: src/View/View.php:136
+#: src/View/View.php:150
 msgid "Home"
 msgstr ""
 
-#: src/View/View.php:137
+#: src/View/View.php:151
 msgid "Guide"
 msgstr ""
 
-#: src/View/View.php:138
+#: src/View/View.php:152
 msgid "Directory"
 msgstr ""
 
-#: src/View/View.php:148
+#: src/View/View.php:162
 msgid "Skip to content"
 msgstr ""
 
-#: src/View/View.php:151
+#: src/View/View.php:165
 msgid "Search for"
 msgstr ""
 
-#: src/View/View.php:152
+#: src/View/View.php:166
 msgid "All"
 msgstr ""
 
-#: src/View/View.php:153
+#: src/View/View.php:167
 msgid "Nothing found."
 msgstr ""
 
-#: src/View/View.php:154
+#: src/View/View.php:168
 msgid "Type something to look for."
 msgstr ""
 
-#: src/View/View.php:155
+#: src/View/View.php:169
 msgid "This profile does not exist."
 msgstr ""
 
-#: src/View/View.php:156
+#: src/View/View.php:170
 msgid "Member since"
 msgstr ""
 
-#: src/View/View.php:157
+#: src/View/View.php:171
 msgid "This profile is not published on the web."
 msgstr ""
 
-#: src/View/View.php:158
+#: src/View/View.php:172
 msgid "Partner"
 msgstr ""
 
-#: src/View/View.php:159
+#: src/View/View.php:173
 msgid "Languages"
 msgstr ""
 
-#: src/View/View.php:160
+#: src/View/View.php:174
 msgid "Wants to"
 msgstr ""
 
-#: src/View/View.php:161
+#: src/View/View.php:175
 msgid "Skills"
 msgstr ""
 
-#: src/View/View.php:162
+#: src/View/View.php:176
 msgid "Web"
 msgstr ""
 
-#: src/View/View.php:163
+#: src/View/View.php:177
 msgid "First life"
 msgstr ""
 
-#: src/View/View.php:164
+#: src/View/View.php:178
 msgid "Picks"
 msgstr ""
