@@ -46,3 +46,4 @@ contents:
 
 scripts:
   preinstall: packaging/opensim-helpers.preinst
+  postinstall: packaging/opensim-helpers.postinst

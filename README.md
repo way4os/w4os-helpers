@@ -39,6 +39,8 @@ The helpers read their settings from the grid config files, by default `/etc/ope
 
 **Web server.** The document root is the `public` folder (`/usr/share/opensim-helpers/public` with the package); what is not a file goes to its `index.php`, with `OPENSIM_GRID` set to the nick of the grid when the machine has several (the files `opensim web <grid> snippet caddy|nginx|apache` writes do it).
 
+**What the helpers write.** They run as the user of the web server (`www-data`), who cannot write the folders of the install. They keep the state of their tasks (the search index fills itself at the end of a visit) and their cache (the pictures) in `/var/cache/opensim-helpers/tasks` and `/var/cache/opensim-helpers/cache`, which the package makes for `www-data`. On a manual install, or with a web server that runs as another user, make these two folders for it, or give the helpers other ones with `OPENSIM_TASKS_ROOT` and `OPENSIM_CACHE_ROOT` (set like `OPENSIM_GRID`). The health page (`cache`: `assets`, `tasks`) says whether they can be written.
+
 **One source of truth.** A setting that has its place in OpenSim.ini or Robust.ini is read from there and nowhere else: do not copy it. `Helpers.ini` may hold any setting, in the same sections, but it only fills what the other files leave out (it is the file of a web host without OpenSimulator, and of the few settings that have no official place, in `[Helpers]`). All those files may hold passwords: mode 640, group of the web server.
 
 ```ini

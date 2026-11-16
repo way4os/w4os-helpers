@@ -1,0 +1,22 @@
+#!/bin/sh
+# postinst of opensim-helpers: the folder the helpers write as the web server (www-data): the state of their tasks (the search
+# index fills itself at the end of a visit) and their cache (the pictures). The folders of the install are its account's
+# (opensim), which the web server cannot write; the helpers use these instead (HelpersLayout). A web server that runs as
+# another user gives OPENSIM_TASKS_ROOT and OPENSIM_CACHE_ROOT to the helpers, or owns these folders.
+set -e
+
+folder=/var/cache/opensim-helpers
+
+case "$1" in
+    configure)
+        if getent passwd www-data >/dev/null; then
+            for sub in tasks cache; do
+                install -d -o www-data -g www-data -m 0755 "$folder/$sub"
+            done
+        else
+            echo "opensim-helpers: no www-data user: give the web server $folder/tasks and $folder/cache, or set OPENSIM_TASKS_ROOT and OPENSIM_CACHE_ROOT" >&2
+        fi
+        ;;
+esac
+
+exit 0

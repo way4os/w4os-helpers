@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenSim\Helpers;
 
 use DI\Bridge\Slim\Bridge;
-use OpenSim\Config\Layout;
 use OpenSim\Helpers\Http\Action\Engine;
 use OpenSim\Helpers\Http\Action\Site;
 use OpenSim\Helpers\Http\Middleware\GridMiddleware;
@@ -24,7 +23,8 @@ final class App
     public static function create(?\Closure $grids = null): SlimApp
     {
         $grids ??= static function (string $nick): ?Grid {
-            $environment = Environment::system(Layout::load());
+            // The settings the web server gives, and folders it can write for the tasks and the cache (HelpersLayout)
+            $environment = Environment::system(HelpersLayout::resolve($_SERVER));
             if ($nick === '') {
                 $all = $environment->layout->etcRoot() . '/grids';
                 $found = array_values(array_filter(scandir($all) ?: [], static fn($n) => $n[0] !== '.'));

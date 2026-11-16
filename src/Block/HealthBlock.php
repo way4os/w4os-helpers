@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\Block;
 
+use OpenSim\Assets\WebAssets;
 use OpenSim\Config\GridConfig;
+use OpenSim\Helpers\Http\Action\Engine;
 use OpenSim\Health\Health;
 use OpenSim\Models\Grid;
 
@@ -22,6 +24,15 @@ final class HealthBlock implements Block
         $groups[] = ['file' => 'PHP', 'title' => '', 'rows' => Health::extensions()];
         $files = Health::files($config?->files() ?? []);
         $files === [] || ($groups[] = ['file' => 'files', 'title' => '', 'rows' => $files]);
+        // The folders the helpers write as the web server: the pictures, and the state of the tasks (without it the search index never fills)
+        $groups[] = [
+            'file' => 'cache',
+            'title' => '',
+            'rows' => [
+                Health::writable('assets', WebAssets::folder($grid)),
+                Health::writable('tasks', Engine::scheduler($grid)->directory()),
+            ],
+        ];
         $seen = [];
         foreach ($groups as &$group) {
             $group['first_of_file'] = !isset($seen[$group['file']]);
