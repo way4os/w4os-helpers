@@ -184,6 +184,13 @@ final class View
             'profile_sections' => $texts['profile_sections'],
             'picks' => $texts['profile_tab_picks'],
             'classifieds' => $texts['profile_tab_classifieds'],
+            // The 2nd Life tab of a profile, as the viewer shows it
+            'name' => $texts['profile_name'] ?? _('Name'),
+            'key' => $texts['profile_key'] ?? _('Key'),
+            'born' => $texts['born'] ?? _('Born'),
+            'account' => $texts['profile_tab_account'] ?? _('Account'),
+            'age_today' => $texts['profile_age_today'] ?? _('Joined today'),
+            'age_days' => $texts['profile_age_days'] ?? _('%d days'),
             // A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
             'none' => $texts['profile_none'] ?? _('None.'),
             'no_description' => $texts['profile_no_description'] ?? _('No description given.'),

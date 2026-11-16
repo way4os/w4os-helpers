@@ -1,12 +1,9 @@
 <section class="block block-profile">
-    <h1 class="block-title">{% if picture is defined %}<img class="profile-picture" src="{{ assets }}/{{ picture }}.jpg" alt="" width="128" height="128">{% endif %}{{ title }}</h1>
+    <h1 class="block-title">{{ title }}</h1>
     {% if not found %}
         <p>{{ labels.profile_not_found }}</p>
     {% else %}
-        <p class="profile-meta">
-            {% if account_title %}<span class="profile-title">{{ account_title }}</span> · {% endif %}
-            {% if member_since %}{{ labels.member_since }} {{ member_since }}{% endif %}
-        </p>
+        {% if account_title %}<p class="profile-meta"><span class="profile-title">{{ account_title }}</span></p>{% endif %}
         {% if not published %}
             <p class="profile-private">{{ labels.profile_private }}</p>
         {% elseif sections %}
@@ -21,8 +18,18 @@
             {% if 'second-life' in sections %}
                 <section id="profile-second-life" class="profile-section">
                     <h2>{{ labels.second_life }}</h2>
-                    {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% elseif not partner %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
-                    {% if partner %}<dl class="profile-details"><dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd></dl>{% endif %}
+                    {# As the 2nd Life tab of the viewer: the picture in its own proportions, then who the avatar is, then its about #}
+                    <div class="profile-identity">
+                        <img class="profile-photo" src="{{ assets }}/{{ picture }}.jpg" alt="">
+                        <dl class="profile-details profile-identity-details">
+                            <dt>{{ labels.name }}</dt><dd>{{ title }}</dd>
+                            {% if key %}<dt>{{ labels.key }}</dt><dd><code>{{ key }}</code></dd>{% endif %}
+                            {% if member_since %}<dt>{{ labels.born }}</dt><dd>{{ member_since }}{% if age is not null %} ({{ age == 0 ? labels.age_today : labels.age_days|format(age) }}){% endif %}</dd>{% endif %}
+                            {% if role %}<dt>{{ labels.account }}</dt><dd>{{ role }}</dd>{% endif %}
+                            {% if partner %}<dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd>{% endif %}
+                        </dl>
+                    </div>
+                    {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
                 </section>
             {% endif %}
             {% if 'web' in sections %}
@@ -57,7 +64,10 @@
             {% if 'first-life' in sections %}
                 <section id="profile-first-life" class="profile-section">
                     <h2>{{ labels.first_life }}</h2>
-                    {% if first_life %}<div class="profile-first-life">{{ first_life|nl2br }}</div>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
+                    <div class="profile-identity">
+                        <img class="profile-photo" src="{{ assets }}/{{ first_picture }}.jpg" alt="">
+                        {% if first_life %}<div class="profile-first-life">{{ first_life|nl2br }}</div>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
+                    </div>
                 </section>
             {% endif %}
             {% if sections|length > 1 %}
@@ -68,6 +78,10 @@
                 if (!nav || !document.querySelectorAll) { return; }
                 var tabs = nav.querySelectorAll('a');
                 var panels = [];
+                // The tab open is in the address (#interests): a reload opens it again
+                function remember(index) {
+                    history.replaceState && history.replaceState(null, '', '#' + tabs[index].getAttribute('href').slice(1).replace(/^profile-/, ''));
+                }
                 function select(index, focus) {
                     for (var i = 0; i < tabs.length; i++) {
                         tabs[i].setAttribute('aria-selected', i === index ? 'true' : 'false');
@@ -89,12 +103,12 @@
                     panels[i].setAttribute('aria-labelledby', id + '-tab');
                     // The tab says what the section is: its heading is for the page without the tabs
                     panels[i].querySelector('h2').hidden = true;
-                    location.hash === '#' + id && (start = i);
+                    (location.hash === '#' + id || location.hash === '#' + id.replace(/^profile-/, '')) && (start = i);
                     (function (index) {
-                        tabs[index].onclick = function (event) { event.preventDefault(); select(index); };
+                        tabs[index].onclick = function (event) { event.preventDefault(); select(index); remember(index); };
                         tabs[index].onkeydown = function (event) {
                             var step = { ArrowRight: 1, ArrowLeft: -1, Right: 1, Left: -1 }[event.key];
-                            if (step) { event.preventDefault(); select((index + step + tabs.length) % tabs.length, true); }
+                            if (step) { event.preventDefault(); var next = (index + step + tabs.length) % tabs.length; select(next, true); remember(next); }
                         };
                     })(i);
                 }

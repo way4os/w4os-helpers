@@ -40,6 +40,12 @@ final class ProfileBlock implements Block
             'title' => trim($d['firstName'] . ' ' . $d['lastName']),
             'found' => true,
             'member_since' => (int) ($d['created'] ?? 0) > 0 ? date('Y-m-d', (int) $d['created']) : '',
+            // What the 2nd Life tab of the viewer shows: the key, the age of the account in days, the account (its role)
+            'key' => (string) ($d['uuid'] ?? ''),
+            'age' => (int) ($d['created'] ?? 0) > 0 ? intdiv(max(0, time() - (int) $d['created']), 86400) : null,
+            'role' => (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)[Catalog::roleKey((string) ($d['role'] ?? ''))] ?? ''),
+            // The picture of the first life, the placeholder of the engine when there is none
+            'first_picture' => trim((string) ($d['firstImage'] ?? ''), '0-') !== '' ? (string) $d['firstImage'] : WebAssets::PLACEHOLDER,
             'account_title' => trim((string) ($d['title'] ?? '')),
             // The picture of the profile, seen by anyone in the world: the placeholder of the engine when there is none
             'picture' => trim((string) ($d['profileImage'] ?? ''), '0-') !== '' ? (string) $d['profileImage'] : WebAssets::PLACEHOLDER,

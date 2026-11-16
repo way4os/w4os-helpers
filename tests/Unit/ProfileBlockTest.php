@@ -45,6 +45,19 @@ describe('The block of a profile', function () {
             ->and($html)->toContain('Build, Meet<br>Gardens', 'Français, English', 'A painter', 'role\', \'tablist\'', '<p class="profile-none">None.</p>');
     });
 
+    test('shows the 2nd Life tab as the viewer: the picture in its proportions, the name, key, birth with the age, account', function () {
+        $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
+
+        expect($html)->toContain(
+            '<h1 class="block-title">Ada Love</h1>',
+            '<img class="profile-photo" src="/api/grids/demo/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg" alt="">',
+            '<dt>Key</dt><dd><code>11111111-1111-4111-8111-111111111111</code></dd>',
+            '<dt>Born</dt><dd>2023-11-14 (',
+            '<dt>Account</dt><dd>Resident</dd>',
+            "location.hash === '#' + id.replace(/^profile-/, '')",
+        )->not->toContain('Member since');
+    });
+
     test('shows the picks as the viewer: the list, then each one with its picture, description, place and teleport link', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
 
