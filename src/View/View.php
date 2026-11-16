@@ -51,7 +51,10 @@ final class View
         }
         $this->found = (($data['found'] ?? true) !== false);
 
-        return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels()]);
+        // The pictures of the grid: the address the site gives (`assets`), else the API of the helpers
+        $assets = (string) ($args['assets'] ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/api/grids/' . rawurlencode($grid->id()) . '/assets');
+
+        return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets]);
     }
 
     /** @param array<string,mixed> $args the arguments of the request, for the block the page is */

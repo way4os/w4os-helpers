@@ -1,5 +1,5 @@
 <section class="block block-profile">
-    <h1 class="block-title">{{ title }}</h1>
+    <h1 class="block-title">{% if picture is defined %}<img class="profile-picture" src="{{ assets }}/{{ picture }}.jpg" alt="" width="128" height="128">{% endif %}{{ title }}</h1>
     {% if not found %}
         <p>{{ labels.profile_not_found }}</p>
     {% else %}

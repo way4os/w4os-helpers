@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\Block;
 
+use OpenSim\Assets\WebAssets;
 use OpenSim\Models\Avatar;
 use OpenSim\Models\Grid;
 
@@ -38,6 +39,8 @@ final class ProfileBlock implements Block
             'found' => true,
             'member_since' => (int) ($d['created'] ?? 0) > 0 ? date('Y-m-d', (int) $d['created']) : '',
             'account_title' => trim((string) ($d['title'] ?? '')),
+            // The picture of the profile, seen by anyone in the world: the placeholder of the engine when there is none
+            'picture' => trim((string) ($d['profileImage'] ?? ''), '0-') !== '' ? (string) $d['profileImage'] : WebAssets::PLACEHOLDER,
             'published' => $published,
             'about' => $text('about'),
             'first_life' => $text('firstLife'),
