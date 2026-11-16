@@ -53,6 +53,7 @@ describe('The block of a profile', function () {
             '<img class="profile-photo" src="/api/grids/demo/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg" alt="">',
             '<dt>Key</dt><dd><code>11111111-1111-4111-8111-111111111111</code></dd>',
             '<dt>Born</dt><dd>2023-11-14 (',
+            ' days)</dd>',
             '<dt>Account</dt><dd>Resident</dd>',
             "location.hash === '#' + id.replace(/^profile-/, '')",
         )->not->toContain('Member since');

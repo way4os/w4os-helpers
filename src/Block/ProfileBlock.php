@@ -42,7 +42,9 @@ final class ProfileBlock implements Block
             'member_since' => (int) ($d['created'] ?? 0) > 0 ? date('Y-m-d', (int) $d['created']) : '',
             // What the 2nd Life tab of the viewer shows: the key, the age of the account in days, the account (its role)
             'key' => (string) ($d['uuid'] ?? ''),
-            'age' => (int) ($d['created'] ?? 0) > 0 ? intdiv(max(0, time() - (int) $d['created']), 86400) : null,
+            'age' => (int) ($d['created'] ?? 0) > 0 ? self::age(intdiv(max(0, time() - (int) $d['created']), 86400)) : null,
+            // The groups it shows in its profile (ListInProfile), by name
+            'groups' => $published ? array_column($avatar->groups(), 'name') : [],
             'role' => (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)[Catalog::roleKey((string) ($d['role'] ?? ''))] ?? ''),
             // The picture of the first life, the placeholder of the engine when there is none
             'first_picture' => trim((string) ($d['firstImage'] ?? ''), '0-') !== '' ? (string) $d['firstImage'] : WebAssets::PLACEHOLDER,
@@ -77,6 +79,14 @@ final class ProfileBlock implements Block
         $data['sections'] = ['second-life', 'web', 'interests', 'picks', 'classifieds', 'first-life'];
 
         return $data;
+    }
+
+    /** The age of an account as the viewer says it: joined today, else its days, in the form of their number. */
+    private static function age(int $days): string
+    {
+        return $days === 0
+            ? (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)['profile_age_today'] ?? 'Joined today')
+            : sprintf(Catalog::plural(I18n::current(), 'profile_age_days', $days), $days);
     }
 
     /**

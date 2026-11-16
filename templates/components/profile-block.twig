@@ -24,12 +24,14 @@
                         <dl class="profile-details profile-identity-details">
                             <dt>{{ labels.name }}</dt><dd>{{ title }}</dd>
                             {% if key %}<dt>{{ labels.key }}</dt><dd><code>{{ key }}</code></dd>{% endif %}
-                            {% if member_since %}<dt>{{ labels.born }}</dt><dd>{{ member_since }}{% if age is not null %} ({{ age == 0 ? labels.age_today : labels.age_days|format(age) }}){% endif %}</dd>{% endif %}
+                            {% if member_since %}<dt>{{ labels.born }}</dt><dd>{{ member_since }}{% if age is not null %} ({{ age }}){% endif %}</dd>{% endif %}
                             {% if role %}<dt>{{ labels.account }}</dt><dd>{{ role }}</dd>{% endif %}
                             {% if partner %}<dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd>{% endif %}
                         </dl>
                     </div>
                     {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
+                    {# Then its groups, as the viewer lists them under its about #}
+                    {% if groups %}<dl class="profile-details profile-groups"><dt>{{ labels.groups }}</dt><dd>{{ groups|join(', ') }}</dd></dl>{% endif %}
                 </section>
             {% endif %}
             {% if 'web' in sections %}
