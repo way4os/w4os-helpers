@@ -28,6 +28,34 @@ final class View
     /** The files each block needs. */
     private const BLOCK_FILES = ['destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']]];
 
+    /** The levels of the notices to the visitor, as the sites name them too (Grav's messages). */
+    public const NOTICE_LEVELS = ['info', 'warning', 'error'];
+
+    /** @var list<array{level:string,text:string}> the notices of this request, not shown yet */
+    private static array $notices = [];
+
+    /**
+     * A notice to the visitor (a new viewer, an error, anything to say), at the start of the content of the page. Inside the page
+     * of a site, the site shows it in its own zone of messages (notices()). The text is given in the language of the page.
+     */
+    public static function notify(string $level, string $text): void
+    {
+        in_array($level, self::NOTICE_LEVELS, true) || ($level = 'info');
+        trim($text) === '' || (self::$notices[] = ['level' => $level, 'text' => $text]);
+    }
+
+    /**
+     * The notices not shown yet, then none: for the page that shows them (the layout of the helpers, or a site).
+     *
+     * @return list<array{level:string,text:string}>
+     */
+    public static function notices(): array
+    {
+        [$notices, self::$notices] = [self::$notices, []];
+
+        return $notices;
+    }
+
     /** Whether what the last block shown is about exists (a profile that does not is a 404). */
     public function found(): bool
     {
@@ -108,6 +136,8 @@ final class View
                 $this->files,
             ),
             'logo_url' => $logo,
+            // Last: what the blocks of the page said is in
+            'notices' => self::notices(),
         ]);
         $this->found = $found;
 
