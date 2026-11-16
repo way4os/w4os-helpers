@@ -71,7 +71,7 @@ final class ProfileBlock implements Block
                 $data['picks'][] = self::item($pick);
             }
             foreach ($avatar->classifieds() as $ad) {
-                $data['classifieds'][] = self::item($ad) + ['until' => date('Y-m-d', (int) $ad['expirationdate'])];
+                $data['classifieds'][] = self::item($ad);
             }
         }
 
@@ -111,14 +111,16 @@ final class ProfileBlock implements Block
     }
 
     /**
-     * A pick or a classified as the viewer shows it, from what the engine gives of it: the place is "parcel, region (x, y, z)".
+     * A pick or a classified as the viewer shows it, from what the engine gives of it (Avatar::picks(), classifieds(), or their API):
+     * the place is "parcel, region (x, y, z)", a classified ends on a date. For the sites that show them the same way (View::items()).
      *
      * @param array<string,mixed> $row
-     * @return array{name:string, description:string, picture:string, place:string, url:?string}
+     * @return array{name:string, description:string, picture:string, place:string, url:?string, until:?string}
      */
-    private static function item(array $row): array
+    public static function item(array $row): array
     {
         $position = is_array($row['position'] ?? null) ? ' (' . implode(', ', $row['position']) . ')' : '';
+        $until = (int) ($row['expirationdate'] ?? $row['expires'] ?? 0);
 
         return [
             'name' => (string) ($row['name'] ?? ''),
@@ -126,6 +128,7 @@ final class ProfileBlock implements Block
             'picture' => (string) ($row['picture'] ?? '') ?: WebAssets::PLACEHOLDER,
             'place' => implode(', ', array_filter([$row['parcel'] ?? null, $row['region'] ?? null])) . (($row['region'] ?? null) === null ? '' : $position),
             'url' => $row['teleport'] ?? null,
+            'until' => $until > 0 ? date('Y-m-d', $until) : null,
         ];
     }
 }

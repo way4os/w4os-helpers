@@ -6,6 +6,7 @@ namespace OpenSim\Helpers\View;
 
 use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Block\Blocks;
+use OpenSim\Helpers\Block\ProfileBlock;
 use OpenSim\Helpers\I18n;
 use OpenSim\Models\Grid;
 use Twig\Environment as Twig;
@@ -153,6 +154,25 @@ final class View
         ];
 
         return array_map(static fn(array $i): array => ['slug' => $i[0], 'label' => $i[1], 'url' => $i[2]], $items);
+    }
+
+    /**
+     * The picks or the classifieds of a profile as its block shows them (components/profile-items.twig, ProfileBlock::item()), for a
+     * site that shows them elsewhere (the form of a profile), in a language (`fr`, `pt-BR`).
+     *
+     * @param list<array<string,mixed>> $items what the engine gives of each (Avatar::picks(), classifieds(), or their API)
+     * @param string $assets the address the pictures are under (`<assets>/<uuid>.jpg`)
+     */
+    public function items(string $kind, array $items, string $assets, string $lang = 'en'): string
+    {
+        I18n::use($lang);
+
+        return $this->twig->render('components/profile-items.twig', [
+            'items' => array_map(ProfileBlock::item(...), $items),
+            'kind' => $kind === 'classifieds' ? 'classified' : 'pick',
+            'assets' => rtrim($assets, '/'),
+            'labels' => self::labels(),
+        ]);
     }
 
     /** @return array<string,string> the words of the templates */

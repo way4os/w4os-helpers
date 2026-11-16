@@ -1,5 +1,7 @@
-{# The picks or the classifieds of a profile, as the viewer shows them: their list, then each one (its picture, name,
-   description, place and teleport link); the script of the profile block shows the one picked from the list alone #}
+{# The picks or the classifieds of a profile, as the viewer shows them: their list, then each one (its picture in its own
+   proportions, name, description, place, end and teleport link); the script shows the one picked from the list alone. The profile
+   block includes it, a site shows it the same way through View::items() #}
+{% if items %}
 <div class="profile-items profile-{{ kind }}s">
     <ul class="profile-items-list">
         {% for item in items %}<li><a href="#profile-{{ kind }}-{{ loop.index }}">{{ item.name }}</a></li>{% endfor %}
@@ -7,7 +9,7 @@
     <div class="profile-items-details">
         {% for item in items %}
             <article id="profile-{{ kind }}-{{ loop.index }}" class="profile-item">
-                <img class="profile-item-picture" src="{{ assets }}/{{ item.picture }}.jpg" alt="" width="256" height="192" loading="lazy">
+                <img class="profile-item-picture" src="{{ assets }}/{{ item.picture }}.jpg" alt="" loading="lazy">
                 <div class="profile-item-text">
                     <h3>{{ item.name }}</h3>
                     <p class="profile-item-description">{% if item.description %}{{ item.description|nl2br }}{% else %}{{ labels.no_description }}{% endif %}</p>
@@ -18,4 +20,23 @@
             </article>
         {% endfor %}
     </div>
+    <script>
+    // The list as in the viewer: the one picked from it shown alone
+    (function (list) {
+        var links = list && list.querySelectorAll ? list.querySelectorAll('.profile-items-list a') : [];
+        function show(index) {
+            for (var k = 0; k < links.length; k++) {
+                links[k].setAttribute('aria-current', k === index ? 'true' : 'false');
+                document.getElementById(links[k].getAttribute('href').slice(1)).hidden = k !== index;
+            }
+        }
+        for (var k = 0; k < links.length; k++) {
+            (function (index) { links[index].onclick = function (event) { event.preventDefault(); show(index); }; })(k);
+        }
+        links.length && show(0);
+    })(document.currentScript && document.currentScript.parentNode);
+    </script>
 </div>
+{% else %}
+<p class="profile-none">{{ labels.none }}</p>
+{% endif %}

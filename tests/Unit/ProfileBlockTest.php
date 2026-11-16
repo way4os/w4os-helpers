@@ -86,4 +86,12 @@ describe('The block of a profile', function () {
 
         expect($html)->toContain('id="profile-second-life"', 'Just me', 'profile-tabs', 'id="profile-picks"')->not->toContain('class="profile-items');
     });
+
+    test('shows the picks or classifieds a site gives the same way, from their API', function () {
+        $view = new View(dirname(__DIR__, 2) . '/templates');
+        $html = $view->items('classifieds', [['name' => 'Shop', 'description' => '', 'picture' => null, 'parcel' => 'Mall', 'region' => 'Town', 'position' => [10, 20, 30], 'teleport' => 'hop://g:8002/Town/10/20/30', 'expires' => 1893456000]], '/assets/', 'en');
+
+        expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', '2030-01-01', 'href="hop://g:8002/Town/10/20/30"')
+            ->and($view->items('picks', [], '/assets'))->toContain('<p class="profile-none">None.</p>');
+    });
 });

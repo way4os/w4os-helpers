@@ -54,13 +54,13 @@
             {% if 'picks' in sections %}
                 <section id="profile-picks" class="profile-section">
                     <h2>{{ labels.picks }}</h2>
-                    {% if picks %}{% include 'components/profile-items.twig' with {items: picks, kind: 'pick'} %}{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
+                    {% include 'components/profile-items.twig' with {items: picks, kind: 'pick'} %}
                 </section>
             {% endif %}
             {% if 'classifieds' in sections %}
                 <section id="profile-classifieds" class="profile-section">
                     <h2>{{ labels.classifieds }}</h2>
-                    {% if classifieds %}{% include 'components/profile-items.twig' with {items: classifieds, kind: 'classified'} %}{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
+                    {% include 'components/profile-items.twig' with {items: classifieds, kind: 'classified'} %}
                 </section>
             {% endif %}
             {% if 'first-life' in sections %}
@@ -123,22 +123,6 @@
                         (location.hash === '#' + tab || location.hash === '#' + tab.replace(/^profile-/, '')) && select(h);
                     }
                 });
-                // The picks and the classifieds as in the viewer: the list, and the one picked from it alone
-                var lists = block.querySelectorAll('.profile-items-list');
-                for (var l = 0; l < lists.length; l++) {
-                    (function (links) {
-                        function show(index) {
-                            for (var k = 0; k < links.length; k++) {
-                                links[k].setAttribute('aria-current', k === index ? 'true' : 'false');
-                                document.getElementById(links[k].getAttribute('href').slice(1)).hidden = k !== index;
-                            }
-                        }
-                        for (var k = 0; k < links.length; k++) {
-                            (function (index) { links[index].onclick = function (event) { event.preventDefault(); show(index); }; })(k);
-                        }
-                        show(0);
-                    })(lists[l].querySelectorAll('a'));
-                }
             })(document.currentScript && document.currentScript.parentNode);
             </script>
             {% endif %}
