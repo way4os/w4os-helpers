@@ -64,7 +64,7 @@ describe('the helpers serve only under their base', function () {
             ->and(base_get($app, '/search')->getStatusCode())->toBe(200)
             ->and(base_get($app, '/guide')->getStatusCode())->toBe(200)
             ->and(base_get($app, '/profile/Nobody.Here')->getStatusCode())->toBe(404);
-    })->skip('the engine: Services::pathOf() of an economy at the root (no path) gives the whole address, so helpersUrl() is wrong');
+    });
 
     test('a profile on the site: the default path of the helpers leads there, with the name', function () {
         $app = base_app('/helpers', ['web_profile_url' => 'https://example.com/profile/[AGENT_NAME]']);

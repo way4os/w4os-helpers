@@ -78,6 +78,8 @@ final class View
             $main = $block === null ? '' : $this->block($block, $grid, $args + ['level' => 'h1']);
         }
 
+        // Whether the page has what it shows: the main block's answer, not the one of the blocks of the layout
+        $found = $this->found;
         $viewer = self::isViewer($agent);
         $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         $config = is_dir($grid->directory()) ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']) : null;
@@ -87,7 +89,7 @@ final class View
         }
         $stylesheet = $this->asset($grid, 'css/page.css');
 
-        return $this->twig->render('layouts/base-layout.twig', [
+        $html = $this->twig->render('layouts/base-layout.twig', [
             'grid_name' => $grid->name(),
             'viewer' => $viewer,
             'slug' => $page,
@@ -106,6 +108,9 @@ final class View
             ),
             'logo_url' => $logo,
         ]);
+        $this->found = $found;
+
+        return $html;
     }
 
     /** Whether a request comes from a viewer (its user agent): a page then shows its content alone. For the sites too. */

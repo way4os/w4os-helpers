@@ -154,21 +154,12 @@ final class Site
     private function local(Grid $grid, string $service): ?string
     {
         $address = (string) $grid->address($service);
-        if ($address === '') {
+        if ($address === '' || !$grid->servedByHelpers($address)) {
             return null;
         }
-        $base = (string) $grid->helpersUrl();
-        $baseHost = strtolower((string) parse_url($base, PHP_URL_HOST));
-        $host = strtolower((string) parse_url($address, PHP_URL_HOST));
-        if ($baseHost !== '' && $host !== '' && $host !== $baseHost) {
-            return null;
-        }
-        $prefix = rtrim((string) parse_url($base, PHP_URL_PATH), '/');
+        $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         // The address of a profile has the name in it, which the path adds
         $path = (string) preg_replace('#/?\[AGENT_NAME\].*$#', '', (string) parse_url($address, PHP_URL_PATH));
-        if ($prefix !== '' && $path !== $prefix && !str_starts_with($path, "$prefix/")) {
-            return null;
-        }
 
         return '/' . trim(substr($path, strlen($prefix)), '/');
     }

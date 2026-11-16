@@ -28,17 +28,26 @@ final class GridMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        // The helpers are served under their base path (/helpers by default): the routes do not know it. What is outside it is the
-        // site's, never the helpers'
-        $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
+        // The helpers are served under their base (/helpers by default): the routes do not know it. What is outside it is the
+        // site's, never the helpers' (Grid::servedByHelpers() decides, the path asked on the origin of the base)
+        $base = $grid->helpersUrl();
         $uri = $request->getUri();
-        if ($prefix !== '') {
-            if ($uri->getPath() !== $prefix && !str_starts_with($uri->getPath(), "$prefix/")) {
+        if ($base !== null) {
+            if (!$grid->servedByHelpers(self::origin($base) . $uri->getPath())) {
                 return new Response(404);
             }
+            $prefix = rtrim((string) parse_url($base, PHP_URL_PATH), '/');
             $request = $request->withUri($uri->withPath(substr($uri->getPath(), strlen($prefix)) ?: '/'));
         }
 
         return $handler->handle($request->withAttribute('grid', $grid));
+    }
+
+    /** The scheme, host and port of an address. */
+    private static function origin(string $url): string
+    {
+        $parts = parse_url($url) ?: [];
+
+        return ($parts['scheme'] ?? 'http') . '://' . ($parts['host'] ?? '') . (isset($parts['port']) ? ':' . $parts['port'] : '');
     }
 }
