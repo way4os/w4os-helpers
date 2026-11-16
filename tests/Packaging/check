@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
-# Tries the files of dist/ (made by dev/build.sh) in a clean container (podman): the Debian package installs with the
-# packages it needs, the helpers answer as an unprivileged user with the config of a grid or a config made by hand,
-# the zip does the same. Exits non-zero when a check fails.
+# Tries the files of dist/ (made by dev/build.sh) in a clean container (podman), the way a grid runs them: the Debian package
+# installs with the packages it needs (the engine makes the system layout and its account), php-fpm and Caddy serve the helpers
+# with the snippet of the kit, as the user of the web server. A visit runs the tasks of the search, a picture of the grid is cached,
+# in the folders the package made for the web server; the zip answers too. Exits non-zero when a check fails.
 #
 #   tests/Packaging/check [base image]       default: Debian 12; docker.io/library/ubuntu:24.04 for another
-#   DEPS_ENGINE=folder DEPS_REST=folder      where the Debian packages of the other projects are
-#                                            (default: ../opensim-engine/dist, ../opensim-rest-php/dist)
+#   DEPS_ENGINE=folder DEPS_REST=folder DEPS_CONTAINER=folder
+#                                            where the Debian packages of the other projects are, the newest of each is taken
+#                                            (default: ../opensim-engine/dist, ../opensim-rest-php/dist, ../container-tools/dist)
 #   CONTAINER_CONNECTION=name                run it on the podman of another machine
-#   MEMORY=400m                              memory of the container
-#   Both can be set in tests/.env (see tests/.env.example), after the .env of the project.
+#   MEMORY=1g                                memory of the container (the database server is in it)
+#   APT_HTTPS=1                              apt over https, for a machine whose port 80 is closed (the packages are still
+#                                            checked by their signatures)
+#   All can be set in tests/.env (see tests/.env.example), after the .env of the project.
 
 set -eo pipefail
 BASE=${1:-docker.io/library/debian:bookworm}
 cd "$(dirname "$0")/../.."
-BASE_DIR=$PWD
 [[ -f vendor/bin/bash-helpers ]] || { echo "bash-tools is not installed: composer install" >&2; exit 1; }
 source vendor/bin/bash-helpers
 
@@ -22,6 +25,7 @@ ENV_SLUG=tests read_env || true
 [[ -z "${CONTAINER_CONNECTION:-}" ]] || log "Podman connection: $CONTAINER_CONNECTION"
 DEPS_ENGINE=${DEPS_ENGINE:-$PWD/../opensim-engine/dist}
 DEPS_REST=${DEPS_REST:-$PWD/../opensim-rest-php/dist}
+DEPS_CONTAINER=${DEPS_CONTAINER:-$PWD/../container-tools/dist}
 
 # What the container needs is sent to it as a tar stream, so it can run on any machine:
 # CONTAINER_CONNECTION=name (see podman system connection) uses the podman of another one
@@ -31,10 +35,13 @@ mkdir "$stage/deps"
 ln -s "$PWD/dist" "$stage/dist"
 ln -s "$DEPS_ENGINE" "$stage/deps/engine"
 ln -s "$DEPS_REST" "$stage/deps/rest"
-COPYFILE_DISABLE=1 tar -chf - -C "$stage" dist deps | podman run --rm -i --memory="${MEMORY:-400m}" "$BASE" bash -c '
+ln -s "$DEPS_CONTAINER" "$stage/deps/container"
+COPYFILE_DISABLE=1 tar -chf - -C "$stage" dist deps | podman run --rm -i --memory="${MEMORY:-1g}" -e APT_HTTPS="${APT_HTTPS:-}" "$BASE" bash -c '
 tar -xf - --no-same-owner --warning=no-unknown-keyword -C /
 status=0
 check() { if eval "$2"; then echo "   ok: $1"; else echo "   FAILED: $1"; status=1; fi; }
+newest() { ls -v "$1"/*.deb 2>/dev/null | tail -1; }
+http_code() { curl -s -o /dev/null -w %{http_code} "$1"; }
 # A previous version of a package, which had the libraries bundled as folders of vendor/magicoli (dpkg does not
 # replace a folder by a link when it upgrades): installed in place of the real one
 previous() { # package, libraries
@@ -49,58 +56,72 @@ previous() { # package, libraries
     done
     printf "Package: $pkg\nVersion: 0.0.1\nArchitecture: all\nMaintainer: test <test@example.org>\nDescription: previous version, libraries bundled\n" >$root/DEBIAN/control
     dpkg-deb -b $root /tmp/previous-$pkg.deb >/dev/null
-    dpkg -r $pkg >/dev/null 2>&1
-    dpkg -i /tmp/previous-$pkg.deb >/dev/null 2>&1
+    dpkg -r --force-depends $pkg >/dev/null 2>&1
+    dpkg -i --force-depends /tmp/previous-$pkg.deb >/dev/null 2>&1
 }
-# The helpers served from a folder as an unprivileged user, with a config made by hand from the example (no database)
-start() { # folder, port
-    (cd "$1" && runuser -u nobody -- php -S 127.0.0.1:$2 index.php >/tmp/serve-$2.log 2>&1 &)
-    sleep 2
-}
-configure() { # folder
-    sed "s/define(.OPENSIM_DB., true)/define(\"OPENSIM_DB\", false)/" "$1/includes/config.example.php" >"$1/includes/config.php"
-    chmod 644 "$1/includes/config.php"
-}
-http_code() { curl -s -o /dev/null -w %{http_code} "http://127.0.0.1:$1/$2"; }
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq >/dev/null
-apt-get install -y -qq unzip curl /deps/rest/*.deb /deps/engine/*.deb /dist/*.deb >/dev/null 2>&1
-
-check "the package is installed, it depends on the engine and rest-php" "dpkg -s opensim-helpers | grep -q \"^Depends:.*opensim-engine.*opensim-rest-php\""
-check "its files are in /usr/share/opensim-helpers" "[ -f /usr/share/opensim-helpers/index.php ] && [ -f /usr/share/opensim-helpers/query.php ] && [ -f /usr/share/opensim-helpers/vendor/autoload.php ]"
-check "it has no config of its own, only the example" "[ ! -e /usr/share/opensim-helpers/includes/config.php ] && [ -f /usr/share/opensim-helpers/includes/config.example.php ]"
-check "the engine and rest-php come from their packages, by links" "[ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-engine ] && [ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/opensim-helpers/vendor/magicoli/opensim-engine/bootstrap.php ]"
-check "the libraries it brings itself are in its vendor folder" "[ -d /usr/share/opensim-helpers/vendor/twig/twig ] && [ -d /usr/share/opensim-helpers/vendor/phpxmlrpc/phpxmlrpc ]"
-start /usr/share/opensim-helpers 8090
-check "without a config it says so: 503, not a crash" "[ \"\$(http_code 8090 \"\")\" = 503 ] && grep -q \"no includes/config.php\" /tmp/serve-8090.log"
-mkdir -p /etc/opensim/grids/Alpha
-cp /usr/share/opensim-helpers/includes/helpers.example.ini /etc/opensim/grids/Alpha/helpers.ini
-chown root:nogroup /etc/opensim/grids/Alpha/helpers.ini
-chmod 640 /etc/opensim/grids/Alpha/helpers.ini
-start /usr/share/opensim-helpers 8093
-check "with the config of a grid, readable by the group of the web server, the home page answers" "[ \"\$(http_code 8093 \"\")\" = 200 ] && curl -s http://127.0.0.1:8093/ | grep -q \"Your Grid\""
-chmod 600 /etc/opensim/grids/Alpha/helpers.ini
-check "when the web server user cannot read it, it says so: 503" "[ \"\$(http_code 8093 \"\")\" = 503 ] && grep -q \"not readable by the web server user\" /tmp/serve-8093.log"
-rm -rf /etc/opensim
-configure /usr/share/opensim-helpers
-start /usr/share/opensim-helpers 8091
-check "as an unprivileged user the home page answers" "[ \"\$(http_code 8091 \"\")\" = 200 ] && curl -s http://127.0.0.1:8091/ | grep -q \"Your Grid\""
-check "a URL it does not know is a 404 of its router" "[ \"\$(http_code 8091 nope)\" = 404 ]"
-# Where the xmlrpc extension is installed (a server may have it), the polyfill must not declare its functions again
-if apt-get install -y -qq php-xmlrpc >/dev/null 2>&1; then
-    start /usr/share/opensim-helpers 8094
-    check "with the xmlrpc extension installed the home page answers too" "php -m | grep -qi xmlrpc && [ \"\$(http_code 8094 \"\")\" = 200 ]"
-else
-    echo "   skipped: php-xmlrpc is not available on this system"
+if [ -n "$APT_HTTPS" ]; then
+    sed -i "s#http://#https://#g" /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
+    echo "Acquire::https::Verify-Peer \"false\";" >/etc/apt/apt.conf.d/99https
 fi
-previous opensim-helpers opensim-engine opensim-rest-php
-dpkg -i /dist/opensim-helpers_*.deb >/dev/null 2>&1
-check "an upgrade from a version that bundled the libraries leaves links, not empty folders" "[ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-engine ] && [ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/opensim-helpers/vendor/magicoli/opensim-engine/bootstrap.php ] && [ -f /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php/class-rest.php ]"
+apt-get update -qq >/dev/null
+apt-get install -y -qq curl unzip php-fpm caddy mariadb-server imagemagick \
+    "$(newest /deps/container)" "$(newest /deps/rest)" "$(newest /deps/engine)" "$(newest /dist)" >/tmp/apt.log 2>&1 ||
+    { tail -20 /tmp/apt.log; exit 1; }
+php=$(php -r "echo PHP_MAJOR_VERSION . \".\" . PHP_MINOR_VERSION;")
 
-mkdir /tmp/zip && cd /tmp/zip && unzip -q /dist/*.zip
-check "the zip has the helpers and a complete vendor folder" "[ -f opensim-helpers/index.php ] && [ -f opensim-helpers/vendor/twig/twig/src/Environment.php ] && [ -f opensim-helpers/vendor/magicoli/opensim-engine/bootstrap.php ] && [ ! -L opensim-helpers/vendor/magicoli/opensim-engine ]"
-check "the zip has no composer.lock, no tests" "[ ! -e opensim-helpers/composer.lock ] && [ ! -e opensim-helpers/tests ]"
-configure /tmp/zip/opensim-helpers
-start /tmp/zip/opensim-helpers 8092
-check "from the zip the home page answers too" "[ \"\$(http_code 8092 \"\")\" = 200 ]"
+echo "The package"
+check "it is installed, it depends on the engine and rest-php" "dpkg -s opensim-helpers | grep -q \"^Depends:.*opensim-engine.*opensim-rest-php\""
+check "its application is in /usr/share/opensim-helpers, its document root public/" "[ -f /usr/share/opensim-helpers/public/index.php ] && [ -f /usr/share/opensim-helpers/src/App.php ] && [ -f /usr/share/opensim-helpers/vendor/autoload.php ]"
+check "the engine and rest-php come from their packages, by links" "[ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-engine ] && [ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/opensim-helpers/vendor/magicoli/opensim-engine/src/Models/Grid.php ]"
+check "the libraries it brings itself are in its vendor folder" "[ -d /usr/share/opensim-helpers/vendor/slim/slim ] && [ -d /usr/share/opensim-helpers/vendor/twig/twig ]"
+check "the folders it writes as the web server are made for www-data" "[ \"\$(stat -c %U /var/cache/opensim-helpers/tasks)\" = www-data ] && [ \"\$(stat -c %U /var/cache/opensim-helpers/cache)\" = www-data ]"
+check "the folders of the install are the account of the instances, which the web server cannot write" "getent passwd opensim >/dev/null && ! runuser -u www-data -- test -w /var/lib/opensim && ! runuser -u www-data -- test -w /var/cache/opensim"
+
+echo "A grid served by php-fpm and Caddy"
+(mysqld_safe >/dev/null 2>&1 &)
+for i in $(seq 1 30); do mysqladmin ping >/dev/null 2>&1 && break; sleep 1; done
+mysql -e "CREATE DATABASE robust; CREATE USER \"os\"@\"localhost\" IDENTIFIED BY \"pw\"; GRANT ALL ON robust.* TO \"os\"@\"localhost\";"
+grid=/etc/opensim/grids/demo
+mkdir -p $grid/web
+printf "[Const]\n    BaseURL = \"http://127.0.0.1\"\n    WebURL = \"http://127.0.0.1:8080\"\n    PublicPort = \"8002\"\n    PrivatePort = \"8003\"\n[DatabaseService]\n    ConnectionString = \"Data Source=localhost;Database=robust;User ID=os;Password=pw;\"\n[GridInfoService]\n    gridname = \"Demo\"\n" >$grid/Robust.HG.ini
+# The config of a grid holds passwords: readable by the group of the web server only
+chgrp -R www-data $grid && chmod 640 $grid/Robust.HG.ini
+php -r "require \"/usr/share/opensim-engine/vendor/autoload.php\"; echo OpenSim\\Provisioning\\Web\\Snippets::render(\"caddy\", \"demo\", \"$grid\", \"/usr/share/opensim-helpers/public\", \"/run/php/php$php-fpm.sock\", \"http://127.0.0.1:8080\");" >$grid/web/demo.caddyfile
+printf "{\n    admin off\n    auto_https off\n}\nhttp://127.0.0.1:8080 {\n    import $grid/web/demo.caddyfile\n}\n" >/etc/caddy/Caddyfile
+check "the snippet of the kit hands the helpers to php-fpm" "grep -q \"php_fastcgi unix//run/php/php$php-fpm.sock\" $grid/web/demo.caddyfile && grep -q \"env OPENSIM_GRID demo\" $grid/web/demo.caddyfile"
+"php-fpm$php" -D
+(caddy run --config /etc/caddy/Caddyfile >/tmp/caddy.log 2>&1 &)
+for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:8080/ && break; sleep 1; done
+check "php-fpm runs the helpers as www-data" "ps -o user= -C php-fpm$php | grep -q www-data"
+check "the home page of the helpers answers, under their base" "[ \"\$(http_code http://127.0.0.1:8080/helpers/)\" = 200 ]"
+sleep 3
+check "the visit ran the tasks of the search, their state in the folder of the helpers" "grep -q \"\\\"status\\\":\\\"ran\\\"\" /var/cache/opensim-helpers/tasks/search-parse.demo.json"
+check "the tables of the search are made" "mysql -N -e \"SHOW TABLES\" robust | grep -qx hostsregister"
+check "nothing is written in the folders of the install" "[ -z \"\$(ls -A /var/lib/opensim/cron 2>/dev/null)\" ]"
+key=$(php -r "require \"/usr/share/opensim-engine/vendor/autoload.php\"; echo OpenSim\\Security\\ApiKeys::for(OpenSim\\Runtime\\Environment::system(OpenSim\\Config\\Layout::resolve()))->create(\"check\")[\"key\"];")
+check "the health page is closed without a key" "[ \"\$(http_code http://127.0.0.1:8080/helpers/health)\" = 401 ]"
+# One row a line, the spaces between the tags out
+curl -s -H "Authorization: Bearer $key" http://127.0.0.1:8080/helpers/health | tr -d "\n" | sed -e "s/>[[:space:]]*</></g" -e "s#<tr #\n<tr #g" >/tmp/health.rows
+check "the health page tells the folders of the tasks and the pictures can be written, the helpers own" "grep \"scope=.row.>tasks<\" /tmp/health.rows | grep -q \"health-ok.*/var/cache/opensim-helpers/tasks\" && grep \"scope=.row.>assets<\" /tmp/health.rows | grep -q \"health-ok.*/var/cache/opensim-helpers/cache\""
+
+echo "A picture of the grid"
+mysql robust -e "CREATE TABLE assets (name VARCHAR(64), description VARCHAR(64), assetType TINYINT, local TINYINT, temporary TINYINT, data LONGBLOB, id CHAR(36) PRIMARY KEY, create_time INT, access_time INT, asset_flags INT, CreatorID VARCHAR(128))"
+convert -size 16x16 xc:red /tmp/red.jp2
+php -r "\$pdo = new PDO(\"mysql:host=localhost;dbname=robust\", \"os\", \"pw\"); \$pdo->prepare(\"INSERT INTO assets VALUES (\\\"red\\\", \\\"\\\", 0, 0, 0, ?, \\\"aaaaaaaa-0000-4000-8000-000000000001\\\", 0, 0, 0, \\\"\\\")\")->execute([file_get_contents(\"/tmp/red.jp2\")]);"
+picture=http://127.0.0.1:8080/helpers/api/assets/aaaaaaaa-0000-4000-8000-000000000001.png
+check "a texture of the grid is served as a picture" "[ \"\$(curl -s -o /tmp/red.png -w %{content_type} $picture)\" = image/png ] && [ -s /tmp/red.png ]"
+check "the picture is kept in the cache of the helpers" "ls /var/cache/opensim-helpers/cache/demo/assets/images/ | grep -q aaaaaaaa-0000-4000-8000-000000000001"
+
+echo "An upgrade, the zip"
+previous opensim-helpers opensim-engine opensim-rest-php
+dpkg -i "$(newest /dist)" >/dev/null 2>&1
+check "an upgrade from a version that bundled the libraries leaves links, not empty folders" "[ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-engine ] && [ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/opensim-helpers/vendor/magicoli/opensim-engine/src/Models/Grid.php ]"
+mkdir /tmp/zip && cd /tmp/zip && unzip -q "$(ls -v /dist/*.zip | tail -1)"
+check "the zip has the helpers and a complete vendor folder, no composer.lock, no tests" "[ -f opensim-helpers/public/index.php ] && [ -f opensim-helpers/vendor/twig/twig/src/Environment.php ] && [ -f opensim-helpers/vendor/magicoli/opensim-engine/src/Models/Grid.php ] && [ ! -L opensim-helpers/vendor/magicoli/opensim-engine ] && [ ! -e opensim-helpers/composer.lock ] && [ ! -e opensim-helpers/tests ]"
+chmod -R a+rX /tmp/zip
+(cd /tmp/zip/opensim-helpers/public && runuser -u www-data -- env OPENSIM_GRID=demo php -S 127.0.0.1:8092 index.php >/tmp/zip.log 2>&1 &)
+sleep 2
+check "from the zip the home page answers too" "[ \"\$(http_code http://127.0.0.1:8092/helpers/)\" = 200 ]"
+[ $status = 0 ] || { echo "--- caddy"; tail -5 /tmp/caddy.log; echo "--- php-fpm"; tail -5 /var/log/php$php-fpm.log 2>/dev/null; echo "--- health"; head -c 300 /tmp/health.rows; grep -i "tasks\|assets" /tmp/health.rows | head -4; ls -l /var/lib/opensim/api-keys.json 2>&1; }
 exit $status'
