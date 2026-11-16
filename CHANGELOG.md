@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+- update (profile): the tabs of a profile are named for any grid, "In-world" and "Real life" (the engine's `profile_tab_inworld` and `profile_tab_real_life`), not after Second Life; the sections are `inworld` and `real-life` (`#profile-inworld`, `#profile-real-life`)
+- update (packaging): the helpers depend on the engine that has everything they call (`opensim-engine (>= 3.0.0~beta.13.441)`)
+- test (blocks): the recent users leave out an avatar waiting for the confirmation of its email, as well as a disabled one
 - update (profile): the tabs of a profile are named by the catalog of the engine (`profile_tab_*`, `profile_sections`), as on every site, in the language of the page; the helpers keep no copy of them
 - test (packaging): the check of the package is the one of the Slim application: the real .deb on a clean Debian with php-fpm and Caddy (the snippet of the kit) and MariaDB, the folders of the web server, the tasks of the search after a visit, the health page, a picture cached, an upgrade, the zip
 - update (profile): a profile that is not published says "This profile is not public.", in every language
