@@ -21,19 +21,20 @@
             {% if 'second-life' in sections %}
                 <section id="profile-second-life" class="profile-section">
                     <h2>{{ labels.second_life }}</h2>
-                    {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
+                    {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% elseif not partner %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                     {% if partner %}<dl class="profile-details"><dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd></dl>{% endif %}
                 </section>
             {% endif %}
             {% if 'web' in sections %}
                 <section id="profile-web" class="profile-section">
                     <h2>{{ labels.web }}</h2>
-                    <p><a href="{{ web }}" rel="nofollow ugc">{{ web }}</a></p>
+                    {% if web %}<p><a href="{{ web }}" rel="nofollow ugc">{{ web }}</a></p>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                 </section>
             {% endif %}
             {% if 'interests' in sections %}
                 <section id="profile-interests" class="profile-section">
                     <h2>{{ labels.interests }}</h2>
+                    {% if not (wants_list or wants or skills_list or skills or languages) %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                     <dl class="profile-details">
                         {% if wants_list or wants %}<dt>{{ labels.wants }}</dt><dd>{{ wants_list|join(', ') }}{% if wants_list and wants %}<br>{% endif %}{{ wants|nl2br }}</dd>{% endif %}
                         {% if skills_list or skills %}<dt>{{ labels.skills }}</dt><dd>{{ skills_list|join(', ') }}{% if skills_list and skills %}<br>{% endif %}{{ skills|nl2br }}</dd>{% endif %}
@@ -44,27 +45,19 @@
             {% if 'picks' in sections %}
                 <section id="profile-picks" class="profile-section">
                     <h2>{{ labels.picks }}</h2>
-                    <ul class="profile-picks">
-                        {% for pick in picks %}
-                            <li>{% if pick.url %}<a href="{{ pick.url }}">{{ pick.name }}</a>{% else %}{{ pick.name }}{% endif %}{% if pick.place %} <small>{{ pick.place }}</small>{% endif %}{% if pick.description %}<br>{{ pick.description|nl2br }}{% endif %}</li>
-                        {% endfor %}
-                    </ul>
+                    {% if picks %}{% include 'components/profile-items.twig' with {items: picks, kind: 'pick'} %}{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                 </section>
             {% endif %}
             {% if 'classifieds' in sections %}
                 <section id="profile-classifieds" class="profile-section">
                     <h2>{{ labels.classifieds }}</h2>
-                    <ul class="profile-classifieds">
-                        {% for ad in classifieds %}
-                            <li><strong>{{ ad.name }}</strong>{% if ad.place %} <small>{{ ad.place }}</small>{% endif %}{% if ad.description %}<br>{{ ad.description|nl2br }}{% endif %}</li>
-                        {% endfor %}
-                    </ul>
+                    {% if classifieds %}{% include 'components/profile-items.twig' with {items: classifieds, kind: 'classified'} %}{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                 </section>
             {% endif %}
             {% if 'first-life' in sections %}
                 <section id="profile-first-life" class="profile-section">
                     <h2>{{ labels.first_life }}</h2>
-                    <div class="profile-first-life">{{ first_life|nl2br }}</div>
+                    {% if first_life %}<div class="profile-first-life">{{ first_life|nl2br }}</div>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                 </section>
             {% endif %}
             {% if sections|length > 1 %}
@@ -107,6 +100,22 @@
                 }
                 block.className += ' profile-tabbed';
                 select(start);
+                // The picks and the classifieds as in the viewer: the list, and the one picked from it alone
+                var lists = block.querySelectorAll('.profile-items-list');
+                for (var l = 0; l < lists.length; l++) {
+                    (function (links) {
+                        function show(index) {
+                            for (var k = 0; k < links.length; k++) {
+                                links[k].setAttribute('aria-current', k === index ? 'true' : 'false');
+                                document.getElementById(links[k].getAttribute('href').slice(1)).hidden = k !== index;
+                            }
+                        }
+                        for (var k = 0; k < links.length; k++) {
+                            (function (index) { links[index].onclick = function (event) { event.preventDefault(); show(index); }; })(k);
+                        }
+                        show(0);
+                    })(lists[l].querySelectorAll('a'));
+                }
             })(document.currentScript && document.currentScript.parentNode);
             </script>
             {% endif %}

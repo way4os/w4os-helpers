@@ -184,6 +184,12 @@ final class View
             'profile_sections' => $texts['profile_sections'],
             'picks' => $texts['profile_tab_picks'],
             'classifieds' => $texts['profile_tab_classifieds'],
+            // A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
+            'none' => $texts['profile_none'] ?? _('None.'),
+            'no_description' => $texts['profile_no_description'] ?? _('No description given.'),
+            'location' => $texts['profile_location'] ?? _('Location'),
+            'teleport' => $texts['profile_teleport'] ?? _('Teleport'),
+            'until' => $texts['profile_until'] ?? _('Until'),
         ];
     }
 }

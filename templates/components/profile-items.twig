@@ -1,0 +1,21 @@
+{# The picks or the classifieds of a profile, as the viewer shows them: their list, then each one (its picture, name,
+   description, place and teleport link); the script of the profile block shows the one picked from the list alone #}
+<div class="profile-items profile-{{ kind }}s">
+    <ul class="profile-items-list">
+        {% for item in items %}<li><a href="#profile-{{ kind }}-{{ loop.index }}">{{ item.name }}</a></li>{% endfor %}
+    </ul>
+    <div class="profile-items-details">
+        {% for item in items %}
+            <article id="profile-{{ kind }}-{{ loop.index }}" class="profile-item">
+                <img class="profile-item-picture" src="{{ assets }}/{{ item.picture }}.jpg" alt="" width="256" height="192" loading="lazy">
+                <div class="profile-item-text">
+                    <h3>{{ item.name }}</h3>
+                    <p class="profile-item-description">{% if item.description %}{{ item.description|nl2br }}{% else %}{{ labels.no_description }}{% endif %}</p>
+                    {% if item.place %}<p class="profile-item-place"><span class="profile-item-label">{{ labels.location }}</span> {{ item.place }}</p>{% endif %}
+                    {% if item.until %}<p class="profile-item-until"><span class="profile-item-label">{{ labels.until }}</span> {{ item.until }}</p>{% endif %}
+                    {% if item.url %}<p><a class="profile-item-teleport" href="{{ item.url }}">{{ labels.teleport }}</a></p>{% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+</div>

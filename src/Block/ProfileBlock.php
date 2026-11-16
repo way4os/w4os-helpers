@@ -60,32 +60,28 @@ final class ProfileBlock implements Block
         if ($published) {
             foreach ($avatar->picks() as $pick) {
                 $region = (string) ($pick['simname'] ?? '');
+                $position = self::position((string) ($pick['posglobal'] ?? ''));
                 $data['picks'][] = [
                     'name' => (string) $pick['name'],
                     'description' => trim((string) $pick['description']),
-                    'place' => $region,
-                    'url' => $this->hop($search, (string) ($pick['gatekeeper'] ?? ''), $region, (string) ($pick['posglobal'] ?? '')),
+                    'picture' => self::picture($pick['snapshotuuid'] ?? null),
+                    'place' => $region . ($position === null ? '' : ' (' . implode(', ', $position) . ')'),
+                    'url' => $position === null || $region === '' ? null : $search->hop((string) ($pick['gatekeeper'] ?? ''), $region, implode('/', $position)),
                 ];
             }
             foreach ($avatar->classifieds() as $ad) {
                 $data['classifieds'][] = [
                     'name' => (string) $ad['name'],
                     'description' => trim((string) $ad['description']),
+                    'picture' => self::picture($ad['snapshotuuid'] ?? null),
                     'place' => trim(($ad['parcelname'] ?? '') . (empty($ad['simname']) ? '' : ', ' . $ad['simname']), ', '),
                     'until' => date('Y-m-d', (int) $ad['expirationdate']),
                 ];
             }
         }
 
-        // The sections of the viewer's profile that have something, in its order (its tabs)
-        $data['sections'] = array_keys(array_filter([
-            'second-life' => $data['about'] !== '' || $partner !== null,
-            'web' => $data['web'] !== '',
-            'interests' => $data['wants'] !== '' || $data['skills'] !== '' || $data['languages'] !== '' || $data['wants_list'] || $data['skills_list'],
-            'picks' => $data['picks'] !== [],
-            'classifieds' => $data['classifieds'] !== [],
-            'first-life' => $data['first_life'] !== '',
-        ]));
+        // Every section of the viewer's profile, in its order (its tabs), the empty ones too
+        $data['sections'] = ['second-life', 'web', 'interests', 'picks', 'classifieds', 'first-life'];
 
         return $data;
     }
@@ -111,13 +107,23 @@ final class ProfileBlock implements Block
         return $path === '' ? null : "$path/" . rawurlencode($detail['firstName'] . '.' . $detail['lastName']);
     }
 
-    /** The place of a pick: its position is global, the position in the region is the rest of the division by 256. */
-    private function hop(SearchData $search, string $gatekeeper, string $region, string $posglobal): ?string
+    /**
+     * The position of a pick in its region: its position is global, the one in the region is the rest of the division by 256.
+     *
+     * @return ?list<int> x, y, z; null when it has none
+     */
+    private static function position(string $posglobal): ?array
     {
-        if ($region === '' || preg_match('/<?\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/', $posglobal, $m) !== 1) {
+        if (preg_match('/<?\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/', $posglobal, $m) !== 1) {
             return null;
         }
 
-        return $search->hop($gatekeeper, $region, sprintf('%d/%d/%d', fmod((float) $m[1], 256), fmod((float) $m[2], 256), (float) $m[3]));
+        return [(int) fmod((float) $m[1], 256), (int) fmod((float) $m[2], 256), (int) $m[3]];
+    }
+
+    /** The picture of a pick or a classified: its asset, the placeholder of the engine when it has none. */
+    private static function picture(mixed $uuid): string
+    {
+        return trim((string) $uuid, '0-') !== '' ? (string) $uuid : WebAssets::PLACEHOLDER;
     }
 }
