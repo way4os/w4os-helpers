@@ -114,6 +114,13 @@
                 }
                 block.className += ' profile-tabbed';
                 select(start);
+                // A link to a tab of the page (#picks) opens it
+                window.addEventListener && window.addEventListener('hashchange', function () {
+                    for (var h = 0; h < tabs.length; h++) {
+                        var tab = tabs[h].getAttribute('href').slice(1);
+                        (location.hash === '#' + tab || location.hash === '#' + tab.replace(/^profile-/, '')) && select(h);
+                    }
+                });
                 // The picks and the classifieds as in the viewer: the list, and the one picked from it alone
                 var lists = block.querySelectorAll('.profile-items-list');
                 for (var l = 0; l < lists.length; l++) {
