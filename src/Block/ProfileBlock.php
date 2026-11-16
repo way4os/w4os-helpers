@@ -46,11 +46,11 @@ final class ProfileBlock implements Block
             // The groups it shows in its profile (ListInProfile), by name
             'groups' => $published ? array_column($avatar->groups(), 'name') : [],
             'role' => (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)[Catalog::roleKey((string) ($d['role'] ?? ''))] ?? ''),
-            // The picture of the real life, the placeholder of the engine when there is none
-            'first_picture' => trim((string) ($d['firstImage'] ?? ''), '0-') !== '' ? (string) $d['firstImage'] : WebAssets::PLACEHOLDER,
+            // The picture of the real life, the silhouette of a person of the engine when there is none
+            'first_picture' => trim((string) ($d['firstImage'] ?? ''), '0-') !== '' ? (string) $d['firstImage'] : WebAssets::PERSON,
             'account_title' => trim((string) ($d['title'] ?? '')),
-            // The picture of the profile, seen by anyone in the world: the placeholder of the engine when there is none
-            'picture' => trim((string) ($d['profileImage'] ?? ''), '0-') !== '' ? (string) $d['profileImage'] : WebAssets::PLACEHOLDER,
+            // The picture of the profile, seen by anyone in the world: the silhouette of a person of the engine when there is none
+            'picture' => trim((string) ($d['profileImage'] ?? ''), '0-') !== '' ? (string) $d['profileImage'] : WebAssets::PERSON,
             'published' => $published,
             'about' => $text('about'),
             'real_life' => $text('firstLife'),

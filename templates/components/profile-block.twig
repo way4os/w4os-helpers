@@ -21,7 +21,7 @@
                     <h2>{{ labels.inworld }}</h2>
                     {# As the viewer's tab of the avatar: the picture in its own proportions, then who the avatar is, then its about #}
                     <div class="profile-identity">
-                        <img class="profile-photo" src="{{ assets }}/{{ picture }}.jpg" alt="">
+                        <img class="profile-photo" src="{{ assets }}/{{ picture }}.jpg?default=person" alt="">
                         <dl class="profile-details profile-identity-details">
                             <dt>{{ labels.name }}</dt><dd>{{ title }}</dd>
                             {% if key %}<dt>{{ labels.key }}</dt><dd><code>{{ key }}</code></dd>{% endif %}
@@ -68,7 +68,7 @@
                 <section id="profile-real-life" class="profile-section">
                     <h2>{{ labels.real_life }}</h2>
                     <div class="profile-identity">
-                        <img class="profile-photo" src="{{ assets }}/{{ first_picture }}.jpg" alt="">
+                        <img class="profile-photo" src="{{ assets }}/{{ first_picture }}.jpg?default=person" alt="">
                         {% if real_life %}<div class="profile-real-life">{{ real_life|nl2br }}</div>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                     </div>
                 </section>
