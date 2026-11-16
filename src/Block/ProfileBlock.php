@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace OpenSim\Helpers\Block;
 
 use OpenSim\Assets\WebAssets;
+use OpenSim\Helpers\I18n;
+use OpenSim\I18n\Catalog;
 use OpenSim\Models\Avatar;
 use OpenSim\Models\Grid;
 
@@ -49,6 +51,9 @@ final class ProfileBlock implements Block
             'languages' => $text('languages'),
             'web' => preg_match('#^https?://#i', $text('profileUrl')) ? $text('profileUrl') : '',
             'partner' => $partner,
+            // The boxes checked in the viewer, by their texts in the language of the page
+            'wants_list' => $published ? self::flags($d['wantsList'] ?? [], 'want_') : [],
+            'skills_list' => $published ? self::flags($d['skillsList'] ?? [], 'skill_') : [],
             'picks' => [],
             'classifieds' => [],
         ];
@@ -72,7 +77,30 @@ final class ProfileBlock implements Block
             }
         }
 
+        // The sections of the viewer's profile that have something, in its order (its tabs)
+        $data['sections'] = array_keys(array_filter([
+            'second-life' => $data['about'] !== '' || $partner !== null,
+            'web' => $data['web'] !== '',
+            'interests' => $data['wants'] !== '' || $data['skills'] !== '' || $data['languages'] !== '' || $data['wants_list'] || $data['skills_list'],
+            'picks' => $data['picks'] !== [],
+            'classifieds' => $data['classifieds'] !== [],
+            'first-life' => $data['first_life'] !== '',
+        ]));
+
         return $data;
+    }
+
+    /**
+     * The texts of the boxes of a profile (the engine's names of its flags), in the language in use.
+     *
+     * @param list<string> $names
+     * @return list<string>
+     */
+    private static function flags(array $names, string $prefix): array
+    {
+        $texts = Catalog::messages(I18n::current());
+
+        return array_map(static fn(string $name): string => $texts[$prefix . str_replace('-', '_', $name)] ?? $name, $names);
     }
 
     /** @param array<string,mixed> $detail */

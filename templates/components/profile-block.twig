@@ -9,34 +9,106 @@
         </p>
         {% if not published %}
             <p class="profile-private">{{ labels.profile_private }}</p>
-        {% else %}
-            {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
-            <dl class="profile-details">
-                {% if partner %}<dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd>{% endif %}
-                {% if languages %}<dt>{{ labels.languages }}</dt><dd>{{ languages }}</dd>{% endif %}
-                {% if wants %}<dt>{{ labels.wants }}</dt><dd>{{ wants|nl2br }}</dd>{% endif %}
-                {% if skills %}<dt>{{ labels.skills }}</dt><dd>{{ skills|nl2br }}</dd>{% endif %}
-                {% if web %}<dt>{{ labels.web }}</dt><dd><a href="{{ web }}" rel="nofollow ugc">{{ web }}</a></dd>{% endif %}
-            </dl>
-            {% if first_life %}
-                <h2>{{ labels.first_life }}</h2>
-                <div class="profile-first-life">{{ first_life|nl2br }}</div>
+        {% elseif sections %}
+            {# The sections of the viewer's profile, in the order of its tabs: links to each, made tabs by the script below; without
+               it, every section shows, one after the other #}
+            {% set titles = {'second-life': labels.second_life, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'first-life': labels.first_life} %}
+            {% if sections|length > 1 %}
+                <nav class="profile-tabs" aria-label="{{ labels.profile_sections }}">
+                    <ul>{% for id in sections %}<li><a href="#profile-{{ id }}">{{ titles[id] }}</a></li>{% endfor %}</ul>
+                </nav>
             {% endif %}
-            {% if picks %}
-                <h2>{{ labels.picks }}</h2>
-                <ul class="profile-picks">
-                    {% for pick in picks %}
-                        <li>{% if pick.url %}<a href="{{ pick.url }}">{{ pick.name }}</a>{% else %}{{ pick.name }}{% endif %}{% if pick.place %} <small>{{ pick.place }}</small>{% endif %}{% if pick.description %}<br>{{ pick.description|nl2br }}{% endif %}</li>
-                    {% endfor %}
-                </ul>
+            {% if 'second-life' in sections %}
+                <section id="profile-second-life" class="profile-section">
+                    <h2>{{ labels.second_life }}</h2>
+                    {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
+                    {% if partner %}<dl class="profile-details"><dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd></dl>{% endif %}
+                </section>
             {% endif %}
-            {% if classifieds %}
-                <h2>{{ labels.classifieds }}</h2>
-                <ul class="profile-classifieds">
-                    {% for ad in classifieds %}
-                        <li><strong>{{ ad.name }}</strong>{% if ad.place %} <small>{{ ad.place }}</small>{% endif %}{% if ad.description %}<br>{{ ad.description|nl2br }}{% endif %}</li>
-                    {% endfor %}
-                </ul>
+            {% if 'web' in sections %}
+                <section id="profile-web" class="profile-section">
+                    <h2>{{ labels.web }}</h2>
+                    <p><a href="{{ web }}" rel="nofollow ugc">{{ web }}</a></p>
+                </section>
+            {% endif %}
+            {% if 'interests' in sections %}
+                <section id="profile-interests" class="profile-section">
+                    <h2>{{ labels.interests }}</h2>
+                    <dl class="profile-details">
+                        {% if wants_list or wants %}<dt>{{ labels.wants }}</dt><dd>{{ wants_list|join(', ') }}{% if wants_list and wants %}<br>{% endif %}{{ wants|nl2br }}</dd>{% endif %}
+                        {% if skills_list or skills %}<dt>{{ labels.skills }}</dt><dd>{{ skills_list|join(', ') }}{% if skills_list and skills %}<br>{% endif %}{{ skills|nl2br }}</dd>{% endif %}
+                        {% if languages %}<dt>{{ labels.languages }}</dt><dd>{{ languages }}</dd>{% endif %}
+                    </dl>
+                </section>
+            {% endif %}
+            {% if 'picks' in sections %}
+                <section id="profile-picks" class="profile-section">
+                    <h2>{{ labels.picks }}</h2>
+                    <ul class="profile-picks">
+                        {% for pick in picks %}
+                            <li>{% if pick.url %}<a href="{{ pick.url }}">{{ pick.name }}</a>{% else %}{{ pick.name }}{% endif %}{% if pick.place %} <small>{{ pick.place }}</small>{% endif %}{% if pick.description %}<br>{{ pick.description|nl2br }}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+            {% if 'classifieds' in sections %}
+                <section id="profile-classifieds" class="profile-section">
+                    <h2>{{ labels.classifieds }}</h2>
+                    <ul class="profile-classifieds">
+                        {% for ad in classifieds %}
+                            <li><strong>{{ ad.name }}</strong>{% if ad.place %} <small>{{ ad.place }}</small>{% endif %}{% if ad.description %}<br>{{ ad.description|nl2br }}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+            {% if 'first-life' in sections %}
+                <section id="profile-first-life" class="profile-section">
+                    <h2>{{ labels.first_life }}</h2>
+                    <div class="profile-first-life">{{ first_life|nl2br }}</div>
+                </section>
+            {% endif %}
+            {% if sections|length > 1 %}
+            <script>
+            // The links to the sections as tabs: one section shown at a time, the arrow keys move between the tabs
+            (function (block) {
+                var nav = block && block.querySelector('.profile-tabs');
+                if (!nav || !document.querySelectorAll) { return; }
+                var tabs = nav.querySelectorAll('a');
+                var panels = [];
+                function select(index, focus) {
+                    for (var i = 0; i < tabs.length; i++) {
+                        tabs[i].setAttribute('aria-selected', i === index ? 'true' : 'false');
+                        tabs[i].tabIndex = i === index ? 0 : -1;
+                        panels[i].hidden = i !== index;
+                    }
+                    focus && tabs[index].focus();
+                }
+                nav.querySelector('ul').setAttribute('role', 'tablist');
+                var start = 0;
+                for (var i = 0; i < tabs.length; i++) {
+                    var id = tabs[i].getAttribute('href').slice(1);
+                    panels[i] = document.getElementById(id);
+                    tabs[i].parentNode.setAttribute('role', 'presentation');
+                    tabs[i].setAttribute('role', 'tab');
+                    tabs[i].id = id + '-tab';
+                    tabs[i].setAttribute('aria-controls', id);
+                    panels[i].setAttribute('role', 'tabpanel');
+                    panels[i].setAttribute('aria-labelledby', id + '-tab');
+                    // The tab says what the section is: its heading is for the page without the tabs
+                    panels[i].querySelector('h2').hidden = true;
+                    location.hash === '#' + id && (start = i);
+                    (function (index) {
+                        tabs[index].onclick = function (event) { event.preventDefault(); select(index); };
+                        tabs[index].onkeydown = function (event) {
+                            var step = { ArrowRight: 1, ArrowLeft: -1, Right: 1, Left: -1 }[event.key];
+                            if (step) { event.preventDefault(); select((index + step + tabs.length) % tabs.length, true); }
+                        };
+                    })(i);
+                }
+                block.className += ' profile-tabbed';
+                select(start);
+            })(document.currentScript && document.currentScript.parentNode);
+            </script>
             {% endif %}
         {% endif %}
     {% endif %}

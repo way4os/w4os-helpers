@@ -175,6 +175,9 @@ final class View
             'skills' => _('Skills'),
             'web' => _('Web'),
             'first_life' => _('First life'),
+            'second_life' => _('2nd Life'),
+            'interests' => _('Interests'),
+            'profile_sections' => _('Profile sections'),
             'picks' => _('Picks'),
             'classifieds' => _('Classifieds'),
         ];
