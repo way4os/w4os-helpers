@@ -6,7 +6,10 @@ use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Models\Grid;
 use OpenSim\Testing\Machine;
 
-/** A grid whose accounts are in one database: people, a model, the account of the services, one without an email, one disabled. */
+/**
+ * A grid whose accounts are in one database: people, a model, the account of the services, one without an email, one disabled,
+ * two waiting for the confirmation of their email.
+ */
 function new_users_grid(): Grid
 {
     $machine = new Machine();
@@ -29,6 +32,11 @@ function new_users_grid(): Grid
         ('55555555-5555-4555-8555-555555555555', 'No', 'Mail', '', 1800000002, 0, 1),
         ('66666666-6666-4666-8666-666666666666', 'Cy', 'Gone', 'cy@example.org', 1800000003, -1, 0),
         ('77777777-7777-4777-8777-777777777777', 'Dee', 'Late', 'dee@example.org', 1750000000, 0, 1)");
+    // Waiting for the confirmation of their email: as the engine makes them, and with only the flag
+    $pending = \OpenSim\Models\Avatar::PENDING_FLAG;
+    $pdo->exec("INSERT INTO UserAccounts (PrincipalID, FirstName, LastName, Email, Created, UserLevel, UserFlags, active) VALUES
+        ('88888888-8888-4888-8888-888888888888', 'Pia', 'Pending', 'pia@example.org', 1800000004, -1, $pending, 0),
+        ('99999999-9999-4999-8999-999999999999', 'Pat', 'Flagged', 'pat@example.org', 1800000005, 0, $pending, 1)");
     Connections::using(static fn() => $pdo);
 
     return Grid::find($machine->environment, 'demo');
@@ -37,7 +45,7 @@ function new_users_grid(): Grid
 afterEach(fn() => Connections::using(null));
 
 describe('The block of the recent users', function () {
-    test('lists the newest people, never a model, the account of the services, an account without an email or a disabled one', function () {
+    test('lists the newest people, never a model, the account of the services, an account without an email, a disabled one or one waiting for its email', function () {
         $data = Blocks::data('new_users', new_users_grid());
 
         expect($data['title'])
