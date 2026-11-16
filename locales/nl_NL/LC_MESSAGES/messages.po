@@ -165,3 +165,6 @@ msgstr "Het echte leven"
 
 msgid "Picks"
 msgstr "Favorieten"
+
+msgid "Recent users"
+msgstr "Recente gebruikers"

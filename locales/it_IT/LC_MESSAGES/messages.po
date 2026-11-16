@@ -165,3 +165,6 @@ msgstr "Vita reale"
 
 msgid "Picks"
 msgstr "Preferiti"
+
+msgid "Recent users"
+msgstr "Utenti recenti"

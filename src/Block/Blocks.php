@@ -15,6 +15,7 @@ final class Blocks
         'destination_guide' => DestinationGuideBlock::class,
         'popular_places' => PopularPlacesBlock::class,
         'directory_info' => DirectoryInfoBlock::class,
+        'new_users' => NewUsersBlock::class,
         'search' => SearchBlock::class,
         'profile' => ProfileBlock::class,
     ];
