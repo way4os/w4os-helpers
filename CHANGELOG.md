@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- refactor (blocks): whether a profile is published is the engine's (`Avatar::isPublished()`), not a bit read by hand; the hop:// link of a place found is written from its URI as the engine writes one (`host:port/Region/x/y/z`, `Destination::HOP`)
 - update (blocks): the links to a profile (the recent users, the search of people, the partner of a profile) are the address the grid gives (`web_profile_url`, `[AGENT_NAME]` as First.Last, its host and what follows kept), made by the engine (`Avatar::profileAt()`); none when the grid gives none
 - update (profile): a profile without its picture, in-world or of the real life, shows the silhouette of a person of the engine (`WebAssets::PERSON`, `?default=person` for a picture that is missing), not the landscape of nothing
 - update (profile): the tabs of a profile are named for any grid, "In-world" and "Real life" (the engine's `profile_tab_inworld` and `profile_tab_real_life`), not after Second Life; the sections are `inworld` and `real-life` (`#profile-inworld`, `#profile-real-life`)

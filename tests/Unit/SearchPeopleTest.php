@@ -44,3 +44,14 @@ describe('The search of people', function () {
         expect($data['groups'][0]['items'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
     });
 });
+
+describe('A place found', function () {
+    test('is reached by the hop:// address of its region and its landing point', function () {
+        $search = new OpenSim\Helpers\Block\SearchData(people_grid());
+
+        expect($search->hop('http://grid.example.org:8002', 'My Region', '<10.4, 20, 30.6>'))
+            ->toBe('hop://grid.example.org:8002/My+Region/10/20/30')
+            ->and($search->hop('http://grid.example.org:8002', ''))
+            ->toBeNull();
+    });
+});

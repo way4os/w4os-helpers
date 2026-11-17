@@ -29,7 +29,7 @@ final class ProfileBlock implements Block
             return ['title' => _('Profile not found'), 'found' => false, 'name' => $name];
         }
         $d = $avatar->detail();
-        $published = ((int) ($d['flags'] ?? 0) & 1) === 1;
+        $published = $avatar->isPublished();
         $text = static fn(string $key): string => $published ? trim((string) ($d[$key] ?? '')) : '';
         $partner = null;
         if ($published && $d['partner'] !== null) {

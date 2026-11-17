@@ -60,6 +60,6 @@ final class SearchData
             ? sprintf('/%d/%d/%d', (float) $m[1], (float) $m[2], (float) $m[3])
             : '';
 
-        return (string) Destination::format("$host:$region$at", 8);
+        return (string) Destination::format("$host/$region$at", Destination::HOP);
     }
 }
