@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+- update (guide): the guide as the viewers' Destinations panel shows it: a card for each category (the picture of one of its places, its name, how many destinations), then for each destination (the picture of its parcel, its name), dark as the panel; one row scrolling sideways in a viewer, as many rows as needed on a web page
+- update (blocks): the popular places are a grid of cards, the picture of each parcel with its name and its region, as many rows as needed (`assets/css/places.css`)
+- new (blocks): the picture of the parcel a destination leads to, as the search has it (`SearchData::picture()`: the parcel of that name in the region, else the one of that landing point, else the only parcel of the region; never another parcel), the grid's placeholder without one; `View::blockFiles()` gives a site the styles and scripts of a block it shows in its pages
 - fix (guide): the destinations of the guide are linked as the viewers open them and as the 2.x guide linked them (`secondlife://host:port Region/x/y/z`, `Destination::HG`), no longer the line of the list as it is; a region named alone is one of the grid; tested against what the 2.x guide showed on the same lists (`tests/fixtures/guide`)
 - update (blocks): the dates the blocks show are in the language of the page (`I18n::date()`, PHP's Intl formatter), no longer ISO: a recent user's arrival as a short date with its time, today and yesterday by their name; the birth of a profile and the end of a classified as a medium date; an event and the time of the health check as a medium date with its time (UTC)
 - fix (security): the engine answers the services of the helpers locked (`Locked`): only what it says is public (`Router::PUBLIC`: what the viewers and the simulators call, the pictures), whatever key a request brings; the address of the offline messages takes their two methods only (SaveMessage, RetrieveMessages)

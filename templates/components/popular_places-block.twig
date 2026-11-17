@@ -1,8 +1,14 @@
 {% extends 'components/block-component.twig' %}
+{# A grid of cards, as many rows as it needs: the picture of the parcel (the grid's placeholder without one), its name over it, its
+   region under it (assets/css/places.css) #}
 {% block body %}
-    <ol class="popular-places">
+    <div class="places">
         {% for row in rows %}
-            <li>{% if row.url %}<a href="{{ row.url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}{% if row.value %} <small>{{ row.value }}</small>{% endif %}</li>
+            <a class="place" {% if row.url %}href="{{ row.url }}"{% endif %}>
+                <img class="place-picture" src="{{ assets }}/{{ row.picture ?: placeholder }}.jpg" alt="" loading="lazy">
+                <span class="place-name">{{ row.label }}</span>
+                {% if row.value %}<span class="place-region">{{ row.value }}</span>{% endif %}
+            </a>
         {% endfor %}
-    </ol>
+    </div>
 {% endblock %}

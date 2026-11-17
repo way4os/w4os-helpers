@@ -98,3 +98,65 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
         expect($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'secondlife://login.osgrid.org:8002%20RuthAndRoth']);
     })->todo('engine: Destination::parse() reads nothing of host:Region (no port)');
 });
+
+/** A search that knows the parcels of a grid: two in Welcome (one with a picture), one in Sandbox, one of another grid. */
+function guide_search(): OpenSim\Data\OSPDO
+{
+    $pdo = new OpenSim\Data\OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
+    $pdo->exec('CREATE TABLE regionsregister (regionUUID CHAR(36), regionname VARCHAR(255))');
+    $pdo->exec('CREATE TABLE parcels (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), landingpoint VARCHAR(255), imageUUID CHAR(36), gatekeeperURL VARCHAR(255), dwell FLOAT DEFAULT 0)');
+    $pdo->exec('CREATE TABLE popularplaces (parcelUUID CHAR(36), name VARCHAR(255), dwell FLOAT, has_picture INT)');
+    $pdo->exec("INSERT INTO regionsregister VALUES ('r1', 'Welcome'), ('r2', 'Sandbox'), ('r3', 'Elsewhere')");
+    $pdo->exec("INSERT INTO parcels VALUES
+        ('p1', 'r1', 'Plaza', '128/128/25', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'http://grid.example.org:8002', 40),
+        ('p2', 'r1', 'Garden', '64/64/22', '00000000-0000-0000-0000-000000000000', 'http://grid.example.org:8002', 10),
+        ('p3', 'r2', 'Sandbox', '10/20/30', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'http://grid.example.org:8002/', 0),
+        ('p4', 'r3', 'Elsewhere', '128/128/25', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'http://other.example.org:8002', 0)");
+    $pdo->exec("INSERT INTO popularplaces VALUES ('p1', 'Plaza', 40, 1), ('p2', 'Garden', 10, 0)");
+
+    return $pdo;
+}
+
+describe('the pictures of the guide and of the popular places: the parcel, never the region', function () {
+    afterEach(fn () => OpenSim\Data\Connections::using(null));
+
+    test('a destination has the picture of its parcel, by its name or its landing point; another parcel of the region none', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $search = new OpenSim\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
+
+        expect($search->picture('grid.example.org:8002:Welcome', 'Plaza'))->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+            ->and($search->picture('Welcome/128/128/25', 'The square'))->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+            ->and($search->picture('grid.example.org:8002:Welcome', 'Garden'))->toBeNull()
+            ->and($search->picture('grid.example.org:8002:Welcome', 'Somewhere'))->toBeNull()
+            ->and($search->picture('hop://grid.example.org:8002/Sandbox/1/2/3', 'A place'))->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
+            ->and($search->picture('grid.example.org:8002:Elsewhere', 'Elsewhere'))->toBeNull();
+    });
+
+    test('a category has the picture of the first of its places that has one, a card without one the placeholder', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+        $categories = array_column(Blocks::data('destination_guide', $grid)['items'], 'picture', 'name');
+        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', $grid, ['assets' => '/pictures']);
+
+        expect($categories['Destinations Guide'])->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+            ->and($categories['Hypergrid'])->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
+            ->and($categories['Empty category'])->toBeNull()
+            ->and($html)->toContain('src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
+            ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
+    });
+
+    test('the popular places are cards with the picture of their parcel, the placeholder without one', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
+
+        expect($html)->toContain('class="places"')
+            ->and($html)->toMatch('#<a class="place" href="hop://grid.example.org:8002/Welcome/128/128/25">\s*<img class="place-picture" src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
+            ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
+    });
+
+    test('a site that shows the blocks in its pages knows the files they need', function () {
+        expect(OpenSim\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/guide.css'], 'js' => ['js/guide.js']])
+            ->and(OpenSim\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/places.css'], 'js' => []])
+            ->and(OpenSim\Helpers\View\View::blockFiles('motd'))->toBe(['css' => [], 'js' => []]);
+    });
+});
