@@ -35,8 +35,10 @@ msgstr ""
 
 #: src/Block/DestinationGuideBlock.php:34
 #, php-format
-msgid "%s destinations"
-msgstr ""
+msgid "%s destination"
+msgid_plural "%s destinations"
+msgstr[0] ""
+msgstr[1] ""
 
 #: src/Block/DestinationGuideBlock.php:47
 msgid "Back to categories"

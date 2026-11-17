@@ -47,7 +47,10 @@ function guide_old(string $list): array
 
 describe('the destination guide, as the helpers 2.x showed it', function () {
     test('the same categories, in the same order, with the same number of destinations', function () {
-        expect(guide_shown('big-display', 'http://speculoos.world:8002')['categories'])->toBe(guide_old('big-display')['categories']);
+        // One destination is singular now (the 2.x said "1 destinations")
+        $old = array_map(fn (array $c) => ['name' => $c['name'], 'data' => $c['data'] === '1 destinations' ? '1 destination' : $c['data']], guide_old('big-display')['categories']);
+
+        expect(guide_shown('big-display', 'http://speculoos.world:8002')['categories'])->toBe($old);
     });
 
     test('the same destinations, linked as the viewers open them (secondlife://host:port Region)', function () {
@@ -246,4 +249,22 @@ describe('the list, as the Gudz Teleport Board reads it', function () {
 
         expect(OpenSim\Text\DestinationList::format(OpenSim\Text\DestinationList::parse($text, layout: true)))->toBe($text);
     });
+});
+
+describe('the number of destinations of a category', function () {
+    afterEach(fn () => OpenSim\Helpers\I18n::use('en'));
+
+    test('one destination, several destinations, in the language of the page', function () {
+        $categories = fn () => array_column(Blocks::data('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'))['items'], 'data', 'name');
+
+        OpenSim\Helpers\I18n::use('en');
+        expect($categories()['Hypergrid'])->toBe('5 destinations')
+            ->and($categories()['Empty category'])->toBe('1 destination');
+        OpenSim\Helpers\I18n::use('fr');
+        expect($categories()['Empty category'])->toBe('1 destination')
+            ->and($categories()['Hypergrid'])->toBe('5 destinations');
+        OpenSim\Helpers\I18n::use('de');
+        expect($categories()['Empty category'])->toBe('1 Ziel')
+            ->and($categories()['Hypergrid'])->toBe('5 Ziele');
+    })->skip(fn () => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false || setlocale(LC_MESSAGES, ['de_DE.UTF-8', 'de_DE.utf8']) === false, 'the system has no French or German locale');
 });

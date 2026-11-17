@@ -53,7 +53,7 @@ final class DestinationGuideBlock implements Block
                     'name' => $name,
                     'url' => '?' . http_build_query(['category' => $name]),
                     'picture' => $picture,
-                    'data' => sprintf(_('%s destinations'), count($list)),
+                    'data' => sprintf(ngettext('%s destination', '%s destinations', count($list)), count($list)),
                 ];
             }
 

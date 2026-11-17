@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (guide): one destination is singular ("1 destination"), in every language (its plural forms, `ngettext`)
 - update (guide): the guide as the viewers' Destinations panel shows it: a card for each category (the picture of one of its places, its name, how many destinations), then for each destination (the picture of its parcel, its name), dark as the panel; one row scrolling sideways in a viewer, as many rows as needed on a web page
 - update (blocks): the popular places are a grid of cards, the picture of each parcel with its name and its region, as many rows as needed (`assets/css/places.css`)
 - new (blocks): the picture of the parcel a destination leads to, as the search has it (`SearchData::picture()`: the parcel of that name in the region, else the one of that landing point, else the only parcel of the region; never another parcel), the grid's placeholder without one; `View::blockFiles()` gives a site the styles and scripts of a block it shows in its pages
