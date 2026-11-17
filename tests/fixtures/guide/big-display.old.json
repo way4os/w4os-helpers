@@ -1,0 +1,150 @@
+{
+    "categories": [
+        {
+            "name": "Speculoos",
+            "data": "5 destinations"
+        },
+        {
+            "name": "Hang out",
+            "data": "7 destinations"
+        },
+        {
+            "name": "Hypergrid Safari Tour",
+            "data": "3 destinations"
+        },
+        {
+            "name": "Find out",
+            "data": "1 destinations"
+        },
+        {
+            "name": "Bodies & Clothing:login.friends-grid.com:8002:Bodies & Clothing",
+            "data": "4 destinations"
+        },
+        {
+            "name": "Grid out",
+            "data": "7 destinations"
+        }
+    ],
+    "destinations": {
+        "Speculoos": [
+            {
+                "name": "Grand Place",
+                "url": "secondlife://speculoos.world:8002 Grand Place"
+            },
+            {
+                "name": "Welcome Area",
+                "url": "secondlife://speculoos.world:8002 Welcome"
+            },
+            {
+                "name": "Residences",
+                "url": "secondlife://speculoos.world:8002 Residences"
+            },
+            {
+                "name": "Speculoos Lab",
+                "url": "secondlife://speculoos.world:8002 Lab"
+            },
+            {
+                "name": "Cymru Fach",
+                "url": "secondlife://speculoos.world:8002 Redoutable"
+            }
+        ],
+        "Hang out": [
+            {
+                "name": "Le Petit Prince",
+                "url": "secondlife://hg.osgrid.org:80 Exupery"
+            },
+            {
+                "name": "Maritime Club Belfast",
+                "url": "secondlife://hg.osgrid.org:80 Maritime Club Belfast"
+            },
+            {
+                "name": "Wyldwood Bayou",
+                "url": "secondlife://wyldwoodbayou.com:8002"
+            },
+            {
+                "name": "The Guitar Factory",
+                "url": "secondlife://hg.osgrid.org:80 The Guitar Factory"
+            },
+            {
+                "name": "Le monde de Jo",
+                "url": "secondlife://qcgrid.mooo.com:8002"
+            },
+            {
+                "name": "Neiferleaf",
+                "url": "secondlife://grid.vibel.eu:8002 neiferleaf"
+            },
+            {
+                "name": "France RP",
+                "url": "secondlife://francerpgrid.fr:8002"
+            }
+        ],
+        "Hypergrid Safari Tour": [
+            {
+                "name": "Ivory City",
+                "url": "secondlife://craft-world.org:8002 Ivory City"
+            },
+            {
+                "name": "Immersive",
+                "url": "secondlife://pangeagrid.de:8002 Immersive"
+            },
+            {
+                "name": "AI Dreams in Art",
+                "url": "secondlife://grid.kitely.com:8002 AI Dreams in Art"
+            }
+        ],
+        "Find out": [
+            {
+                "name": "RuthAndRoth",
+                "url": "secondlife://login.osgrid.org:8002"
+            }
+        ],
+        "Bodies & Clothing:login.friends-grid.com:8002:Bodies & Clothing": [
+            {
+                "name": "Paramour Shopping",
+                "url": "secondlife://hg.osgrid.org:80 Paramour Shopping"
+            },
+            {
+                "name": "Pop-Up Market",
+                "url": "secondlife://discoverygrid.net:8002 Seattle"
+            },
+            {
+                "name": "Savvy (La Baronnie)",
+                "url": "secondlife://bubblesz.nl:8002 Savvy"
+            },
+            {
+                "name": "OpenSimWorld",
+                "url": "secondlife://hg.osgrid.org:80 OpenSimWorld"
+            }
+        ],
+        "Grid out": [
+            {
+                "name": "OSGrid",
+                "url": "secondlife://hg.osgrid.org:80 Lbsa Plaza"
+            },
+            {
+                "name": "Twiztid Timez",
+                "url": "secondlife://login.twiztidtimez.com:8002"
+            },
+            {
+                "name": "Party Destination Grid",
+                "url": "secondlife://partydestinationgrid.com:8002"
+            },
+            {
+                "name": "Dorenas World",
+                "url": "secondlife://dorenas-world.de:8002"
+            },
+            {
+                "name": "Digiworldz",
+                "url": "secondlife://login.digiworldz.com:8002"
+            },
+            {
+                "name": "Kitely",
+                "url": "secondlife://grid.kitely.com:8002 Kitely Welcome Center"
+            },
+            {
+                "name": "Littlefield",
+                "url": "secondlife://lfgrid.com:8002"
+            }
+        ]
+    }
+}

@@ -1,0 +1,19 @@
+Local places|Welcome
+Welcome alone|Welcome
+Welcome landing|Welcome|128,128,25
+// a comment
+# another comment
+   # an indented comment
+Hypergrid
+Old format|||grid.example.org:8002|Sandbox
+Trailing pipes|grid.example.org:8002:Sandbox|||
+Hop address|hop://grid.example.org:8002/Sandbox/10/20/30
+Http address|http://grid.example.org:8002:Sandbox
+-
+|
+After the dash|grid.example.org:8002:Sandbox
+A category name longer than a hundred characters, written by someone who had a lot to say about it, really a lot
+Long category place|grid.example.org:8002:Sandbox
+Empty category
+
+Last|grid.example.org:8002:Last Region

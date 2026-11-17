@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\Block;
 
+use OpenSim\Hypergrid\Destination;
 use OpenSim\Models\Grid;
 
-/** The destinations of the grid, by category; one category is the guide itself, several are a list of them. */
+/**
+ * The destinations of the grid, by category; one category is the guide itself, several are a list of them. Each destination is
+ * linked as the viewers open it from their guide (secondlife://host:port Region/x/y/z), a region named alone being one of the grid.
+ */
 final class DestinationGuideBlock implements Block
 {
     public function data(Grid $grid, array $args = []): array
@@ -38,10 +42,17 @@ final class DestinationGuideBlock implements Block
             return $data + ['items' => $items];
         }
 
+        $login = $grid->loginUrl();
+
         return $data + [
             'title' => $category,
             'items' => array_map(
-                static fn(array $d): array => ['name' => $d['name'], 'url' => $d['url'], 'image' => $image, 'data' => ''],
+                static fn(array $d): array => [
+                    'name' => $d['name'],
+                    'url' => Destination::format(Destination::uri($d['url'], $login), Destination::HG),
+                    'image' => $image,
+                    'data' => '',
+                ],
                 $destinations[$category],
             ),
             'back' => count($destinations) > 1 ? ['url' => '?', 'label' => _('Back to categories')] : null,
