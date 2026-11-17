@@ -160,3 +160,83 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->and(OpenSim\Helpers\View\View::blockFiles('motd'))->toBe(['css' => [], 'js' => []]);
     });
 });
+
+/**
+ * The cells of the Gudz Teleport Board 2 for a list, as its script reads it (parseDestination() and addDestination() of
+ * "Gudz Teleport Board 2.ossl.lsl", written again here): a title (a name without an address), a destination (name, address,
+ * landing point), a spacer (`|` alone), a column jump (`-` alone); `#` and `//` lines left out, an address listed already too.
+ *
+ * @return list<array{kind: string, name?: string, uri?: string, landing?: string}>
+ */
+function board_cells(string $text): array
+{
+    $cells = [];
+    $uris = [];
+    foreach (explode("\n", $text) as $line) {
+        if (trim($line) === '' || str_starts_with($line, '#') || str_starts_with($line, '//')) {
+            continue;
+        }
+        if ($line === '-') {
+            $cells[] = ['kind' => 'column'];
+            continue;
+        }
+        $parse = explode('|', $line);
+        if (count($parse) >= 4) {
+            // The old format: grid name, region name, grid coordinates, address, landing point
+            [$name, $uri, $landing] = [$parse[1] !== '' ? $parse[1] : $parse[0], $parse[3], $parse[4] ?? ''];
+        } else {
+            [$name, $uri, $landing] = [$parse[0], $parse[1] ?? '', $parse[2] ?? ''];
+        }
+        if ($uri !== '' && in_array($uri, $uris, true)) {
+            continue;
+        }
+        $uris[] = $uri;
+        $uri = str_replace('http://', '', $uri);
+        $cells[] = $uri !== '' ? ['kind' => 'destination', 'name' => $name, 'uri' => $uri, 'landing' => $landing]
+            : ['kind' => $name === '' ? 'spacer' : 'title', 'name' => $name];
+    }
+
+    return $cells;
+}
+
+describe('the list, as the Gudz Teleport Board reads it', function () {
+    test('the same destinations, in the same order, at the same address and landing point', function () {
+        $text = (string) file_get_contents(__DIR__ . '/../fixtures/guide/big-display.txt');
+        $board = array_map(
+            fn (array $cell) => ['name' => $cell['name'], 'url' => $cell['uri'] . ($cell['landing'] === '' ? '' : '/' . str_replace(',', '/', $cell['landing']))],
+            array_values(array_filter(board_cells($text), fn (array $cell) => $cell['kind'] === 'destination')),
+        );
+        $parsed = array_merge(...array_values(OpenSim\Text\DestinationList::parse($text)));
+
+        // The board leaves out the http:// of an address, the engine reads it (Destination)
+        $parsed = array_map(fn (array $d) => ['name' => $d['name'], 'url' => str_replace('http://', '', $d['url'])], $parsed);
+
+        expect($parsed)->toBe(array_map(fn (array $d) => ['name' => trim($d['name']), 'url' => $d['url']], $board));
+    });
+
+    test('a title of the board is a category of the guide, in the same order', function () {
+        $text = (string) file_get_contents(__DIR__ . '/../fixtures/guide/big-display.txt');
+        // A title inside a column of the board (Hypergrid Safari Tour, under Hang out) is a category of its own in the guide, as in 2.x
+        $titles = array_column(array_filter(board_cells($text), fn (array $cell) => $cell['kind'] === 'title'), 'name');
+
+        expect(array_keys(OpenSim\Text\DestinationList::parse($text)))->toBe($titles);
+    });
+
+    test('the old format: the region name is the name, the 4th column the address, the 5th the landing point', function () {
+        $line = "Speculoos|Grand Place|1000,1000|speculoos.world:8002:Grand Place|128,128,25\n";
+
+        expect(OpenSim\Text\DestinationList::parse($line))->toBe(['Destinations Guide' => [['name' => 'Grand Place', 'url' => 'speculoos.world:8002:Grand Place/128/128/25']]]);
+    })->todo('engine: DestinationList::parse() reads the 5th column of the old format as the region, the board as the landing point');
+
+    test('an address listed already is left out, as the board does', function () {
+        $text = "Places\nOne|grid.example.org:8002:Sandbox\nTwo|grid.example.org:8002:Sandbox\n";
+
+        expect(OpenSim\Text\DestinationList::parse($text))->toBe(['Places' => [['name' => 'One', 'url' => 'grid.example.org:8002:Sandbox']]]);
+    })->todo('engine: DestinationList::parse() keeps a destination whose address is listed already, the board leaves it out');
+
+    test('the list for the boards (format=list) gives them their columns back: the landing point in its own column, the markers kept', function () {
+        $text = "Places\nResidences|speculoos.world:8002:Residences|128,128,30\n|\n-\nOther\nLab|speculoos.world:8002:Lab\n";
+
+        expect(OpenSim\Text\DestinationList::format(OpenSim\Text\DestinationList::parse($text, layout: true)))->toBe($text);
+    });
+});
