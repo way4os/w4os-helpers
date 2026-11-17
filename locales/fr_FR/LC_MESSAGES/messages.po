@@ -152,7 +152,7 @@ msgid "Languages"
 msgstr "Langues"
 
 msgid "Wants to"
-msgstr "J'aimerais"
+msgstr "Souhaite"
 
 msgid "Skills"
 msgstr "Compétences"
