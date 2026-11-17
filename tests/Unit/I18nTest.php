@@ -17,4 +17,22 @@ describe('language', function () {
             ->and(I18n::use('en'))->toBe('en')
             ->and(_('Grid Information'))->toBe('Grid Information');
     })->skip(fn () => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false, 'the system has no French locale');
+
+    test('a time in the language in use: a medium date, with its time, or a short one with today and yesterday by their name', function () {
+        I18n::use('en');
+
+        expect(I18n::date(1700000000, 'date', 'UTC'))->toBe('Nov 14, 2023')
+            ->and(I18n::date(1700000000, 'long', 'UTC'))->toMatch('~^Nov 14, 2023, 10:13\\s?PM$~u')
+            ->and(I18n::date(1700000000, 'list', 'UTC'))->toMatch('~^11/14/23, 10:13\\s?PM$~u')
+            ->and(I18n::date(time() - 60, 'list'))->toStartWith('today')
+            ->and(I18n::date(time() - 86400, 'list'))->toStartWith('yesterday');
+    });
+
+    test('a time in French in French', function () {
+        I18n::use('fr');
+
+        expect(I18n::date(1700000000, 'date', 'UTC'))->toBe('14 nov. 2023')
+            ->and(I18n::date(1700000000, 'long', 'UTC'))->toBe('14 nov. 2023, 22:13');
+        I18n::use('en');
+    })->skip(fn () => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false, 'the system has no French locale');
 });

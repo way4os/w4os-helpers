@@ -53,7 +53,7 @@ describe('The block of the recent users', function () {
             ->and(array_column($data['rows'], 'label'))
             ->toBe(['Dee Late', 'Ada Love', 'Bob Root'])
             ->and($data['rows'][0])
-            ->toMatchArray(['url' => 'https://demo.example.org/helpers/profile/Dee.Late', 'value' => '2025-06-15'])
+            ->toMatchArray(['url' => 'https://demo.example.org/helpers/profile/Dee.Late', 'value' => OpenSim\Helpers\I18n::date(1750000000, 'list')])
             ->and($data['rows'][0])
             ->not->toHaveKey('email');
     });

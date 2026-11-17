@@ -53,7 +53,7 @@ describe('The block of a profile', function () {
             '<h1 class="block-title">Ada Love</h1>',
             '<img class="profile-photo" src="/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg?default=person" alt="">',
             '<dt>Key</dt><dd><code>11111111-1111-4111-8111-111111111111</code></dd>',
-            '<dt>Born</dt><dd>2023-11-14 (',
+            '<dt>Born</dt><dd>' . OpenSim\Helpers\I18n::date(1700000000) . ' (',
             ' days)</dd>',
             '<dt>Account</dt><dd>Resident</dd>',
             "asked() === '#' + id.replace(/^profile-/, '')",
@@ -95,7 +95,7 @@ describe('The block of a profile', function () {
         $view = new View(dirname(__DIR__, 2) . '/templates');
         $html = $view->items('classifieds', [['name' => 'Shop', 'description' => '', 'picture' => null, 'parcel' => 'Mall', 'region' => 'Town', 'position' => [10, 20, 30], 'teleport' => 'hop://g:8002/Town/10/20/30', 'expires' => 1893456000]], '/assets/', 'en');
 
-        expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', '2030-01-01', 'href="hop://g:8002/Town/10/20/30"')
+        expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', OpenSim\Helpers\I18n::date(1893456000), 'href="hop://g:8002/Town/10/20/30"')
             ->and($view->items('picks', [], '/assets'))->toContain('<p class="profile-none">None.</p>');
     });
 });

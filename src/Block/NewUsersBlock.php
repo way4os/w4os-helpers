@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\Block;
 
+use OpenSim\Helpers\I18n;
 use OpenSim\Models\Avatar;
 use OpenSim\Models\Grid;
 
@@ -37,7 +38,7 @@ final class NewUsersBlock implements Block
             $created = (int) ($avatar->detail()['created'] ?? 0);
             $rows[] = [
                 'label' => $avatar->name(),
-                'value' => $created > 0 ? date('Y-m-d', $created) : '',
+                'value' => $created > 0 ? I18n::date($created, 'list') : '',
                 'url' => Avatar::profileAt($profiles, $avatar->name()),
             ];
         }

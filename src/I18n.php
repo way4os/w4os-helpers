@@ -55,6 +55,29 @@ final class I18n
         return self::$current;
     }
 
+    /**
+     * A time in the language in use, by PHP's Intl formatter (ISO without it): `list` the short date, today and yesterday by their
+     * name, with its time (a list: when someone joined); `date` the medium date (a profile: since when); `long` the medium date with
+     * its time (an event).
+     *
+     * @param int $time a Unix time
+     * @param ?string $timezone the zone it is told in (`UTC`); the one of PHP without it
+     */
+    public static function date(int $time, string $style = 'date', ?string $timezone = null): string
+    {
+        $date = (new \DateTimeImmutable('@' . $time))->setTimezone(new \DateTimeZone($timezone ?? date_default_timezone_get()));
+        if (!class_exists(\IntlDateFormatter::class)) {
+            return $date->format($style === 'date' ? 'Y-m-d' : 'Y-m-d H:i');
+        }
+        [$day, $hour] = match ($style) {
+            'list' => [\IntlDateFormatter::RELATIVE_SHORT, \IntlDateFormatter::SHORT],
+            'long' => [\IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT],
+            default => [\IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE],
+        };
+
+        return (string) (new \IntlDateFormatter(self::$current, $day, $hour, $date->getTimezone()))->format($date);
+    }
+
     /** The locale of the helpers for a language tag (fr, fr-FR, pt-br), `en` for English, null for one they do not have. */
     public static function locale(string $tag): ?string
     {

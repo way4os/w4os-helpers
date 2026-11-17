@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (blocks): the dates the blocks show are in the language of the page (`I18n::date()`, PHP's Intl formatter), no longer ISO: a recent user's arrival as a short date with its time, today and yesterday by their name; the birth of a profile and the end of a classified as a medium date; an event and the time of the health check as a medium date with its time (UTC)
 - fix (security): the engine answers the services of the helpers locked (`Locked`): only what it says is public (`Router::PUBLIC`: what the viewers and the simulators call, the pictures), whatever key a request brings; the address of the offline messages takes their two methods only (SaveMessage, RetrieveMessages)
 - change (api): the helpers no longer serve the API of the engine: `/api/...` is a 404 here, the engine serves it from its own entry point (`public/index.php` of opensim-engine, `opensim web GRID api`); the pictures of the grid a page shows are at `/pictures/<uuid>.<format>` (were `/api/grids/<grid>/assets/...`); the due tasks of the grid still run after the pages, as before (`Engine::serving()`)
 - update (blocks): the links of a block a site shows (the form and the topics of the search, the profiles of the people found, of the recent users, of the partner of a profile) are at the addresses the site gives (`search_url`, `web_profile_url` with `[AGENT_NAME]`), in its language (`/fr/search`, `/fr/profile/…`); without them, the grid's

@@ -7,6 +7,7 @@ namespace OpenSim\Helpers\Block;
 use OpenSim\Assets\WebAssets;
 use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Http\Action\Engine;
+use OpenSim\Helpers\I18n;
 use OpenSim\Health\Health;
 use OpenSim\Models\Grid;
 
@@ -42,7 +43,7 @@ final class HealthBlock implements Block
         return [
             'title' => _('Health'),
             'groups' => $groups,
-            'when' => gmdate('Y-m-d H:i:s') . ' UTC',
+            'when' => I18n::date(time(), 'long', 'UTC') . ' UTC',
             'cert_title' => _('Certificate'),
         ];
     }

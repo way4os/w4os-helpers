@@ -39,7 +39,7 @@ final class ProfileBlock implements Block
         $data = [
             'title' => trim($d['firstName'] . ' ' . $d['lastName']),
             'found' => true,
-            'member_since' => (int) ($d['created'] ?? 0) > 0 ? date('Y-m-d', (int) $d['created']) : '',
+            'member_since' => (int) ($d['created'] ?? 0) > 0 ? I18n::date((int) $d['created']) : '',
             // What the in-world tab shows, as the viewer's: the key, the age of the account in days, the account (its role)
             'key' => (string) ($d['uuid'] ?? ''),
             'age' => (int) ($d['created'] ?? 0) > 0 ? self::age(intdiv(max(0, time() - (int) $d['created']), 86400)) : null,
@@ -120,7 +120,7 @@ final class ProfileBlock implements Block
             'picture' => (string) ($row['picture'] ?? '') ?: WebAssets::PLACEHOLDER,
             'place' => implode(', ', array_filter([$row['parcel'] ?? null, $row['region'] ?? null])) . (($row['region'] ?? null) === null ? '' : $position),
             'url' => $row['teleport'] ?? null,
-            'until' => $until > 0 ? date('Y-m-d', $until) : null,
+            'until' => $until > 0 ? I18n::date($until) : null,
         ];
     }
 }

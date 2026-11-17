@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\Block;
 
+use OpenSim\Helpers\I18n;
 use OpenSim\Models\Avatar;
 use OpenSim\Models\Grid;
 
@@ -108,7 +109,7 @@ final class SearchBlock implements Block
                 );
 
                 return array_map(
-                    fn($row) => $this->place($search, $row, date('Y-m-d H:i', (int) $row['dateUTC']) . ' UTC, ' . sprintf(_('%d min'), (int) $row['duration']), $row['description']),
+                    fn($row) => $this->place($search, $row, I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(_('%d min'), (int) $row['duration']), $row['description']),
                     $rows,
                 );
             case 'classifieds':
