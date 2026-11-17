@@ -57,6 +57,18 @@ test('a service is found at the address the grid has for it', function () {
     expect(Engine::target($paths, '/helpers/off/SaveMessage/'))->toBe('/offline-messages/SaveMessage');
     expect(Engine::target($paths, '/eco/currency.php'))->toBe('/currency.php');
     expect(Engine::target($paths, '/query.php'))->toBeNull();
+    // Only the two methods of the offline messages: nothing else of the engine through their address
+    expect(Engine::target($paths, '/helpers/off/../../grids'))->toBeNull();
+    expect(Engine::target($paths, '/helpers/off/RetrieveMessages'))->toBe('/offline-messages/RetrieveMessages');
+});
+
+test('the engine answers the helpers only what it says is public, whatever key a request brings', function () {
+    $grid = OpenSim\Models\Grid::find((new OpenSim\Testing\Machine())->environment, 'demo');
+    $request = (new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', '/grids')
+        ->withAttribute('grid', $grid)
+        ->withHeader('Authorization', 'Bearer osk_anything');
+
+    expect(Engine::handler($request)->handle($request)->getStatusCode())->toBe(401);
 });
 
 test('a profile that does not exist says so', function () {

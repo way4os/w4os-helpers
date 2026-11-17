@@ -9,7 +9,7 @@ use OpenSim\Api\Handler;
 use OpenSim\Config\GridConfig;
 use OpenSim\Models\Grid;
 use OpenSim\Scheduling\Scheduler;
-use OpenSim\Security\ApiKeys;
+use OpenSim\Security\Locked;
 use OpenSim\Services\SearchTasks;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -42,7 +42,10 @@ final class Engine
         'landtool' => '/landtool.php',
     ];
 
-    /** The engine, as a PSR-15 handler for the services of the grid of the request. */
+    /**
+     * The engine, as a PSR-15 handler for the services of the grid of the request: locked, it answers only what the engine says is
+     * public (Router::PUBLIC: what the viewers and the simulators call, the pictures); the API is the engine's, never the helpers'.
+     */
     public static function handler(ServerRequestInterface $request): Handler
     {
         $grid = $request->getAttribute('grid');
@@ -52,7 +55,7 @@ final class Engine
             new ResponseFactory(),
             new StreamFactory(),
             grid: $grid->nick(),
-            authenticator: ApiKeys::for($grid->environment()),
+            authenticator: new Locked(),
         );
     }
 
@@ -143,8 +146,8 @@ final class Engine
             if ($path === $known) {
                 return self::TARGETS[$service];
             }
-            // The offline messages: the method follows the address (`/SaveMessage/`)
-            if ($service === 'offline' && str_starts_with($path, "$known/")) {
+            // The offline messages: the method follows the address (`/SaveMessage/`), one of the two the simulators call
+            if ($service === 'offline' && in_array(substr($path, strlen($known)), ['/SaveMessage', '/RetrieveMessages'], true)) {
                 return self::TARGETS[$service] . substr($path, strlen($known));
             }
         }
