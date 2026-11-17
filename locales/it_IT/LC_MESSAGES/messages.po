@@ -14,7 +14,7 @@ msgid "This is a work in progress, please be indulgent."
 msgstr "Questo è un lavoro in corso, per favore sii indulgente."
 
 msgid "%s destinations"
-msgstr "destinazioni %s"
+msgstr "%s destinazioni"
 
 msgid "Back to categories"
 msgstr "Torna alle categorie"
