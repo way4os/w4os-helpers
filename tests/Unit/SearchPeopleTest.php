@@ -45,6 +45,27 @@ describe('The search of people', function () {
     });
 });
 
+describe('The links of a search a site shows', function () {
+    $site = ['search_url' => 'https://site.example.org/fr/search', 'web_profile_url' => 'https://site.example.org/fr/profile/[AGENT_NAME]'];
+
+    test('are at the addresses the site gives (its language), the form, the topics and the profiles', function () use ($site) {
+        $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1'] + $site);
+
+        expect($data['action'])->toBe('https://site.example.org/fr/search')
+            ->and($data['all_url'])->toBe('https://site.example.org/fr/search?q=la')
+            ->and(array_column($data['topics'], 'url'))->toContain('https://site.example.org/fr/search/people/?q=la')
+            ->and($data['groups'][0]['url'])->toBe('https://site.example.org/fr/search/people/?q=la')
+            ->and($data['groups'][0]['items'][0]['url'])->toBe('https://site.example.org/fr/profile/Ada.Lovelace');
+    });
+
+    test('are the grid\'s without an address of the site, or with one that is not a page', function () {
+        $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1', 'search_url' => 'javascript:alert(1)', 'web_profile_url' => 'javascript:[AGENT_NAME]']);
+
+        expect($data['action'])->toBe('/search')
+            ->and($data['groups'][0]['items'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
+    });
+});
+
 describe('A place found', function () {
     test('is reached by the hop:// address of its region and its landing point', function () {
         $search = new OpenSim\Helpers\Block\SearchData(people_grid());

@@ -34,7 +34,7 @@ final class ProfileBlock implements Block
         $partner = null;
         if ($published && $d['partner'] !== null) {
             $other = Avatar::find($config, $d['partner']);
-            $partner = $other ? ['name' => $other->name(), 'url' => Avatar::profileAt((string) $grid->address('web-profile'), $other->name())] : null;
+            $partner = $other ? ['name' => $other->name(), 'url' => Avatar::profileAt(Blocks::siteAddress($args, 'web_profile_url') ?? (string) $grid->address('web-profile'), $other->name())] : null;
         }
         $data = [
             'title' => trim($d['firstName'] . ' ' . $d['lastName']),

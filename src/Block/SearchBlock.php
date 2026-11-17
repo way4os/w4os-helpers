@@ -27,35 +27,38 @@ final class SearchBlock implements Block
             if ($kind === 'people' && $q === '') {
                 continue;
             }
-            $items = $this->find($search, $kind, $q);
+            $items = $this->find($search, $kind, $q, $args);
             $items === [] ||
-                ($groups[] = ['topic' => $kind, 'title' => self::title($kind), 'items' => $items, 'url' => self::url($grid, $kind, $q)]);
+                ($groups[] = ['topic' => $kind, 'title' => self::title($kind), 'items' => $items, 'url' => self::url($grid, $kind, $q, $args)]);
         }
 
         return [
             'title' => _('Search'),
             'form' => true,
             'embedded' => $embedded,
-            'action' => self::page($grid),
+            'action' => self::page($grid, $args),
             'q' => $q,
             'topic' => $topic,
             'topics' => array_map(
-                fn(string $kind): array => ['topic' => $kind, 'title' => self::title($kind), 'url' => self::url($grid, $kind, $q), 'current' => $kind === $topic],
+                fn(string $kind): array => ['topic' => $kind, 'title' => self::title($kind), 'url' => self::url($grid, $kind, $q, $args), 'current' => $kind === $topic],
                 self::TOPICS,
             ),
-            'all_url' => self::url($grid, '', $q),
+            'all_url' => self::url($grid, '', $q, $args),
             'groups' => $groups,
         ];
     }
 
-    private static function page(Grid $grid): string
+    /** The page of the search: the one of the site that shows it (its language), else the one of the grid. */
+    private static function page(Grid $grid, array $args = []): string
     {
-        return rtrim((string) parse_url((string) $grid->searchUrl(), PHP_URL_PATH), '/') ?: '/search';
+        $site = Blocks::siteAddress($args, 'search_url');
+
+        return $site !== null ? rtrim($site, '/') : (rtrim((string) parse_url((string) $grid->searchUrl(), PHP_URL_PATH), '/') ?: '/search');
     }
 
-    private static function url(Grid $grid, string $topic, string $q): string
+    private static function url(Grid $grid, string $topic, string $q, array $args = []): string
     {
-        return self::page($grid) . ($topic === '' ? '' : "/$topic/") . ($q === '' ? '' : '?q=' . rawurlencode($q));
+        return self::page($grid, $args) . ($topic === '' ? '' : "/$topic/") . ($q === '' ? '' : '?q=' . rawurlencode($q));
     }
 
     private static function title(string $kind): string
@@ -70,7 +73,7 @@ final class SearchBlock implements Block
     }
 
     /** @return list<array<string,mixed>> */
-    private function find(SearchData $search, string $kind, string $q): array
+    private function find(SearchData $search, string $kind, string $q, array $args = []): array
     {
         $like = ['q' => '%' . addcslashes($q, '%_\\') . '%'];
         $params = $q === '' ? [] : $like;
@@ -134,7 +137,7 @@ final class SearchBlock implements Block
                 } catch (\OpenSim\Exceptions\ChannelUnavailable) {
                     $people = [];
                 }
-                $profile = (string) $search->grid->address('web-profile');
+                $profile = Blocks::siteAddress($args, 'web_profile_url') ?? (string) $search->grid->address('web-profile');
 
                 return array_map(
                     fn($p) => [

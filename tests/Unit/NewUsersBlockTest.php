@@ -58,6 +58,12 @@ describe('The block of the recent users', function () {
             ->not->toHaveKey('email');
     });
 
+    test('links each one to their profile at the address the site gives (its language)', function () {
+        $data = Blocks::data('new_users', new_users_grid(), ['web_profile_url' => '/fr/profile/[AGENT_NAME]']);
+
+        expect($data['rows'][0]['url'])->toBe('/fr/profile/Dee.Late');
+    });
+
     test('takes how many it lists', function () {
         $data = Blocks::data('new_users', new_users_grid(), ['count' => 1]);
 

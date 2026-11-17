@@ -31,7 +31,7 @@ final class NewUsersBlock implements Block
         } catch (\OpenSim\Exceptions\ChannelUnavailable) {
             $avatars = [];
         }
-        $profiles = (string) $grid->address('web-profile');
+        $profiles = Blocks::siteAddress($args, 'web_profile_url') ?? (string) $grid->address('web-profile');
         $rows = [];
         foreach ($avatars as $avatar) {
             $created = (int) ($avatar->detail()['created'] ?? 0);

@@ -35,6 +35,19 @@ final class Blocks
     }
 
     /**
+     * An address of a page of the site that shows the block (`search_url`, `web_profile_url` with `[AGENT_NAME]`), as the site
+     * gives it, in its language: a path or an http(s) address; null without one, the block then links to the grid's.
+     *
+     * @param array<string,mixed> $args
+     */
+    public static function siteAddress(array $args, string $name): ?string
+    {
+        $address = trim((string) ($args[$name] ?? ''));
+
+        return preg_match('#^(/(?!/)|https?://)#i', $address) === 1 ? $address : null;
+    }
+
+    /**
      * @param array<string,mixed> $args
      * @return ?array<string,mixed> null for a block that does not exist
      */

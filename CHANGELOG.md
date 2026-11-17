@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (blocks): the links of a block a site shows (the form and the topics of the search, the profiles of the people found, of the recent users, of the partner of a profile) are at the addresses the site gives (`search_url`, `web_profile_url` with `[AGENT_NAME]`), in its language (`/fr/search`, `/fr/profile/…`); without them, the grid's
 - update (i18n): "Wants to" is "Souhaite" in French (was "J'aimerais")
 - refactor (blocks): whether a profile is published is the engine's (`Avatar::isPublished()`), not a bit read by hand; the hop:// link of a place found is written from its URI as the engine writes one (`host:port/Region/x/y/z`, `Destination::HOP`)
 - update (blocks): the links to a profile (the recent users, the search of people, the partner of a profile) are the address the grid gives (`web_profile_url`, `[AGENT_NAME]` as First.Last, its host and what follows kept), made by the engine (`Avatar::profileAt()`); none when the grid gives none
