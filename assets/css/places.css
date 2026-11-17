@@ -1,0 +1,51 @@
+/**
+ * css/places.css: the popular places, a grid of cards that takes as many rows as it needs: the picture of the parcel, its name over
+ * it, its region under it.
+ *
+ * @package    magicoli/opensim-helpers
+ * @license    AGPLv3
+ */
+.block-popular_places .places {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+.block-popular_places .place {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	border-radius: 0.4rem;
+	color: #fff;
+	text-decoration: none;
+	background: #2a2a2a;
+}
+.block-popular_places .place-picture {
+	display: block;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+}
+.block-popular_places .place-name,
+.block-popular_places .place-region {
+	position: absolute;
+	left: 0;
+	right: 0;
+	padding: 0.5rem 0.75rem;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.block-popular_places .place-name {
+	top: 0;
+	font-weight: bold;
+	background: linear-gradient(rgba(0, 0, 0, 0.55), transparent);
+}
+.block-popular_places .place-region {
+	bottom: 0;
+	font-size: 0.85em;
+	background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+}
+.block-popular_places .place:hover .place-picture,
+.block-popular_places .place:focus .place-picture {
+	opacity: 0.85;
+}

@@ -25,8 +25,21 @@ final class View
     /** @var array{css:list<string>,js:list<string>} the files the blocks shown need, for the head of the layout */
     private array $files = ['css' => [], 'js' => []];
 
-    /** The files each block needs. */
-    private const BLOCK_FILES = ['destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']]];
+    /** The files each block needs, under the assets of the helpers. */
+    private const BLOCK_FILES = [
+        'destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']],
+        'popular_places' => ['css' => ['css/places.css'], 'js' => []],
+    ];
+
+    /**
+     * The files a block needs, for a site that shows the block in its own pages (and links them from where it has the helpers).
+     *
+     * @return array{css:list<string>,js:list<string>} paths under the assets of the helpers (`assets/`)
+     */
+    public static function blockFiles(string $name): array
+    {
+        return (self::BLOCK_FILES[str_replace('-', '_', $name)] ?? []) + ['css' => [], 'js' => []];
+    }
 
     /** The levels of the notices to the visitor, as the sites name them too (Grav's messages). */
     public const NOTICE_LEVELS = ['info', 'warning', 'error'];

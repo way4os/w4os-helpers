@@ -1,109 +1,118 @@
 /**
- * css/guide.css
+ * css/guide.css: the destination guide as the viewers' Destinations panel shows it: a dark panel, a card for each category or
+ * destination (its picture, its name, how many); one row scrolling sideways in a viewer (body.viewer), as many rows as needed on a
+ * web page. The colors are variables a site may set.
  *
  * @package    magicoli/opensim-helpers
- * @subpackage    magicoli/opensim-helpers/guide
- *
- * @author     Gudule Lapointe <gudule@speculoos.world>
- * @link       https://github.com/magicoli/opensim-helpers
  * @license    AGPLv3
  */
 
-:root {
-	--guide-color-green: #61c909;
-	--guide-color-orange: #ff7f00;
-	--guide-color-text: white;
-}
-/* The guide is a page of the layout: in a viewer it is the whole panel, in a browser it is the main content */
 #guide {
+	--guide-background: #2b2b2b;
+	--guide-text: #fff;
+	--guide-muted: #cfcfcf;
+	--guide-line: #3d3d3d;
+	--guide-highlight: #ffde00;
 	font-family: "Liberation Sans", Arial, Roboto, "Helvetica", sans-serif;
-	background: var(--guide-color-orange);
-	color: var(--guide-color-text);
-	padding: 10px;
+	background: var(--guide-background);
+	color: var(--guide-text);
+	padding: 0 10px 10px;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
-	min-height: 20rem;
 	overflow: hidden;
 }
+/* In a viewer the guide is the whole panel */
 body.viewer #guide {
 	height: 100vh;
+	margin: 0;
 }
 body.viewer .layout {
 	padding: 0;
 }
+body.viewer {
+	margin: 0;
+	background: var(--guide-background, #2b2b2b);
+}
 
 #guide .header {
-	padding-top: 10px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0 1rem;
+	padding: 8px 0;
+	border-bottom: 1px solid var(--guide-line);
+}
+#guide h1,
+#guide h2 {
+	margin: 0;
+	font-family: inherit;
+	font-size: 1rem;
+	font-weight: bold;
+	letter-spacing: normal;
+	line-height: 1.4;
+	color: var(--guide-text);
+}
+#guide .disclaimer {
+	margin-left: auto;
+	font-size: 0.75rem;
+	color: var(--guide-muted);
 }
 #guide a {
-	color: var(--guide-color-text);
+	color: var(--guide-text);
 	text-decoration: none;
 }
-#guide .list > a {
-	height: 160px;
-}
-
-#guide .item:hover,
-#guide a:hover {
-	color: black;
-}
-
-#guide .item:hover {
-	background: var(--guide-color-green);
-	/* transform: scale(0.95); /* Slight scale-up effect on hover */ */
-}
-
-#guide h1, #guide h2 {
-	margin: 0;
-	font-size: 1.25rem;
-	padding: 0 10px 5px;
-	display: inline-block;
-}
-
-#guide .disclaimer {
-	float: right;
-	font-size: 0.85rem;
-	opacity: 0.7;
-}
-
 #guide a.back {
-	font-size: 0.9rem;
+	font-size: 0.8rem;
+	color: var(--guide-muted);
+}
+#guide a.back:hover {
+	color: var(--guide-highlight);
 }
 
 #guide .list {
 	display: flex;
-	overflow-x: auto; /* Enable horizontal scrolling */
-	overflow-y: hidden; /* Hide vertical scrolling */
-	flex-grow: 1; /* Allow .list to grow and fill the remaining height */
-	padding-bottom: 10px;
+	flex-wrap: wrap;
+	gap: 14px;
+	padding-top: 14px;
 }
-
-#guide .item,
-#guide .error {
-	padding: 10px;
-	box-sizing: border-box;
+body.viewer #guide .list {
+	flex-wrap: nowrap;
+	flex-grow: 1;
+	overflow-x: auto;
+	overflow-y: hidden;
 }
 
 #guide .item {
-	width: 160px;
-	transition: background-color 0.3s ease; /* Add a smooth transition effect for background color */
-}
-
-#guide img.thumbnail {
+	flex: none;
+	display: flex;
+	flex-direction: column;
 	width: 140px;
-	height: 105px;
-	object-fit: cover; /* Crop the image to fit without stretching */
 }
-
+#guide img.thumbnail {
+	display: block;
+	width: 140px;
+	height: 84px;
+	object-fit: cover;
+	background: #444;
+}
 #guide .name {
-	font-size: 0.85rem;
+	margin-top: 6px;
+	font-size: 0.8rem;
 	font-weight: bold;
-	white-space: nowrap; /* Prevent the name from wrapping */
-	overflow: hidden; /* Hide overflowing content */
-	text-overflow: ellipsis; /* Add an ellipsis (...) to indicate content is hidden */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#guide .data {
+	font-size: 0.75rem;
+	color: var(--guide-muted);
+}
+#guide .item:hover .name,
+#guide .item:focus .name {
+	color: var(--guide-highlight);
 }
 
-#guide .data {
-	font-size: 0.8rem;
+#guide .error {
+	padding: 14px 0;
 }

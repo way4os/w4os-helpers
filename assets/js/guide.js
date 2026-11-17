@@ -9,12 +9,13 @@
  * @license    AGPLv3
  */
 
-// Force horizontal scrolling with the mouse wheel, on the list of the guide (there is none when the guide is empty)
+// The mouse wheel scrolls the list of the guide sideways while it is one row wider than the panel (in a viewer); there is no list
+// when the guide is empty
 const guideList = document.querySelector("#guide .list");
 if (guideList) {
 	guideList.addEventListener("wheel", function (event) {
-		// Check if Shift key is pressed to allow vertical scrolling
-		if (event.shiftKey) {
+		// Shift keeps the vertical scrolling, and so does a list that fits
+		if (event.shiftKey || this.scrollWidth <= this.clientWidth) {
 			return;
 		}
 
