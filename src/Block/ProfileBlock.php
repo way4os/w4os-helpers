@@ -7,6 +7,7 @@ namespace OpenSim\Helpers\Block;
 use OpenSim\Assets\WebAssets;
 use OpenSim\Helpers\I18n;
 use OpenSim\I18n\Catalog;
+use OpenSim\Flux\Posts;
 use OpenSim\Models\Avatar;
 use OpenSim\Models\Grid;
 
@@ -64,6 +65,7 @@ final class ProfileBlock implements Block
             'skills_list' => $published ? self::flags($d['skillsList'] ?? [], 'skill_') : [],
             'picks' => [],
             'classifieds' => [],
+            'feed' => [],
         ];
         if ($published) {
             // What the viewer shows of each (the engine's Avatar::place()): picture, place, teleport link
@@ -73,12 +75,44 @@ final class ProfileBlock implements Block
             foreach ($avatar->classifieds() as $ad) {
                 $data['classifieds'][] = self::item($ad);
             }
+            // Its stream (w4os-flux), newest first: none when the grid keeps no posts
+            try {
+                $data['feed'] = array_map(self::post(...), Posts::for($config)->of((string) $d['uuid']));
+            } catch (\OpenSim\Exceptions\ChannelUnavailable) {
+                $data['feed'] = [];
+            }
         }
 
-        // Every section of the viewer's profile, in its order (its tabs), the empty ones too
-        $data['sections'] = ['inworld', 'web', 'interests', 'picks', 'classifieds', 'real-life'];
+        // Every section of the viewer's profile, in its order (its tabs), the empty ones too; the stream where the viewer has its
+        // Feed tab, and alone in it (which opens this page), or for whoever asks it alone (feed_only, as the viewers of SL do)
+        $data['sections'] = \OpenSim\Result::isTrue($args['feed_only'] ?? false)
+            ? ['feed']
+            : ['inworld', 'feed', 'web', 'interests', 'picks', 'classifieds', 'real-life'];
 
         return $data;
+    }
+
+    /**
+     * A post of the stream as the page shows it: its text escaped, its addresses links, its date in the language of the page.
+     *
+     * @param array{id:string,content:string,created:int} $post
+     * @return array{id:string,text:string,html:string,created:int,date:string}
+     */
+    public static function post(array $post): array
+    {
+        $html = preg_replace_callback(
+            '#\bhttps?://[^\s<>"]+#i',
+            static fn(array $m): string => '<a href="' . $m[0] . '" rel="nofollow ugc">' . $m[0] . '</a>',
+            htmlspecialchars($post['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+        );
+
+        return [
+            'id' => $post['id'],
+            'text' => $post['content'],
+            'html' => nl2br((string) $html),
+            'created' => $post['created'],
+            'date' => I18n::date($post['created']),
+        ];
     }
 
     /** The age of an account as the viewer says it: joined today, else its days, in the form of their number. */

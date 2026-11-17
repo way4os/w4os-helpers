@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- feature (profile): the stream of the avatar (w4os-flux), its posts newest first in the Feed tab of the page, after the in-world one; a viewer gets it alone (its Feed tab opens the page of the profile, `web_profile_url`), and whoever asks `feed_only=true`; a JSON Feed (`?format=feed`) and an RSS feed (`?format=rss`) of it; needs opensim-engine with `OpenSim\Flux\Posts`
 - update (blocks): the dates the blocks show are in the language of the page (`I18n::date()`, PHP's Intl formatter), no longer ISO: a recent user's arrival as a short date with its time, today and yesterday by their name; the birth of a profile and the end of a classified as a medium date; an event and the time of the health check as a medium date with its time (UTC)
 - fix (security): the engine answers the services of the helpers locked (`Locked`): only what it says is public (`Router::PUBLIC`: what the viewers and the simulators call, the pictures), whatever key a request brings; the address of the offline messages takes their two methods only (SaveMessage, RetrieveMessages)
 - change (api): the helpers no longer serve the API of the engine: `/api/...` is a 404 here, the engine serves it from its own entry point (`public/index.php` of opensim-engine, `opensim web GRID api`); the pictures of the grid a page shows are at `/pictures/<uuid>.<format>` (were `/api/grids/<grid>/assets/...`); the due tasks of the grid still run after the pages, as before (`Engine::serving()`)

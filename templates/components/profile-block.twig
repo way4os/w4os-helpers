@@ -9,7 +9,7 @@
         {% elseif sections %}
             {# The sections of the viewer's profile, in the order of its tabs: links to each, made tabs by the script below; without
                it, every section shows, one after the other #}
-            {% set titles = {'inworld': labels.inworld, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'real-life': labels.real_life} %}
+            {% set titles = {'inworld': labels.inworld, 'feed': labels.feed, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'real-life': labels.real_life} %}
             {% if sections|length > 1 %}
                 {# The classes of the tabs of Grav's Form plugin (form-tabs, tabs-nav, tab__link, active): a site's theme draws them as its forms' tabs #}
                 <nav class="profile-tabs form-tabs" aria-label="{{ labels.profile_sections }}">
@@ -33,6 +33,19 @@
                     {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
                     {# Then its groups, as the viewer lists them under its about #}
                     {% if groups %}<dl class="profile-details profile-groups"><dt>{{ labels.groups }}</dt><dd>{{ groups|join(', ') }}</dd></dl>{% endif %}
+                </section>
+            {% endif %}
+            {% if 'feed' in sections %}
+                <section id="profile-feed" class="profile-section">
+                    <h2>{{ labels.feed }}</h2>
+                    {% for post in feed %}
+                        <article id="profile-post-{{ post.id }}" class="profile-post">
+                            <p class="profile-post-text">{{ post.html|raw }}</p>
+                            <p class="profile-post-date"><time datetime="{{ post.created|date('c') }}">{{ post.date }}</time></p>
+                        </article>
+                    {% else %}
+                        <p class="profile-none">{{ labels.none }}</p>
+                    {% endfor %}
                 </section>
             {% endif %}
             {% if 'web' in sections %}

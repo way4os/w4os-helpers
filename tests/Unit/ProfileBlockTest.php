@@ -41,8 +41,8 @@ describe('The block of a profile', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
 
-        expect($tabs[1])->toBe(['inworld', 'web', 'interests', 'picks', 'classifieds', 'real-life'])
-            ->and($tabs[2])->toBe(['In-world', 'Web', 'Interests', 'Picks', 'Classifieds', 'Real life'])
+        expect($tabs[1])->toBe(['inworld', 'feed', 'web', 'interests', 'picks', 'classifieds', 'real-life'])
+            ->and($tabs[2])->toBe(['In-world', 'Feed', 'Web', 'Interests', 'Picks', 'Classifieds', 'Real life'])
             ->and($html)->toContain('Build, Meet<br>Gardens', 'Français, English', 'A painter', 'role\', \'tablist\'', '<p class="profile-none">None.</p>');
     });
 
@@ -81,7 +81,7 @@ describe('The block of a profile', function () {
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
         OpenSim\Helpers\I18n::use('en');
 
-        expect($tabs[2])->toBe(['Dans le monde', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie réelle'])
+        expect($tabs[2])->toBe(['Dans le monde', 'Flux', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie réelle'])
             ->and($html)->toContain('aria-label="Sections du profil"');
     })->skip(fn() => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false, 'the system has no French locale');
 

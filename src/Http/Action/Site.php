@@ -78,6 +78,22 @@ final class Site
         // The name of a profile follows the address of the profiles: /profile/First.Last
         if ($page === 'profile') {
             $query['name'] = rawurldecode(substr($path, (int) strrpos($path, '/') + 1));
+            // The Feed tab of a viewer opens the page of the profile: its stream alone, the viewer shows the rest itself
+            View::isViewer($request->getHeaderLine('User-Agent')) && ($query['feed_only'] = 'true');
+            // Its stream for a reader: a JSON Feed, an RSS feed
+            $format = (string) ($query['format'] ?? '');
+            if (in_array($format, ['feed', 'rss'], true)) {
+                $profile = \OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['feed_only' => 'true'] + $query);
+                $url = (string) $request->getUri()->withQuery('')->withFragment('');
+                if (!($profile['found'] ?? false)) {
+                    return $response->withStatus(404);
+                }
+                $response->getBody()->write($format === 'rss'
+                    ? \OpenSim\Helpers\Block\ProfileFeed::rss($profile, $url)
+                    : (string) json_encode(\OpenSim\Helpers\Block\ProfileFeed::json($profile, $url), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+                return $response->withHeader('Content-Type', $format === 'rss' ? 'application/rss+xml; charset=utf-8' : 'application/feed+json; charset=utf-8');
+            }
         }
         // The topic of the search is in the path: /search/places/
         if ($page === 'search' && preg_match('#/([a-z]+)$#', $path, $m) === 1) {
