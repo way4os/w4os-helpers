@@ -66,26 +66,30 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
         }
     });
 
-    test('the same lines left out: comments, empty lines, the old format of the 4th and 5th columns, trailing pipes', function () {
-        $shown = guide_shown('edge-cases', 'http://grid.example.org:8002');
-        $old = guide_old('edge-cases');
-
-        expect($shown['destinations']['Hypergrid'])->toBe([...$old['destinations']['Hypergrid'], ...$old['destinations']['-']])
-            ->and($shown['destinations']['Empty category'])->toBe($old['destinations']['Empty category']);
+    test('the lines as the board reads them: comments left out, the old format, trailing pipes, an address once', function () {
+        expect(guide_shown('edge-cases', 'http://grid.example.org:8002')['destinations']['Hypergrid'])->toBe([
+            ['name' => 'Old format', 'url' => 'secondlife://grid.example.org:8002%20Sandbox/10/20/30'],
+            ['name' => 'Trailing pipes', 'url' => 'secondlife://grid.example.org:8002%20Trailing'],
+            ['name' => 'Hop address', 'url' => 'secondlife://grid.example.org:8002%20Hop/10/20/30'],
+            ['name' => 'Http address', 'url' => 'secondlife://grid.example.org:8002%20Http'],
+            // After a column jump without a title of its own: the section goes on
+            ['name' => 'After the dash', 'url' => 'secondlife://grid.example.org:8002%20After'],
+        ]);
     });
 
-    test('differs on purpose: a dash alone is a layout hint of the boards, not a category; a category keeps its whole name', function () {
-        $names = array_column(guide_shown('edge-cases', 'http://grid.example.org:8002')['categories'], 'name');
-
-        expect($names)->not->toContain('-')
-            ->and($names)->toContain('A category name longer than a hundred characters, written by someone who had a lot to say about it, really a lot');
+    test('the sections are the titles: a dash or a pipe is never one, titles that follow each other are one, a title without a destination is left out', function () {
+        expect(array_column(guide_shown('edge-cases', 'http://grid.example.org:8002')['categories'], 'name'))->toBe([
+            'Destinations Guide',
+            'Hypergrid',
+            'A long title, written on two lines because it did not fit on one',
+            'Apart',
+        ]);
     });
 
     test('a region of the grid, by its name alone, is linked on the grid', function () {
         expect(guide_shown('edge-cases', 'http://grid.example.org:8002')['destinations']['Destinations Guide'])->toBe([
             ['name' => 'Local places', 'url' => 'secondlife://grid.example.org:8002%20Welcome'],
-            ['name' => 'Welcome alone', 'url' => 'secondlife://grid.example.org:8002%20Welcome'],
-            ['name' => 'Welcome landing', 'url' => 'secondlife://grid.example.org:8002%20Welcome/128/128/25'],
+            ['name' => 'Welcome landing', 'url' => 'secondlife://grid.example.org:8002%20Plaza/128/128/25'],
         ]);
     });
 
@@ -102,20 +106,24 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
     });
 });
 
-/** A search that knows the parcels of a grid: two in Welcome (one with a picture), one in Sandbox, one of another grid. */
+/**
+ * A search that knows the parcels of a grid: two in Welcome (one with a picture), one in Plaza and one in Sandbox (with a
+ * picture each), one of another grid.
+ */
 function guide_search(): OpenSim\Data\OSPDO
 {
     $pdo = new OpenSim\Data\OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
     $pdo->exec('CREATE TABLE regionsregister (regionUUID CHAR(36), regionname VARCHAR(255))');
     $pdo->exec('CREATE TABLE parcels (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), landingpoint VARCHAR(255), imageUUID CHAR(36), gatekeeperURL VARCHAR(255), dwell FLOAT DEFAULT 0)');
     $pdo->exec('CREATE TABLE popularplaces (parcelUUID CHAR(36), name VARCHAR(255), dwell FLOAT, has_picture INT)');
-    $pdo->exec("INSERT INTO regionsregister VALUES ('r1', 'Welcome'), ('r2', 'Sandbox'), ('r3', 'Elsewhere')");
+    $pdo->exec("INSERT INTO regionsregister VALUES ('r1', 'Welcome'), ('r2', 'Sandbox'), ('r3', 'Elsewhere'), ('r4', 'Plaza')");
     $pdo->exec("INSERT INTO parcels VALUES
-        ('p1', 'r1', 'Plaza', '128/128/25', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'http://grid.example.org:8002', 40),
+        ('p1', 'r1', 'Local places', '128/128/25', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'http://grid.example.org:8002', 40),
         ('p2', 'r1', 'Garden', '64/64/22', '00000000-0000-0000-0000-000000000000', 'http://grid.example.org:8002', 10),
         ('p3', 'r2', 'Sandbox', '10/20/30', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'http://grid.example.org:8002/', 0),
-        ('p4', 'r3', 'Elsewhere', '128/128/25', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'http://other.example.org:8002', 0)");
-    $pdo->exec("INSERT INTO popularplaces VALUES ('p1', 'Plaza', 40, 1), ('p2', 'Garden', 10, 0)");
+        ('p4', 'r3', 'Elsewhere', '128/128/25', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'http://other.example.org:8002', 0),
+        ('p5', 'r4', 'Square', '128/128/25', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'http://grid.example.org:8002', 0)");
+    $pdo->exec("INSERT INTO popularplaces VALUES ('p1', 'Local places', 40, 1), ('p2', 'Garden', 10, 0)");
 
     return $pdo;
 }
@@ -123,27 +131,17 @@ function guide_search(): OpenSim\Data\OSPDO
 describe('the pictures of the guide and of the popular places: the parcel, never the region', function () {
     afterEach(fn () => OpenSim\Data\Connections::using(null));
 
-    test('a destination has the picture of its parcel, by its name or its landing point; another parcel of the region none', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
-        $search = new OpenSim\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
-
-        expect($search->picture('grid.example.org:8002:Welcome', 'Plaza'))->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
-            ->and($search->picture('Welcome/128/128/25', 'The square'))->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
-            ->and($search->picture('grid.example.org:8002:Welcome', 'Garden'))->toBeNull()
-            ->and($search->picture('grid.example.org:8002:Welcome', 'Somewhere'))->toBeNull()
-            ->and($search->picture('hop://grid.example.org:8002/Sandbox/1/2/3', 'A place'))->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
-            ->and($search->picture('grid.example.org:8002:Elsewhere', 'Elsewhere'))->toBeNull();
-    });
-
-    test('a category has the picture of the first of its places that has one, a card without one the placeholder', function () {
+    test('each card shows the picture the engine finds (Grid::guide()): a destination its parcel, a section its first place with one, else the placeholder', function () {
         OpenSim\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $categories = array_column(Blocks::data('destination_guide', $grid)['items'], 'picture', 'name');
+        $places = array_column(Blocks::data('destination_guide', $grid, ['category' => 'Destinations Guide'])['items'], 'picture', 'name');
         $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', $grid, ['assets' => '/pictures']);
 
-        expect($categories['Destinations Guide'])->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+        expect($places)->toBe(['Local places' => 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Welcome landing' => 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'])
+            ->and($categories['Destinations Guide'])->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
             ->and($categories['Hypergrid'])->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
-            ->and($categories['Empty category'])->toBeNull()
+            ->and($categories['Apart'])->toBeNull()
             ->and($html)->toContain('src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
             ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
@@ -236,13 +234,13 @@ describe('the list, as the Gudz Teleport Board reads it', function () {
         $line = "Speculoos|Grand Place|1000,1000|speculoos.world:8002:Grand Place|128,128,25\n";
 
         expect(OpenSim\Text\DestinationList::parse($line))->toBe(['Destinations Guide' => [['name' => 'Grand Place', 'url' => 'speculoos.world:8002:Grand Place/128/128/25']]]);
-    })->todo('engine: DestinationList::parse() reads the 5th column of the old format as the region, the board as the landing point');
+    });
 
     test('an address listed already is left out, as the board does', function () {
         $text = "Places\nOne|grid.example.org:8002:Sandbox\nTwo|grid.example.org:8002:Sandbox\n";
 
         expect(OpenSim\Text\DestinationList::parse($text))->toBe(['Places' => [['name' => 'One', 'url' => 'grid.example.org:8002:Sandbox']]]);
-    })->todo('engine: DestinationList::parse() keeps a destination whose address is listed already, the board leaves it out');
+    });
 
     test('the list for the boards (format=list) gives them their columns back: the landing point in its own column, the markers kept', function () {
         $text = "Places\nResidences|speculoos.world:8002:Residences|128,128,30\n|\n-\nOther\nLab|speculoos.world:8002:Lab\n";
@@ -259,12 +257,13 @@ describe('the number of destinations of a category', function () {
 
         OpenSim\Helpers\I18n::use('en');
         expect($categories()['Hypergrid'])->toBe('5 destinations')
-            ->and($categories()['Empty category'])->toBe('1 destination');
+            ->and($categories()['Apart'])->toBe('2 destinations')
+            ->and($categories()['A long title, written on two lines because it did not fit on one'])->toBe('1 destination');
         OpenSim\Helpers\I18n::use('fr');
-        expect($categories()['Empty category'])->toBe('1 destination')
+        expect($categories()['A long title, written on two lines because it did not fit on one'])->toBe('1 destination')
             ->and($categories()['Hypergrid'])->toBe('5 destinations');
         OpenSim\Helpers\I18n::use('de');
-        expect($categories()['Empty category'])->toBe('1 Ziel')
+        expect($categories()['A long title, written on two lines because it did not fit on one'])->toBe('1 Ziel')
             ->and($categories()['Hypergrid'])->toBe('5 Ziele');
     })->skip(fn () => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false || setlocale(LC_MESSAGES, ['de_DE.UTF-8', 'de_DE.utf8']) === false, 'the system has no French or German locale');
 });

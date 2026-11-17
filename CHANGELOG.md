@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- update (guide): the pictures of the cards are the engine's (`Grid::guide()`: the parcel of each destination, of this grid or of another, the first of a section); the helpers only show them, the lookup of `SearchData::picture()` is gone; the sections are the titles of the list as the engine reads them (titles that follow each other are one, a title without a destination is left out)
+- update (blocks): the link of a place found or popular is written by the engine from its grid, its region and its landing point (`Destination::uri()`, `Destination::position()`: a height of zero lands at 21 m, a point as a script writes it read too), no longer assembled by hand
 - fix (guide): one destination is singular ("1 destination"), in every language (its plural forms, `ngettext`)
 - update (guide): the guide as the viewers' Destinations panel shows it: a card for each category (the picture of one of its places, its name, how many destinations), then for each destination (the picture of its parcel, its name), dark as the panel; one row scrolling sideways in a viewer, as many rows as needed on a web page
 - update (blocks): the popular places are a grid of cards, the picture of each parcel with its name and its region, as many rows as needed (`assets/css/places.css`)

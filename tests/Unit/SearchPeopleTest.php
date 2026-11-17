@@ -70,8 +70,11 @@ describe('A place found', function () {
     test('is reached by the hop:// address of its region and its landing point', function () {
         $search = new OpenSim\Helpers\Block\SearchData(people_grid());
 
+        // The landing point as the search keeps it (x/y/z), or as a script writes it (<x, y, z>); a height of zero lands at 21 m
         expect($search->hop('http://grid.example.org:8002', 'My Region', '<10.4, 20, 30.6>'))
-            ->toBe('hop://grid.example.org:8002/My+Region/10/20/30')
+            ->toBe('hop://grid.example.org:8002/My+Region/10.4/20/30.6')
+            ->and($search->hop('http://grid.example.org:8002', 'My Region', '128/128/0'))
+            ->toBe('hop://grid.example.org:8002/My+Region/128/128/21')
             ->and($search->hop('http://grid.example.org:8002', ''))
             ->toBeNull();
     });

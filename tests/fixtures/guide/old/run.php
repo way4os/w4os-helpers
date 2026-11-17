@@ -3,7 +3,6 @@
 // each category's destinations with their link. It made the *.old.json files next to it, the reference of DestinationGuideTest:
 // put classes/class-helpers-guide.php and engine/includes/functions*.php of opensim-helpers 2.x (0d82a3c) beside it, then
 //   php run.php ../big-display.txt http://speculoos.world:8002 > ../big-display.old.json
-//   php run.php ../edge-cases.txt http://grid.example.org:8002 > ../edge-cases.old.json
 // Stubs stand for its environment.
 $source = $argv[1];
 $login = $argv[2] ?? 'http://grid.example.org:8002';
