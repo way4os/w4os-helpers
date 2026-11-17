@@ -31,17 +31,14 @@ final class NewUsersBlock implements Block
         } catch (\OpenSim\Exceptions\ChannelUnavailable) {
             $avatars = [];
         }
-        $profiles = rtrim(
-            (string) preg_replace('#/?\[AGENT_NAME\].*$#', '', (string) parse_url((string) $grid->address('web-profile'), PHP_URL_PATH)),
-            '/',
-        );
+        $profiles = (string) $grid->address('web-profile');
         $rows = [];
         foreach ($avatars as $avatar) {
             $created = (int) ($avatar->detail()['created'] ?? 0);
             $rows[] = [
                 'label' => $avatar->name(),
                 'value' => $created > 0 ? date('Y-m-d', $created) : '',
-                'url' => $profiles === '' ? null : "$profiles/" . rawurlencode($avatar->firstName() . '.' . $avatar->lastName()),
+                'url' => Avatar::profileAt($profiles, $avatar->name()),
             ];
         }
 

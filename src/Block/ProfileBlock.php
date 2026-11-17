@@ -34,7 +34,7 @@ final class ProfileBlock implements Block
         $partner = null;
         if ($published && $d['partner'] !== null) {
             $other = Avatar::find($config, $d['partner']);
-            $partner = $other ? ['name' => $other->name(), 'url' => $this->url($grid, $other->detail())] : null;
+            $partner = $other ? ['name' => $other->name(), 'url' => Avatar::profileAt((string) $grid->address('web-profile'), $other->name())] : null;
         }
         $data = [
             'title' => trim($d['firstName'] . ' ' . $d['lastName']),
@@ -100,14 +100,6 @@ final class ProfileBlock implements Block
         $texts = Catalog::messages(I18n::current());
 
         return array_map(static fn(string $name): string => $texts[$prefix . str_replace('-', '_', $name)] ?? $name, $names);
-    }
-
-    /** @param array<string,mixed> $detail */
-    private function url(Grid $grid, array $detail): ?string
-    {
-        $path = rtrim((string) preg_replace('#/?\[AGENT_NAME\].*$#', '', (string) parse_url((string) $grid->address('web-profile'), PHP_URL_PATH)), '/');
-
-        return $path === '' ? null : "$path/" . rawurlencode($detail['firstName'] . '.' . $detail['lastName']);
     }
 
     /**

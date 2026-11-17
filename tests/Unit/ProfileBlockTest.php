@@ -13,7 +13,8 @@ function profile_grid(): Grid
     $robust = (string) file_get_contents($machine->grid . '/Robust.HG.ini');
     $machine->write(
         $machine->grid . '/Robust.HG.ini',
-        $robust . "\n[DatabaseService]\n    ConnectionString = \"Data Source=localhost;Database=robust;User ID=os;Password=pw;\"\n",
+        $robust . "\n[DatabaseService]\n    ConnectionString = \"Data Source=localhost;Database=robust;User ID=os;Password=pw;\"\n" .
+            "[GridInfoService]\n    web_profile_url = \"https://demo.example.org/helpers/profile/[AGENT_NAME]\"\n",
     );
     $pdo = new OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
     $pdo->exec('CREATE TABLE UserAccounts (PrincipalID CHAR(36) PRIMARY KEY, ScopeID CHAR(36), FirstName VARCHAR(64), LastName VARCHAR(64), Email VARCHAR(64), Created INT, UserLevel INT DEFAULT 0, UserFlags INT DEFAULT 0, UserTitle VARCHAR(64) DEFAULT \'\', active INT DEFAULT 1)');
@@ -25,9 +26,9 @@ function profile_grid(): Grid
     $pdo->exec("INSERT INTO UserAccounts (PrincipalID, FirstName, LastName, Email, Created, UserFlags) VALUES
         ('11111111-1111-4111-8111-111111111111', 'Ada', 'Love', 'ada@example.org', 1700000000, 1),
         ('22222222-2222-4222-8222-222222222222', 'Bob', 'Plain', 'bob@example.org', 1700000000, 1)");
-    $pdo->exec("INSERT INTO userprofile (useruuid, profileAboutText, profileWantToText, profileWantToMask, profileLanguages, profileFirstText) VALUES
-        ('11111111-1111-4111-8111-111111111111', 'Hello', 'Gardens', 5, 'Français, English', 'A painter'),
-        ('22222222-2222-4222-8222-222222222222', 'Just me', '', 0, '', '')");
+    $pdo->exec("INSERT INTO userprofile (useruuid, profileAboutText, profileWantToText, profileWantToMask, profileLanguages, profileFirstText, profilePartner) VALUES
+        ('11111111-1111-4111-8111-111111111111', 'Hello', 'Gardens', 5, 'Français, English', 'A painter', '22222222-2222-4222-8222-222222222222'),
+        ('22222222-2222-4222-8222-222222222222', 'Just me', '', 0, '', '', NULL)");
     Connections::using(static fn() => $pdo);
 
     return Grid::find($machine->environment, 'demo');
@@ -57,6 +58,8 @@ describe('The block of a profile', function () {
             '<dt>Account</dt><dd>Resident</dd>',
             "asked() === '#' + id.replace(/^profile-/, '')",
             "'#second-life': '#inworld'",
+            // The partner, linked to their profile at the address the grid gives
+            '<a href="https://demo.example.org/helpers/profile/Bob.Plain">Bob Plain</a>',
         )->not->toContain('Member since');
     });
 

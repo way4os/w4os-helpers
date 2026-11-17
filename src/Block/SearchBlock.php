@@ -134,14 +134,14 @@ final class SearchBlock implements Block
                 } catch (\OpenSim\Exceptions\ChannelUnavailable) {
                     $people = [];
                 }
-                $profile = rtrim((string) preg_replace('#/?\[AGENT_NAME\].*$#', '', (string) parse_url((string) $search->grid->address('web-profile'), PHP_URL_PATH)), '/');
+                $profile = (string) $search->grid->address('web-profile');
 
                 return array_map(
                     fn($p) => [
                         'title' => $p['name'],
                         'detail' => '',
                         'text' => '',
-                        'url' => $profile === '' ? null : "$profile/" . rawurlencode($p['firstName'] . '.' . $p['lastName']),
+                        'url' => Avatar::profileAt($profile, $p['firstName'] . ' ' . $p['lastName']),
                     ],
                     $people,
                 );

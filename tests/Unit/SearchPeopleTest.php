@@ -13,7 +13,8 @@ function people_grid(): Grid
     $machine->write(
         $machine->grid . '/Robust.HG.ini',
         (string) file_get_contents($machine->grid . '/Robust.HG.ini') .
-            "\n[DatabaseService]\n    ConnectionString = \"Data Source=localhost;Database=robust;User ID=os;Password=pw;\"\n",
+            "\n[DatabaseService]\n    ConnectionString = \"Data Source=localhost;Database=robust;User ID=os;Password=pw;\"\n" .
+            "[GridInfoService]\n    web_profile_url = \"https://demo.example.org/profile/[AGENT_NAME]?tab=web\"\n",
     );
     $pdo = new OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
     $pdo->exec('CREATE TABLE UserAccounts (PrincipalID CHAR(36) PRIMARY KEY, ScopeID CHAR(36), FirstName VARCHAR(64), LastName VARCHAR(64), Email VARCHAR(64), Created INT, UserLevel INT DEFAULT 0, UserFlags INT DEFAULT 0, UserTitle VARCHAR(64) DEFAULT \'\', active INT DEFAULT 1)');
@@ -35,5 +36,11 @@ describe('The search of people', function () {
         $people = array_column($data['groups'][0]['items'] ?? [], 'title');
 
         expect($people)->toBe(['Ada Lovelace']);
+    });
+
+    test('links each one to their profile, at the address the grid gives', function () {
+        $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1']);
+
+        expect($data['groups'][0]['items'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
     });
 });
