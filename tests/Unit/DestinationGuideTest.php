@@ -154,6 +154,13 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
+    test('an open category is headed by its name, whatever title the page gives the guide', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['category' => 'Hypergrid', 'title' => 'The guide']);
+
+        expect($html)->toContain('<h2>Hypergrid</h2>')->and($html)->toContain('class="back"');
+    });
+
     test('a site that shows the blocks in its pages knows the files they need', function () {
         expect(OpenSim\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/guide.css'], 'js' => ['js/guide.js']])
             ->and(OpenSim\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/places.css'], 'js' => []])

@@ -53,6 +53,13 @@ body.viewer {
 	line-height: 1.4;
 	color: var(--guide-text);
 }
+/* The decorations a site gives its titles (a bar over them) are not the guide's */
+#guide h1::before,
+#guide h1::after,
+#guide h2::before,
+#guide h2::after {
+	content: none;
+}
 #guide .disclaimer {
 	margin-left: auto;
 	font-size: 0.75rem;

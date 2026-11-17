@@ -61,7 +61,8 @@ final class DestinationGuideBlock implements Block
         }
 
         return $data + [
-            'title' => $category,
+            // The title of the guide may be the page's: the category has its own heading
+            'category' => $category,
             'items' => array_map($place, $destinations[$category]),
             'back' => count($destinations) > 1 ? ['url' => '?', 'label' => _('Back to categories')] : null,
         ];

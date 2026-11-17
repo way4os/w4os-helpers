@@ -2,7 +2,7 @@
    category or destination, the picture of its parcel (the grid's placeholder without one), on one row in a viewer (body.viewer) #}
 <div id="guide" class="block block-guide">
     <div class="header">
-        {% if back is defined and back %}<h2>{{ title }}</h2>{% else %}<h1>{{ title }}</h1>{% endif %}
+        {% if category is defined and category and back is defined and back %}<h2>{{ category }}</h2>{% else %}<h1>{{ category ?? title }}</h1>{% endif %}
         {% if back is defined and back %}<a href="{{ back.url }}" class="back">{{ back.label }}</a>{% endif %}
         <span class="disclaimer">{{ disclaimer }}</span>
     </div>
