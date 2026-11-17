@@ -48,9 +48,6 @@ final class App
         $app->add(new GridMiddleware($grids));
         $app->addErrorMiddleware(false, true, true);
 
-        // The API of the engine
-        $app->any('/api[/{path:.*}]', static fn($request) => Engine::handler($request, '/api')->handle($request));
-
         // The services the grid is configured with (see Engine::paths()): whatever no other route took
         $app->map(['GET', 'POST'], '/{path:.*}', Site::class);
 

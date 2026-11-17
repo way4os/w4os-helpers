@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (api): the helpers no longer serve the API of the engine: `/api/...` is a 404 here, the engine serves it from its own entry point (`public/index.php` of opensim-engine, `opensim web GRID api`); the pictures of the grid a page shows are at `/pictures/<uuid>.<format>` (were `/api/grids/<grid>/assets/...`); the due tasks of the grid still run after the pages, as before (`Engine::serving()`)
 - update (blocks): the links of a block a site shows (the form and the topics of the search, the profiles of the people found, of the recent users, of the partner of a profile) are at the addresses the site gives (`search_url`, `web_profile_url` with `[AGENT_NAME]`), in its language (`/fr/search`, `/fr/profile/…`); without them, the grid's
 - update (i18n): "Wants to" is "Souhaite" in French (was "J'aimerais")
 - refactor (blocks): whether a profile is published is the engine's (`Avatar::isPublished()`), not a bit read by hand; the hop:// link of a place found is written from its URI as the engine writes one (`host:port/Region/x/y/z`, `Destination::HOP`)

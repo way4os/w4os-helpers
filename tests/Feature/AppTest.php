@@ -38,13 +38,16 @@ test('the home page and a block are served, the health is closed, the rest is no
     expect(helpers_get($app, '/nothing-here')->getStatusCode())->toBe(404);
 });
 
-test('the API is the engine\'s', function () {
+test('the API is the engine\'s, served by its own entry point: the helpers do not answer /api', function () {
     $app = helpers_app();
 
-    $api = helpers_get($app, '/api/openapi.json');
-    expect($api->getStatusCode())->toBe(200);
-    expect(json_decode((string) $api->getBody(), true))->toHaveKey('paths');
+    expect(helpers_get($app, '/api/openapi.json')->getStatusCode())->toBe(404);
+    expect(helpers_get($app, '/api/grids')->getStatusCode())->toBe(404);
+});
 
+test('the pictures of the grid are served at /pictures, by the engine', function () {
+    expect(Engine::target([], '/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg'))->toBe('/assets/c14a1985-c549-4485-8779-7103d74ef5e0.jpg');
+    expect(Engine::target([], '/pictures/nothing.exe'))->toBeNull();
 });
 
 test('a service is found at the address the grid has for it', function () {

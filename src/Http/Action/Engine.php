@@ -42,8 +42,8 @@ final class Engine
         'landtool' => '/landtool.php',
     ];
 
-    /** The engine, as a PSR-15 handler for the grid of the request. */
-    public static function handler(ServerRequestInterface $request, string $base = ''): Handler
+    /** The engine, as a PSR-15 handler for the services of the grid of the request. */
+    public static function handler(ServerRequestInterface $request): Handler
     {
         $grid = $request->getAttribute('grid');
 
@@ -51,7 +51,6 @@ final class Engine
             self::api($grid),
             new ResponseFactory(),
             new StreamFactory(),
-            $base,
             grid: $grid->nick(),
             authenticator: ApiKeys::for($grid->environment()),
         );
@@ -135,6 +134,10 @@ final class Engine
     public static function target(array $paths, string $path): ?string
     {
         $path = '/' . trim($path, '/');
+        // The pictures of the grid (a texture, a profile picture, a map tile), at a path of their own: the asset of the engine
+        if (preg_match('#^/pictures/([0-9a-fA-F-]{36}\.(?:' . implode('|', array_keys(\OpenSim\Models\Image::FORMATS)) . '))$#', $path, $m) === 1) {
+            return "/assets/{$m[1]}";
+        }
         foreach ($paths as $service => $known) {
             $known = '/' . trim($known, '/');
             if ($path === $known) {

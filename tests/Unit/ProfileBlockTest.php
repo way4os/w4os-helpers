@@ -51,7 +51,7 @@ describe('The block of a profile', function () {
 
         expect($html)->toContain(
             '<h1 class="block-title">Ada Love</h1>',
-            '<img class="profile-photo" src="/api/grids/demo/assets/c14a1985-c549-4485-8779-7103d74ef5e0.jpg?default=person" alt="">',
+            '<img class="profile-photo" src="/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg?default=person" alt="">',
             '<dt>Key</dt><dd><code>11111111-1111-4111-8111-111111111111</code></dd>',
             '<dt>Born</dt><dd>2023-11-14 (',
             ' days)</dd>',

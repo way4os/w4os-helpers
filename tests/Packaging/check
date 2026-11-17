@@ -109,7 +109,7 @@ echo "A picture of the grid"
 mysql robust -e "CREATE TABLE assets (name VARCHAR(64), description VARCHAR(64), assetType TINYINT, local TINYINT, temporary TINYINT, data LONGBLOB, id CHAR(36) PRIMARY KEY, create_time INT, access_time INT, asset_flags INT, CreatorID VARCHAR(128))"
 convert -size 16x16 xc:red /tmp/red.jp2
 php -r "\$pdo = new PDO(\"mysql:host=localhost;dbname=robust\", \"os\", \"pw\"); \$pdo->prepare(\"INSERT INTO assets VALUES (\\\"red\\\", \\\"\\\", 0, 0, 0, ?, \\\"aaaaaaaa-0000-4000-8000-000000000001\\\", 0, 0, 0, \\\"\\\")\")->execute([file_get_contents(\"/tmp/red.jp2\")]);"
-picture=http://127.0.0.1:8080/helpers/api/assets/aaaaaaaa-0000-4000-8000-000000000001.png
+picture=http://127.0.0.1:8080/helpers/pictures/aaaaaaaa-0000-4000-8000-000000000001.png
 check "a texture of the grid is served as a picture" "[ \"\$(curl -s -o /tmp/red.png -w %{content_type} $picture)\" = image/png ] && [ -s /tmp/red.png ]"
 check "the picture is kept in the cache of the helpers" "ls /var/cache/opensim-helpers/cache/demo/assets/images/ | grep -q aaaaaaaa-0000-4000-8000-000000000001"
 

@@ -81,7 +81,7 @@ final class View
         $this->found = (($data['found'] ?? true) !== false);
 
         // The pictures of the grid: the address the site gives (`assets`), else the API of the helpers
-        $assets = (string) ($args['assets'] ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/api/grids/' . rawurlencode($grid->id()) . '/assets');
+        $assets = (string) ($args['assets'] ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/pictures');
 
         return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets]);
     }
