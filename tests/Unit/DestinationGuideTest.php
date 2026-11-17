@@ -55,11 +55,11 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
         // A place in the region (third column) is now part of the link
         $old['Speculoos'][2]['url'] .= '/128/128/30';
         $old['Hang out'][1]['url'] .= '/28/11/26';
+        // An address without its port keeps its region now (2.x linked the grid alone)
+        $old['Find out'][0]['url'] = 'secondlife://login.osgrid.org:8002%20RuthAndRoth';
         $shown = guide_shown('big-display', 'http://speculoos.world:8002')['destinations'];
-        // The links the engine does not read as the 2.x did yet: a grid without its region, an address without its port
-        $engine = fn (array $place) => ! str_ends_with($place['url'], ':8002') && ! str_ends_with($place['url'], ':8002%20') && $place['url'] !== '';
         foreach ($old as $category => $places) {
-            expect(array_values(array_filter($shown[$category], $engine)))->toBe(array_values(array_filter($places, $engine)));
+            expect($shown[$category])->toBe($places);
         }
     });
 
@@ -90,11 +90,11 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
         $shown = guide_shown('big-display', 'http://speculoos.world:8002')['destinations'];
 
         expect($shown['Hang out'][2])->toBe(['name' => 'Wyldwood Bayou', 'url' => 'secondlife://wyldwoodbayou.com:8002']);
-    })->todo('engine: Destination::format() ends the link of a grid without a region with %20');
+    });
 
     test('an address without its port is the region of that grid, at its default port', function () {
         $shown = guide_shown('big-display', 'http://speculoos.world:8002')['destinations'];
 
         expect($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'secondlife://login.osgrid.org:8002%20RuthAndRoth']);
-    })->todo('engine: Destination::parse() reads nothing of host:Region (no port)');
+    });
 });
