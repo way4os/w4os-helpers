@@ -8,7 +8,8 @@
 .block-popular_places .places {
 	display: grid;
 	gap: 1rem;
-	grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+	/* Two of them a row at least on a narrow screen: cards, never a banner as wide as the page */
+	grid-template-columns: repeat(auto-fill, minmax(min(11rem, calc(50% - 0.5rem)), 1fr));
 }
 .block-popular_places .place {
 	position: relative;
