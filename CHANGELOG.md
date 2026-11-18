@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (profile): a viewer gets the stream of a profile alone wherever the block is shown (a site's page too, the `web_profile_url` of a grid), the engine telling a viewer (`Destination::client()`: the class a site gives, else the user agent); the rule is the block's, no longer the page route's
 - feature (profile): the stream of the avatar (w4os-flux), its posts newest first in the Feed tab of the page, after the in-world one; a viewer gets it alone (its Feed tab opens the page of the profile, `web_profile_url`), and whoever asks `feed_only=true`; a JSON Feed (`?format=feed`) and an RSS feed (`?format=rss`) of it; needs opensim-engine with `OpenSim\Flux\Posts`
 - update (guide, popular places): a card shows what you go to, then where, as the engine says it (`title` above, the largest: the name of the list here, the region on another grid; `label` under it: its region and point here, its grid elsewhere); a label breaks after a slash or a colon only
 - update (guide, popular places): each card shows the label of its destination under its name, the engine's (its region and point for this grid, its grid for another), no longer the bare name of its region; the popular places are the engine's (`Grid::popularPlaces()`), no longer a query of the helpers; the login screen takes the same links as the other pages

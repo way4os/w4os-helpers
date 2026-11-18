@@ -8,7 +8,6 @@ use OpenSim\Config\Layout;
 use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Helpers\I18n;
 use OpenSim\Helpers\View\View;
-use OpenSim\Hypergrid\Destination;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\Environment;
 use OpenSim\Security\ApiKeys;
@@ -84,8 +83,6 @@ final class Site
         // The name of a profile follows the address of the profiles: /profile/First.Last
         if ($page === 'profile') {
             $query['name'] = rawurldecode(substr($path, (int) strrpos($path, '/') + 1));
-            // The Feed tab of a viewer opens the page of the profile: its stream alone, the viewer shows the rest itself
-            Destination::isViewer($request->getHeaderLine('User-Agent')) && ($query['feed_only'] = 'true');
             // Its stream for a reader: a JSON Feed, an RSS feed
             $format = (string) ($query['format'] ?? '');
             if (in_array($format, ['feed', 'rss'], true)) {

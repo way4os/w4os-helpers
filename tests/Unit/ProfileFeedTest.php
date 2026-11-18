@@ -60,6 +60,15 @@ describe('The stream of a profile', function () {
             ->toContain('id="profile-inworld"', 'id="profile-feed"');
     });
 
+    test('is all the block gives a viewer, told by the engine (Destination::client), whoever shows the block: a site that gives its class or its agent', function () {
+        $sections = fn (array $args) => OpenSim\Helpers\Block\Blocks::data('profile', feed_grid(), ['name' => 'Ada.Love'] + $args)['sections'];
+
+        expect($sections(['client' => 'viewer']))->toBe(['feed'])
+            ->and($sections(['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm-Releasex64)']))->toBe(['feed'])
+            ->and($sections(['client' => 'browser']))->toContain('inworld', 'feed', 'picks')
+            ->and($sections(['client' => 'browser', 'feed_only' => 'true']))->toBe(['feed']);
+    });
+
     test('is a JSON Feed and an RSS feed too', function () {
         $json = json_decode((string) feed_get('/helpers/profile/Ada.Love?format=feed')->getBody(), true);
         $rss = feed_get('/helpers/profile/Ada.Love?format=rss');
