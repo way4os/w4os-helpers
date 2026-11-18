@@ -157,9 +157,41 @@ describe('the pictures of the guide and of the popular places: the parcel, never
 
     test('an open category is headed by its name, whatever title the page gives the guide', function () {
         OpenSim\Data\Connections::using(fn () => guide_search());
-        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['category' => 'Hypergrid', 'title' => 'The guide']);
+        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['category' => 'Hypergrid', 'title' => 'The guide', 'client' => 'viewer']);
 
         expect($html)->toContain('<h2>Hypergrid</h2>')->and($html)->toContain('class="back"');
+    });
+
+    test('in a browser, the guide is a block of the page as the popular places are: its title as theirs, the class of its client for its style', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $view = new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+
+        $browser = $view->block('destination_guide', $grid, ['client' => 'browser', 'level' => 'h2']);
+        $places = $view->block('popular_places', $grid, ['client' => 'browser', 'level' => 'h2']);
+        $viewer = $view->block('destination_guide', $grid, ['agent' => 'Mozilla/5.0 SecondLife/7.1 (Firestorm)']);
+
+        expect($browser)
+            ->toContain('class="block block-guide client-browser"')
+            ->toContain('<h2 class="block-title">Destinations Guide</h2>')
+            ->and($places)
+            ->toContain('<h2 class="block-title">')
+            // The viewer keeps the look of its Destinations panel
+            ->and($viewer)
+            ->toContain('class="block block-guide client-viewer"')
+            ->toContain('<h1>Destinations Guide</h1>');
+    });
+
+    test('the dark look of the viewers is the one of the viewer only: in a browser the colours are the theme\'s', function () {
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/guide.css');
+        $base = substr($css, (int) strpos($css, '*/'), (int) strpos($css, '/* In a viewer') - (int) strpos($css, '*/'));
+
+        expect($base)
+            ->not->toContain('#2b2b2b')
+            ->toContain('color: inherit')
+            ->and($css)
+            ->toContain('#guide.client-viewer')
+            ->toContain('body.viewer #guide');
     });
 
     test('a site that shows the blocks in its pages knows the files they need', function () {

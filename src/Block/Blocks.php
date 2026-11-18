@@ -63,6 +63,11 @@ final class Blocks
         // A title of the call wins, an empty one leaves the title out
         $data['title'] = array_key_exists('title', $args) ? $args['title'] : $data['title'] ?? null;
         $data['name'] = $name;
+        // The class of the visitor, for the style of a block: the one a site gives (client), else its user agent (Destination::client())
+        $client = $args['client'] ?? null;
+        $data['client'] = in_array($client, \OpenSim\Hypergrid\Destination::CLIENTS, true)
+            ? $client
+            : \OpenSim\Hypergrid\Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
 
         return $data;
     }

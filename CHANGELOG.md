@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (guide): in a browser the guide is a block of the page as the popular places are: on the column of the content, without a background, in the colours of the theme (light or dark), its title the one of the blocks (`block-title`, at the level the page gives), its pictures smaller than theirs; in a viewer it keeps the dark look of the Destinations panel; the class of the client (`client-viewer`, `client-browser`, from `client` or the user agent, the engine's `Destination::client()`) is on the guide, so that every site that shows it gets the same rule (`assets/css/guide.css`)
 - update (profile): the stream reads as a timeline, each post its date first, relative (Carbon, in the language of the page) small and muted in a margin on the left, its full date and time as its tip, then its message; the date above the message where the block is narrow; the styles of a profile in their own file, for every page that shows the block (`css/profile.css`, `View::blockFiles('profile')`)
 - update (profile): it opens on its first tab that has something (About for a stream with nothing); no key, the viewer shows it; the role alone in its banner, as the engine says it (`bare`); the details label left and value right
 - update (blocks): the profile, the search and the guide leave their title to the page that shows them when it asks it so (an empty `title`), as the other blocks do: a site's theme shows the title of its page
