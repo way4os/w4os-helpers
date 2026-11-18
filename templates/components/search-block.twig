@@ -1,5 +1,5 @@
 <section class="block block-search">
-    <{{ level }} class="block-title">{{ title }}</{{ level }}>
+    {% if title %}<{{ level }} class="block-title">{{ title }}</{{ level }}>{% endif %}
     <form class="search-form" action="{{ action }}{% if topic %}/{{ topic }}/{% endif %}" method="get" role="search">
         <label class="visually-hidden" for="search-q">{{ labels.search_for }}</label>
         <input id="search-q" type="search" name="q" value="{{ q }}" autofocus>

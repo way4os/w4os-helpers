@@ -3,7 +3,7 @@
     <header class="profile-banner">
         {% if banner.picture is defined and banner.picture %}<img class="profile-photo" src="{{ assets }}/{{ banner.picture }}.jpg?default=person" alt="">{% endif %}
         <div class="profile-banner-text">
-            <h1 class="block-title">{{ title }}</h1>
+            {% if title %}<h1 class="block-title">{{ title }}</h1>{% endif %}
             {% if account_title is defined and account_title %}<p class="profile-meta"><span class="profile-title">{{ account_title }}</span></p>{% endif %}
             {% if banner.details is defined and banner.details %}
                 <dl class="profile-details profile-banner-details">{% for detail in banner.details %}<dt>{{ detail.label }}</dt><dd>{{ detail.value }}</dd>{% endfor %}</dl>

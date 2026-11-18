@@ -111,3 +111,16 @@ describe('The block of a profile', function () {
             ->and($view->items('picks', [], '/assets'))->toContain('<p class="profile-none">None.</p>');
     });
 });
+
+describe('The title of a block', function () {
+    test('is left to the page that shows it when it asks it so (an empty title): the profile keeps its banner, the search and the guide their content', function () {
+        $view = new View(dirname(__DIR__, 2) . '/templates');
+        $profile = $view->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en', 'title' => '']);
+        $search = $view->block('search', profile_grid(), ['lang' => 'en', 'title' => '']);
+        $guide = $view->block('destination_guide', profile_grid(), ['lang' => 'en', 'title' => '']);
+
+        expect($profile)->toContain('<header class="profile-banner">', '<dt>Born</dt>')->not->toContain('<h1', 'Ada Love</h')
+            ->and($search)->toContain('search-form')->not->toContain('class="block-title"')
+            ->and($guide)->toContain('id="guide"')->not->toContain('<h1');
+    });
+});
