@@ -46,6 +46,18 @@ describe('The block of a profile', function () {
             ->and($html)->toContain('Build, Meet<br>Gardens', 'Français, English', 'A painter', 'role\', \'tablist\'', '<p class="profile-none">None.</p>');
     });
 
+    test('takes its sections from the engine: no Web tab when the grid does not allow the web address of a profile', function () {
+        $grid = profile_grid();
+        file_put_contents($grid->directory() . '/OpenSim.ini', "[UserProfiles]\n AllowUserProfileWebURLs = false\n");
+        $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', $grid, ['name' => 'Ada.Love', 'lang' => 'en']);
+        preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
+        $sections = fn (array $args) => OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['name' => 'Ada.Love'] + $args)['sections'];
+
+        expect($tabs[1])->toBe(['feed', 'about', 'interests', 'picks', 'classifieds', 'real-life'])
+            ->and($html)->not->toContain('id="profile-web"')
+            ->and($sections(['client' => 'viewer']))->toBe(['feed', 'about', 'interests']);
+    });
+
     test('has a banner over every tab, the fields the engine marks: the picture, the name, the birth with the age, the role alone', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
         $banner = substr($html, (int) strpos($html, '<header class="profile-banner">'), (int) strpos($html, '</header>') - (int) strpos($html, '<header class="profile-banner">'));

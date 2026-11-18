@@ -84,15 +84,17 @@ final class ProfileBlock implements Block
             }
         }
 
-        // The sections of the profile as tabs, its stream first, the empty ones too: every one in a browser; in a viewer, whose Feed tab
+        // The sections of the profile as tabs, in the order of the engine, its stream first, the empty ones too: every one in a browser; in a viewer, whose Feed tab
         // opens this page, the stream, About and the interests, its own windows showing the rest (the engine tells a viewer: the
         // class a site gives, else the user agent); the stream alone for whoever asks it so (feed_only, as the viewers of SL do)
         $client = isset($args['client']) ? (string) $args['client'] : \OpenSim\Hypergrid\Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
-        $data['sections'] = match (true) {
+        // The sections are the engine's, as the grid has them (none the grid does not allow: the web address of a profile)
+        $sections = array_column($avatar->form()->sections, 'name');
+        $data['sections'] = array_values(array_intersect($sections, match (true) {
             \OpenSim\Result::isTrue($args['feed_only'] ?? false) => ['feed'],
             $client === 'viewer' => ['feed', 'about', 'interests'],
-            default => ['feed', 'about', 'web', 'interests', 'picks', 'classifieds', 'real-life'],
-        };
+            default => $sections,
+        }));
         $data['open'] = self::open($data['sections'], $data);
 
         return $data;
