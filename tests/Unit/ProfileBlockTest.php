@@ -46,7 +46,7 @@ describe('The block of a profile', function () {
             ->and($html)->toContain('Build, Meet<br>Gardens', 'Français, English', 'A painter', 'role\', \'tablist\'', '<p class="profile-none">None.</p>');
     });
 
-    test('has a banner over every tab, the fields the engine marks: the picture, the name, the birth with the age, the role', function () {
+    test('has a banner over every tab, the fields the engine marks: the picture, the name, the birth with the age, the role alone', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
         $banner = substr($html, (int) strpos($html, '<header class="profile-banner">'), (int) strpos($html, '</header>') - (int) strpos($html, '<header class="profile-banner">'));
 
@@ -55,16 +55,16 @@ describe('The block of a profile', function () {
             '<h1 class="block-title">Ada Love</h1>',
             '<dt>Born</dt><dd>' . OpenSim\Helpers\I18n::date(1700000000) . ' (',
             ' days)</dd>',
-            '<dt>Role</dt><dd>Resident</dd>',
-        )->and(strpos($html, '<header class="profile-banner">'))->toBeLessThan(strpos($html, 'profile-tabs'));
+            '<p class="profile-banner-bare">Resident</p>',
+        )->not->toContain('<dt>Role</dt>')->and(strpos($html, '<header class="profile-banner">'))->toBeLessThan(strpos($html, 'profile-tabs'));
     });
 
-    test('shows the rest of the in-world tab in About: the key, the partner, the about text, the groups', function () {
+    test('shows the rest of the in-world tab in About: the partner, the about text, the groups; never the key, the viewer has it', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
         $about = substr($html, (int) strpos($html, '<section id="profile-about"'));
 
-        expect($about)->toContain(
-            '<dt>Key</dt><dd><code>11111111-1111-4111-8111-111111111111</code></dd>',
+        expect($html)->not->toContain('11111111-1111-4111-8111-111111111111', '<dt>Key</dt>')
+            ->and($about)->toContain(
             'Hello',
             "asked() === '#' + id.replace(/^profile-/, '')",
             // The former names of the tab lead to it
@@ -109,6 +109,19 @@ describe('The block of a profile', function () {
 
         expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', OpenSim\Helpers\I18n::date(1893456000), 'href="hop://g:8002/Town/10/20/30"')
             ->and($view->items('picks', [], '/assets'))->toContain('<p class="profile-none">None.</p>');
+    });
+});
+
+describe('The tab a profile opens on', function () {
+    test('is the first that has something: About for a stream with nothing, the stream once it has posts, the first when all are empty', function () {
+        $open = fn (Grid $grid, string $name, array $args = []) => OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['name' => $name] + $args)['open'];
+        $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
+
+        expect($open(profile_grid(), 'Ada.Love'))->toBe('about')
+            ->and($open(profile_grid(), 'Ada.Love', ['client' => 'viewer']))->toBe('about')
+            ->and($open(feed_grid(), 'Ada.Love'))->toBe('feed')
+            ->and(OpenSim\Helpers\Block\ProfileBlock::open(['feed', 'about'], ['feed' => [], 'about' => '', 'partner' => null, 'groups' => []]))->toBe('feed')
+            ->and($html)->toContain('data-open="profile-about"');
     });
 });
 

@@ -63,8 +63,10 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 .profile-identity-details { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: .25rem 1rem; }
 .profile-identity-details dd { margin: 0; }
 .profile-meta { color: var(--muted); margin-top: 0; }
-.profile-details dt { font-weight: 600; margin-top: .5rem; }
-.profile-details dd { margin: 0 0 0 1rem; }
+/* The details of a profile (its groups, its interests...), label left and value right, label bold */
+.profile-details { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .25rem 1rem; margin: 0 0 1rem; }
+.profile-details dt, .profile-details dd { margin: 0; }
+.profile-details dt { font-weight: 600; }
 /* The sections of a profile as the viewer's tabs (links to each without the script), spaced as Grav's form tabs */
 .profile-tabs .tabs-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; list-style: none; margin: 1rem 0 1.5rem; padding: 0; border-bottom: 1px solid var(--line); }
 .profile-tabs .tab__link { display: inline-block; padding: .75rem 1.25rem; margin-bottom: -1px; color: var(--muted); font-weight: 500; text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; }

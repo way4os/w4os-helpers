@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (profile): it opens on its first tab that has something (About for a stream with nothing); no key, the viewer shows it; the role alone in its banner, as the engine says it (`bare`); the details label left and value right
 - update (blocks): the profile, the search and the guide leave their title to the page that shows them when it asks it so (an empty `title`), as the other blocks do: a site's theme shows the title of its page
 - update (profile): a banner over every tab, the picture, the name, the birth and the role of the avatar as the engine marks them in its form (`banner`); the stream first, then About (the rest of the in-world tab: the key, the partner, the about, the groups), then the other tabs; a viewer gets the stream, About and the interests, its own windows showing the rest; `feed_only` the stream alone
 - fix (profile): a viewer gets the stream of a profile alone wherever the block is shown (a site's page too, the `web_profile_url` of a grid), the engine telling a viewer (`Destination::client()`: the class a site gives, else the user agent); the rule is the block's, no longer the page route's

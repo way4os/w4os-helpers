@@ -6,7 +6,10 @@
             {% if title %}<h1 class="block-title">{{ title }}</h1>{% endif %}
             {% if account_title is defined and account_title %}<p class="profile-meta"><span class="profile-title">{{ account_title }}</span></p>{% endif %}
             {% if banner.details is defined and banner.details %}
-                <dl class="profile-details profile-banner-details">{% for detail in banner.details %}<dt>{{ detail.label }}</dt><dd>{{ detail.value }}</dd>{% endfor %}</dl>
+                {# The details with a label, label left and value right; a value that reads alone (the role) by itself #}
+                {% set labelled = banner.details|filter(detail => detail.label) %}
+                {% if labelled %}<dl class="profile-details profile-banner-details">{% for detail in labelled %}<dt>{{ detail.label }}</dt><dd>{{ detail.value }}</dd>{% endfor %}</dl>{% endif %}
+                {% for detail in banner.details|filter(detail => not detail.label) %}<p class="profile-banner-bare">{{ detail.value }}</p>{% endfor %}
             {% endif %}
         </div>
     </header>
@@ -21,7 +24,7 @@
             {% set titles = {'about': labels.about, 'feed': labels.feed, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'real-life': labels.real_life} %}
             {% if sections|length > 1 %}
                 {# The classes of the tabs of Grav's Form plugin (form-tabs, tabs-nav, tab__link, active): a site's theme draws them as its forms' tabs #}
-                <nav class="profile-tabs form-tabs" aria-label="{{ labels.profile_sections }}">
+                <nav class="profile-tabs form-tabs" aria-label="{{ labels.profile_sections }}" data-open="profile-{{ open|default(sections|first) }}">
                     <ul class="tabs-nav">{% for id in sections %}<li><a class="tab__link" href="#profile-{{ id }}"><span>{{ titles[id] }}</span></a></li>{% endfor %}</ul>
                 </nav>
             {% endif %}
@@ -41,12 +44,11 @@
             {% if 'about' in sections %}
                 <section id="profile-about" class="profile-section">
                     <h2>{{ labels.about }}</h2>
-                    {# The rest of the viewer's tab of the avatar (the banner has its picture, its name, its birth, its role): its key, its
-                       partner, its about, then its groups, as the viewer lists them under its about #}
-                    {% if key or partner %}
+                    {# The rest of the viewer's tab of the avatar (the banner has its picture, its name, its birth, its role): its partner,
+                       its about, then its groups, as the viewer lists them under its about; never its key, the viewer shows it #}
+                    {% if partner %}
                         <dl class="profile-details profile-identity-details">
-                            {% if key %}<dt>{{ labels.key }}</dt><dd><code>{{ key }}</code></dd>{% endif %}
-                            {% if partner %}<dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd>{% endif %}
+                            <dt>{{ labels.partner }}</dt><dd>{% if partner.url %}<a href="{{ partner.url }}">{{ partner.name }}</a>{% else %}{{ partner.name }}{% endif %}</dd>
                         </dl>
                     {% endif %}
                     {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
@@ -116,7 +118,8 @@
                     focus && tabs[index].focus();
                 }
                 nav.querySelector('ul').setAttribute('role', 'tablist');
-                var start = 0;
+                // The first tab that has something, unless the address asks another
+                var start = 0, wanted = -1, open = nav.getAttribute('data-open');
                 for (var i = 0; i < tabs.length; i++) {
                     var id = tabs[i].getAttribute('href').slice(1);
                     panels[i] = document.getElementById(id);
@@ -128,7 +131,8 @@
                     panels[i].setAttribute('aria-labelledby', id + '-tab');
                     // The tab says what the section is: its heading is for the page without the tabs
                     panels[i].querySelector('h2').hidden = true;
-                    (asked() === '#' + id || asked() === '#' + id.replace(/^profile-/, '')) && (start = i);
+                    id === open && (start = i);
+                    (asked() === '#' + id || asked() === '#' + id.replace(/^profile-/, '')) && (wanted = i);
                     (function (index) {
                         tabs[index].onclick = function (event) { event.preventDefault(); select(index); remember(index); };
                         tabs[index].onkeydown = function (event) {
@@ -138,7 +142,7 @@
                     })(i);
                 }
                 block.className += ' profile-tabbed';
-                select(start);
+                select(wanted < 0 ? start : wanted);
                 // A link to a tab of the page (#picks) opens it
                 window.addEventListener && window.addEventListener('hashchange', function () {
                     for (var h = 0; h < tabs.length; h++) {

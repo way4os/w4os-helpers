@@ -93,6 +93,7 @@ final class ProfileBlock implements Block
             $client === 'viewer' => ['feed', 'about', 'interests'],
             default => ['feed', 'about', 'web', 'interests', 'picks', 'classifieds', 'real-life'],
         };
+        $data['open'] = self::open($data['sections'], $data);
 
         return $data;
     }
@@ -103,7 +104,7 @@ final class ProfileBlock implements Block
      * (the title of the block) for a profile not published.
      *
      * @param array<string,mixed> $avatar Avatar::detail()
-     * @return array{picture: ?string, details: list<array{label: string, value: string}>}
+     * @return array{picture: ?string, details: list<array{label: ?string, value: string}>}
      */
     public static function banner(array $avatar, bool $published): array
     {
@@ -130,10 +131,38 @@ final class ProfileBlock implements Block
                 'select' => isset($field['options'][(string) $value]) ? (string) ($texts[$field['options'][(string) $value]] ?? $value) : null,
                 default => is_scalar($value) && (string) $value !== '' ? (string) $value : null,
             };
-            $text === null || $banner['details'][] = ['label' => (string) ($texts[$field['label']] ?? $field['label']), 'value' => $text];
+            // A value that reads alone (`bare`, the role) has no label
+            $text === null || $banner['details'][] = ['label' => empty($field['bare']) ? (string) ($texts[$field['label']] ?? $field['label']) : null, 'value' => $text];
         }
 
         return $banner;
+    }
+
+    /**
+     * The tab a profile opens on: the first of its sections that has something, the first when none has.
+     *
+     * @param list<string> $sections
+     * @param array<string,mixed> $data the profile (data())
+     */
+    public static function open(array $sections, array $data): string
+    {
+        $has = static fn(string ...$keys): bool => array_filter($keys, static fn(string $key): bool => !empty($data[$key])) !== [];
+        foreach ($sections as $section) {
+            $full = match ($section) {
+                'feed' => $has('feed'),
+                'about' => $has('about', 'partner', 'groups'),
+                'web' => $has('web'),
+                'interests' => $has('wants_list', 'wants', 'skills_list', 'skills', 'languages'),
+                'picks', 'classifieds' => $has($section),
+                'real-life' => $has('real_life') || ($data['first_picture'] ?? WebAssets::PERSON) !== WebAssets::PERSON,
+                default => false,
+            };
+            if ($full) {
+                return $section;
+            }
+        }
+
+        return $sections[0] ?? 'feed';
     }
 
     /**
