@@ -75,9 +75,9 @@ describe('A place found', function () {
             ->toBe('hop://grid.example.org:8002/My%20Region/10.4/20/30.6')
             ->and($search->teleport('http://grid.example.org:8002', 'My Region', '128/128/0'))
             ->toBe('hop://grid.example.org:8002/My%20Region/128/128/21')
-            // In a viewer, a place of another grid: the teleport of the viewer
+            // In a viewer, the form of the viewer: secondlife://host:port/secondlife/Region
             ->and($search->teleport('http://grid.example.org:8002', 'My Region', '128/128/25', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))
-            ->toBe('secondlife:///app/teleport/grid.example.org:8002:My%20Region/128/128/25')
+            ->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/128/128/25')
             ->and($search->teleport('http://grid.example.org:8002', ''))
             ->toBeNull();
     });

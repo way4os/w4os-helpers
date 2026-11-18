@@ -96,13 +96,13 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
             ->and($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'hop://login.osgrid.org:8002/RuthAndRoth']);
     });
 
-    test('in a viewer, a region of the grid is a local secondlife:// link, one of another grid the teleport of the viewer', function () {
+    test('in a viewer, a region of this grid or of another is a secondlife://host:port/secondlife/Region link (the form of the viewer)', function () {
         $shown = guide_shown('big-display', 'http://speculoos.world:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'])['destinations'];
 
-        expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => 'secondlife://Grand%20Place'])
-            ->and($shown['Speculoos'][2])->toBe(['name' => 'Residences', 'url' => 'secondlife://Residences/128/128/30'])
-            ->and($shown['Hang out'][0])->toBe(['name' => 'Le Petit Prince', 'url' => 'secondlife:///app/teleport/hg.osgrid.org:80:Exupery'])
-            ->and($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'secondlife:///app/teleport/login.osgrid.org:8002:RuthAndRoth']);
+        expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => 'secondlife://speculoos.world:8002/secondlife/Grand%20Place'])
+            ->and($shown['Speculoos'][2])->toBe(['name' => 'Residences', 'url' => 'secondlife://speculoos.world:8002/secondlife/Residences/128/128/30'])
+            ->and($shown['Hang out'][0])->toBe(['name' => 'Le Petit Prince', 'url' => 'secondlife://hg.osgrid.org:80/secondlife/Exupery'])
+            ->and($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'secondlife://login.osgrid.org:8002/secondlife/RuthAndRoth']);
     });
 });
 
@@ -271,12 +271,12 @@ describe('the number of destinations of a category', function () {
 describe('the teleport links of the blocks, for where they are shown (Destination::AUTO)', function () {
     afterEach(fn () => OpenSim\Data\Connections::using(null));
 
-    test('the popular places: hop:// on a page, a local secondlife:// link in a viewer for a place of the grid', function () {
+    test('the popular places: hop:// on a page, secondlife://host:port/secondlife/Region in a viewer', function () {
         OpenSim\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
 
         expect(Blocks::data('popular_places', $grid)['rows'][0]['url'])->toBe('hop://grid.example.org:8002/Welcome/128/128/25')
-            ->and(Blocks::data('popular_places', $grid, ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'])['rows'][0]['url'])->toBe('secondlife://Welcome/128/128/25');
+            ->and(Blocks::data('popular_places', $grid, ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'])['rows'][0]['url'])->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25');
     });
 
     test('the grid info: its login address linked by hop:// on a page; in a viewer, already on the grid, no link', function () {
@@ -292,8 +292,8 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $item = fn (string $login, array $args) => OpenSim\Helpers\Block\ProfileBlock::item($row, guide_grid('edge-cases', $login), $args)['url'];
 
         expect($item('http://grid.example.org:8002', []))->toBe('hop://grid.example.org:8002/My%20Region/10/20/30')
-            ->and($item('http://grid.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://My%20Region/10/20/30')
-            ->and($item('http://other.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife:///app/teleport/grid.example.org:8002:My%20Region/10/20/30');
+            ->and($item('http://grid.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30')
+            ->and($item('http://other.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30');
     });
 
     test('a page knows where it is shown from the user agent, and its blocks link for it: the login screen of a viewer', function () {
@@ -301,7 +301,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $view = fn () => new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
 
-        expect($view()->page('splash', $grid, 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://Welcome/128/128/25"')
+        expect($view()->page('splash', $grid, 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
             ->and($view()->page('splash', $grid, 'Mozilla/5.0 Chrome/131'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"');
     });
 
@@ -311,9 +311,9 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $app = OpenSim\Helpers\App::create(static fn (string $nick) => $grid);
         $get = fn (string $path, string $agent) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', $agent))->getBody();
 
-        expect($get('/blocks/popular_places?agent=' . rawurlencode('Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'), 'Grav'))->toContain('href="secondlife://Welcome/128/128/25"')
+        expect($get('/blocks/popular_places?agent=' . rawurlencode('Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'), 'Grav'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
             ->and($get('/blocks/popular_places', 'Grav'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"')
-            ->and($get('/blocks/popular_places', 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://Welcome/128/128/25"');
+            ->and($get('/blocks/popular_places', 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"');
     });
 
     test('a site may give the class of its visitor (client: viewer or browser) instead of its user agent; the class wins', function () {
@@ -323,15 +323,15 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $app = OpenSim\Helpers\App::create(static fn (string $nick) => $grid);
         $get = fn (string $path) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', 'Grav'))->getBody();
 
-        expect($link(['client' => 'viewer']))->toBe('secondlife://Welcome/128/128/25')
+        expect($link(['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25')
             ->and($link(['client' => 'browser', 'agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('hop://grid.example.org:8002/Welcome/128/128/25')
-            ->and($get('/blocks/popular_places?client=viewer'))->toContain('href="secondlife://Welcome/128/128/25"')
+            ->and($get('/blocks/popular_places?client=viewer'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
             ->and($get('/blocks/popular_places?client=browser'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"');
     });
 
     test('a place of the grid with a landing point in decimals keeps its region in a viewer', function () {
         $search = new OpenSim\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
 
-        expect($search->teleport('http://grid.example.org:8002', 'Welcome', '116/136/21.75', ['client' => 'viewer']))->toBe('secondlife://Welcome/116/136/21.75');
+        expect($search->teleport('http://grid.example.org:8002', 'Welcome', '116/136/21.75', ['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/116/136/21.75');
     });
 });
