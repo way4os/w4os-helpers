@@ -1,0 +1,12 @@
+# The hypergrid destinations the pictures of the guide are tried with (the engine finds them: the gatekeeper of the grid, the land
+# of its simulator, its asset service). Checked 2026-11-18: a picture for each but Kitely, which gives the simulator of a region to
+# its signed-in visitors only (get_region: "Not Allowed"): the destination without a picture, to see how the guide shows one.
+# OSGrid serves its assets apart from its gatekeeper: found through the asset service its user agents give.
+Hypergrid examples
+Watta (a grid of v3)|watta.world:8002:Welcome
+Speculoos (a grid of v2)|speculoos.world:8002:Grand Place/128/128/25
+Craft World|craft-world.org:8002:Ivory City
+LFGrid|LFGrid.com:8002:Paramour Shopping
+Alternate Metaverse|alternatemetaverse.com:8002:Alternate Metaverse/298/322/63
+OSGrid|hg.osgrid.org:80:Lbsa Plaza
+Kitely (no picture)|grid.kitely.com:8002:AI Dreams in Art

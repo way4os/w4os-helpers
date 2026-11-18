@@ -128,6 +128,25 @@ function guide_search(): OpenSim\Data\OSPDO
     return $pdo;
 }
 
+describe('the hypergrid destinations the pictures are tried with', function () {
+    test('are the guide itself, one category: each titled by its region, linked by hop:// on a page', function () {
+        $items = Blocks::data('destination_guide', guide_grid('hypergrid-examples', 'http://grid.example.org:8002'), ['client' => 'browser'])['items'];
+
+        expect(array_column($items, 'name'))
+            ->toBe(['Welcome', 'Grand Place', 'Ivory City', 'Paramour Shopping', 'Alternate Metaverse', 'Lbsa Plaza', 'AI Dreams in Art'])
+            ->and(array_column($items, 'url'))
+            ->toBe([
+                'hop://watta.world:8002/Welcome',
+                'hop://speculoos.world:8002/Grand%20Place/128/128/25',
+                'hop://craft-world.org:8002/Ivory%20City',
+                'hop://lfgrid.com:8002/Paramour%20Shopping',
+                'hop://alternatemetaverse.com:8002/Alternate%20Metaverse/298/322/63',
+                'hop://hg.osgrid.org:80/Lbsa%20Plaza',
+                'hop://grid.kitely.com:8002/AI%20Dreams%20in%20Art',
+            ]);
+    });
+});
+
 describe('the pictures of the guide and of the popular places: the parcel, never the region', function () {
     afterEach(fn () => OpenSim\Data\Connections::using(null));
 
@@ -182,6 +201,26 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->toContain('<h1>Destinations Guide</h1>');
     });
 
+    test('the picture of nothing is lighter than a picture: half seen, in the guide and the popular places, set in one place', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $view = new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+        // The categories: one of them has no picture (Apart)
+        $guide = $view->block('destination_guide', $grid, ['assets' => '/pictures']);
+        $places = $view->block('popular_places', $grid, ['assets' => '/pictures']);
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/blocks.css');
+        $placeholder = OpenSim\Assets\WebAssets::PLACEHOLDER;
+
+        expect($guide)
+            ->toMatch('#<img class="thumbnail no-picture" src="/pictures/' . $placeholder . '\.jpg"#')
+            ->toMatch('#<img class="thumbnail" src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\.jpg"#')
+            ->and($places)
+            ->toMatch('#<img class="place-picture no-picture" src="/pictures/' . $placeholder . '\.jpg"#')
+            ->and($css)
+            ->toContain('--helpers-placeholder-opacity: 0.5')
+            ->toContain('opacity: var(--helpers-placeholder-opacity)');
+    });
+
     test('the dark look of the viewers is the one of the viewer only: in a browser the colours are the theme\'s', function () {
         $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/guide.css');
         $base = substr($css, (int) strpos($css, '*/'), (int) strpos($css, '/* In a viewer') - (int) strpos($css, '*/'));
@@ -195,8 +234,8 @@ describe('the pictures of the guide and of the popular places: the parcel, never
     });
 
     test('a site that shows the blocks in its pages knows the files they need', function () {
-        expect(OpenSim\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/guide.css'], 'js' => ['js/guide.js']])
-            ->and(OpenSim\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/places.css'], 'js' => []])
+        expect(OpenSim\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']])
+            ->and(OpenSim\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/blocks.css', 'css/places.css'], 'js' => []])
             ->and(OpenSim\Helpers\View\View::blockFiles('motd'))->toBe(['css' => [], 'js' => []]);
     });
 });

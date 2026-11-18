@@ -16,7 +16,7 @@
         <div class="list">
             {% for item in items %}
                 <a class="item" href="{{ item.url }}">
-                    <img class="thumbnail" src="{{ assets }}/{{ item.picture ?: placeholder }}.jpg" alt="" loading="lazy">
+                    <img class="thumbnail{{ item.picture ? '' : ' no-picture' }}" src="{{ assets }}/{{ item.picture ?: placeholder }}.jpg" alt="" loading="lazy">
                     <span class="name">{{ item.name }}</span>
                     {% if item.data %}<span class="data" title="{{ item.data }}">{% for part in item.data|split('/') %}{% for piece in part|split(':') %}{{ piece }}{% if not loop.last %}:<wbr>{% endif %}{% endfor %}{% if not loop.last %}/<wbr>{% endif %}{% endfor %}</span>{% endif %}
                 </a>

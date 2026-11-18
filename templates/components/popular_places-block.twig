@@ -5,7 +5,7 @@
     <div class="places">
         {% for row in rows %}
             <a class="place" {% if row.url %}href="{{ row.url }}"{% endif %}>
-                <img class="place-picture" src="{{ assets }}/{{ row.picture ?: placeholder }}.jpg" alt="" loading="lazy">
+                <img class="place-picture{{ row.picture ? '' : ' no-picture' }}" src="{{ assets }}/{{ row.picture ?: placeholder }}.jpg" alt="" loading="lazy">
                 <span class="place-name">{{ row.label }}</span>
                 {% if row.value %}<span class="place-region">{{ row.value }}</span>{% endif %}
             </a>

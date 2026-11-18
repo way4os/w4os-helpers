@@ -27,8 +27,8 @@ final class View
 
     /** The files each block needs, under the assets of the helpers. */
     private const BLOCK_FILES = [
-        'destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']],
-        'popular_places' => ['css' => ['css/places.css'], 'js' => []],
+        'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']],
+        'popular_places' => ['css' => ['css/blocks.css', 'css/places.css'], 'js' => []],
         'profile' => ['css' => ['css/profile.css'], 'js' => []],
     ];
 
