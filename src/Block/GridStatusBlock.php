@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenSim\Helpers\Block;
 
 use OpenSim\Helpers\I18n;
+use OpenSim\I18n\Catalog;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\GridMonitor;
 
@@ -19,6 +20,14 @@ final class GridStatusBlock implements Block
             GridMonitor::DEGRADED => 'DEGRADED',
             GridMonitor::DOWN => 'OFFLINE',
         ][$monitor['level']] ?? null;
+    }
+
+    /** The level as a page says it, in a language (Online, En ligne): the text of the catalog of the engine. Null when the machine cannot tell. */
+    public static function label(array $monitor, string $locale = 'en'): ?string
+    {
+        $key = GridMonitor::labelKey((string) ($monitor['level'] ?? ''));
+
+        return $key === null ? null : (string) ((Catalog::messages($locale) + Catalog::MESSAGES)[$key] ?? $key);
     }
 
     /** An area in square kilometers, with its unit: two decimals under 100 km² (a region of 256 m is 0.07 km²). */
@@ -54,9 +63,9 @@ final class GridStatusBlock implements Block
     {
         $monitor = GridMonitor::of($grid);
         $rows = [];
-        $keyword = self::keyword($monitor);
-        $keyword === null || ($rows[] = ['label' => _('Status'), 'value' => $keyword]);
         $locale = I18n::current();
+        $label = self::label($monitor, $locale);
+        $label === null || ($rows[] = ['label' => _('Status'), 'value' => $label]);
         $rows[] = [
             'label' => _('Regions'),
             'value' => self::number($monitor['regions']['online'], $locale) . ' / ' . self::number($monitor['regions']['total'], $locale),

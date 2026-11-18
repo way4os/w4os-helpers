@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (grid status): the status of the block is the text of its level in the language of the page (Online, En ligne), no longer the keyword of the viewers in capitals; the text and the feed the viewers read keep it (ONLINE)
 - fix (places): the cards of the popular places two a row at least on a narrow screen, cards rather than banners as wide as the page
 - update (blocks): the picture of nothing (the grid's placeholder, where a parcel or a place has none) is half seen in the guide and the popular places, in a browser and in a viewer (`no-picture`, `--helpers-placeholder-opacity` of the new `assets/css/blocks.css`, set in one place, given by `View::blockFiles()`); a real picture stays whole
 - update (guide): the hypergrid destinations the pictures are tried with (`tests/fixtures/guide/hypergrid-examples.txt`): Watta (v3) and Speculoos (v2), Craft World, LFGrid, Alternate Metaverse and OSGrid, each with a picture, and Kitely without one
