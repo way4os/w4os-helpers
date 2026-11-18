@@ -244,6 +244,7 @@ final class View
             'feed' => $texts['profile_tab_feed'] ?? 'Feed',
             'real_life' => $texts['profile_tab_real_life'],
             'inworld' => $texts['profile_tab_inworld'],
+            'about' => $texts['profile_tab_about'] ?? _('About'),
             'interests' => $texts['profile_tab_interests'],
             'profile_sections' => $texts['profile_sections'],
             'picks' => $texts['profile_tab_picks'],

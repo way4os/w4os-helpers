@@ -31,13 +31,13 @@ function feed_get(string $path, string $agent = 'Mozilla/5.0'): Psr\Http\Message
 }
 
 describe('The stream of a profile', function () {
-    test('is the tab after the in-world one, newest first, its links made links, its text escaped', function () {
+    test('is the first tab, before About, newest first, its links made links, its text escaped', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', feed_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
 
         expect(array_slice($tabs[1], 0, 2))
-            ->toBe(['inworld', 'feed'])
-            ->and($tabs[2][1])
+            ->toBe(['feed', 'about'])
+            ->and($tabs[2][0])
             ->toBe('Feed')
             ->and($html)
             ->toContain('<a href="https://example.org/garden" rel="nofollow ugc">https://example.org/garden</a> &amp; a &lt; b')
@@ -45,27 +45,27 @@ describe('The stream of a profile', function () {
             ->toBeTrue();
     });
 
-    test('is all a viewer gets, as its Feed tab opens the page of the profile; or who asks it with feed_only', function () {
+    test('comes with About and the interests in a viewer, whose own windows show the rest; alone for who asks it with feed_only', function () {
         $viewer = (string) feed_get('/helpers/profile/Ada.Love?name=Ada.Love', 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm-Releasex64)')->getBody();
         $asked = (string) feed_get('/helpers/profile/Ada.Love?feed_only=true')->getBody();
         $browser = (string) feed_get('/helpers/profile/Ada.Love')->getBody();
 
         expect($viewer)
-            ->toContain('id="profile-feed"', 'An older one')
-            ->not->toContain('id="profile-inworld"', 'profile-tabs')
+            ->toContain('id="profile-feed"', 'An older one', 'id="profile-about"', 'id="profile-interests"', 'profile-tabs')
+            ->not->toContain('id="profile-picks"', 'id="profile-web"')
             ->and($asked)
             ->toContain('id="profile-feed"')
-            ->not->toContain('id="profile-picks"')
+            ->not->toContain('id="profile-picks"', 'id="profile-about"', 'profile-tabs')
             ->and($browser)
-            ->toContain('id="profile-inworld"', 'id="profile-feed"');
+            ->toContain('id="profile-about"', 'id="profile-feed"', 'id="profile-picks"');
     });
 
-    test('is all the block gives a viewer, told by the engine (Destination::client), whoever shows the block: a site that gives its class or its agent', function () {
+    test('comes with About and the interests in a viewer, told by the engine (Destination::client), whoever shows the block: a site that gives its class or its agent', function () {
         $sections = fn (array $args) => OpenSim\Helpers\Block\Blocks::data('profile', feed_grid(), ['name' => 'Ada.Love'] + $args)['sections'];
 
-        expect($sections(['client' => 'viewer']))->toBe(['feed'])
-            ->and($sections(['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm-Releasex64)']))->toBe(['feed'])
-            ->and($sections(['client' => 'browser']))->toContain('inworld', 'feed', 'picks')
+        expect($sections(['client' => 'viewer']))->toBe(['feed', 'about', 'interests'])
+            ->and($sections(['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm-Releasex64)']))->toBe(['feed', 'about', 'interests'])
+            ->and($sections(['client' => 'browser']))->toBe(['feed', 'about', 'web', 'interests', 'picks', 'classifieds', 'real-life'])
             ->and($sections(['client' => 'browser', 'feed_only' => 'true']))->toBe(['feed']);
     });
 

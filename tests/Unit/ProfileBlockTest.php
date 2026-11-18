@@ -37,27 +37,39 @@ function profile_grid(): Grid
 afterEach(fn() => Connections::using(null));
 
 describe('The block of a profile', function () {
-    test('shows every section of the viewer, in its order, as tabs; an empty one says so', function () {
+    test('shows its stream first, then About and every other section of the viewer, as tabs; an empty one says so', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
 
-        expect($tabs[1])->toBe(['inworld', 'feed', 'web', 'interests', 'picks', 'classifieds', 'real-life'])
-            ->and($tabs[2])->toBe(['In-world', 'Feed', 'Web', 'Interests', 'Picks', 'Classifieds', 'Real life'])
+        expect($tabs[1])->toBe(['feed', 'about', 'web', 'interests', 'picks', 'classifieds', 'real-life'])
+            ->and($tabs[2])->toBe(['Feed', 'About', 'Web', 'Interests', 'Picks', 'Classifieds', 'Real life'])
             ->and($html)->toContain('Build, Meet<br>Gardens', 'Français, English', 'A painter', 'role\', \'tablist\'', '<p class="profile-none">None.</p>');
     });
 
-    test('shows the in-world tab as the viewer: the picture in its proportions, the name, key, birth with the age, account', function () {
+    test('has a banner over every tab, the fields the engine marks: the picture, the name, the birth with the age, the role', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
+        $banner = substr($html, (int) strpos($html, '<header class="profile-banner">'), (int) strpos($html, '</header>') - (int) strpos($html, '<header class="profile-banner">'));
 
-        expect($html)->toContain(
-            '<h1 class="block-title">Ada Love</h1>',
+        expect($banner)->toContain(
             '<img class="profile-photo" src="/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg?default=person" alt="">',
-            '<dt>Key</dt><dd><code>11111111-1111-4111-8111-111111111111</code></dd>',
+            '<h1 class="block-title">Ada Love</h1>',
             '<dt>Born</dt><dd>' . OpenSim\Helpers\I18n::date(1700000000) . ' (',
             ' days)</dd>',
-            '<dt>Account</dt><dd>Resident</dd>',
+            '<dt>Role</dt><dd>Resident</dd>',
+        )->and(strpos($html, '<header class="profile-banner">'))->toBeLessThan(strpos($html, 'profile-tabs'));
+    });
+
+    test('shows the rest of the in-world tab in About: the key, the partner, the about text, the groups', function () {
+        $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
+        $about = substr($html, (int) strpos($html, '<section id="profile-about"'));
+
+        expect($about)->toContain(
+            '<dt>Key</dt><dd><code>11111111-1111-4111-8111-111111111111</code></dd>',
+            'Hello',
             "asked() === '#' + id.replace(/^profile-/, '')",
-            "'#second-life': '#inworld'",
+            // The former names of the tab lead to it
+            "'#second-life': '#about'",
+            "'#inworld': '#about'",
             // The partner, linked to their profile at the address the grid gives
             '<a href="https://demo.example.org/helpers/profile/Bob.Plain">Bob Plain</a>',
         )->not->toContain('Member since');
@@ -81,14 +93,14 @@ describe('The block of a profile', function () {
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
         OpenSim\Helpers\I18n::use('en');
 
-        expect($tabs[2])->toBe(['Dans le monde', 'Flux', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie réelle'])
+        expect($tabs[2])->toBe(['Flux', 'À propos', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie réelle'])
             ->and($html)->toContain('aria-label="Sections du profil"');
     })->skip(fn() => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false, 'the system has no French locale');
 
     test('a profile with little has every tab all the same', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Bob.Plain', 'lang' => 'en']);
 
-        expect($html)->toContain('id="profile-inworld"', 'Just me', 'profile-tabs', 'id="profile-picks"')->not->toContain('class="profile-items');
+        expect($html)->toContain('id="profile-about"', 'Just me', 'profile-tabs', 'id="profile-picks"')->not->toContain('class="profile-items');
     });
 
     test('shows the picks or classifieds a site gives the same way, from their API', function () {

@@ -67,6 +67,7 @@ final class ProfileBlock implements Block
             'classifieds' => [],
             'feed' => [],
         ];
+        $data['banner'] = self::banner($d, $published);
         if ($published) {
             // What the viewer shows of each (the engine's Avatar::place()): picture, place, teleport link
             foreach ($avatar->picks() as $pick) {
@@ -83,15 +84,56 @@ final class ProfileBlock implements Block
             }
         }
 
-        // Every section of the viewer's profile, in its order (its tabs), the empty ones too; the stream alone for a viewer, whose Feed
-        // tab opens this page and shows the rest itself (the engine tells a viewer: the class a site gives, else the user agent), or
-        // for whoever asks it alone (feed_only, as the viewers of SL do)
+        // The sections of the profile as tabs, its stream first, the empty ones too: every one in a browser; in a viewer, whose Feed tab
+        // opens this page, the stream, About and the interests, its own windows showing the rest (the engine tells a viewer: the
+        // class a site gives, else the user agent); the stream alone for whoever asks it so (feed_only, as the viewers of SL do)
         $client = isset($args['client']) ? (string) $args['client'] : \OpenSim\Hypergrid\Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
-        $data['sections'] = $client === 'viewer' || \OpenSim\Result::isTrue($args['feed_only'] ?? false)
-            ? ['feed']
-            : ['inworld', 'feed', 'web', 'interests', 'picks', 'classifieds', 'real-life'];
+        $data['sections'] = match (true) {
+            \OpenSim\Result::isTrue($args['feed_only'] ?? false) => ['feed'],
+            $client === 'viewer' => ['feed', 'about', 'interests'],
+            default => ['feed', 'about', 'web', 'interests', 'picks', 'classifieds', 'real-life'],
+        };
 
         return $data;
+    }
+
+    /**
+     * The banner of a profile, over all its tabs: the fields the engine marks in the form of an avatar (Avatar::itemForm()->banner()),
+     * its picture and the details under its name (its birth with its age, its role), each with its label; nothing but its name
+     * (the title of the block) for a profile not published.
+     *
+     * @param array<string,mixed> $avatar Avatar::detail()
+     * @return array{picture: ?string, details: list<array{label: string, value: string}>}
+     */
+    public static function banner(array $avatar, bool $published): array
+    {
+        $banner = ['picture' => null, 'details' => []];
+        if (!$published) {
+            return $banner;
+        }
+        $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
+        $form = Avatar::itemForm();
+        foreach ($form->fields as $field) {
+            if (!in_array($field['name'], $form->banner(), true)) {
+                continue;
+            }
+            $value = $avatar[$field['name']] ?? null;
+            if ($field['type'] === 'picture') {
+                // The silhouette of a person of the engine when there is none
+                $banner['picture'] = trim((string) $value, '0-') !== '' ? (string) $value : WebAssets::PERSON;
+                continue;
+            }
+            $text = match ($field['type']) {
+                // The name is the title of the block
+                'text' => null,
+                'datetime' => (int) $value > 0 ? I18n::date((int) $value) . ' (' . self::age(intdiv(max(0, time() - (int) $value), 86400)) . ')' : null,
+                'select' => isset($field['options'][(string) $value]) ? (string) ($texts[$field['options'][(string) $value]] ?? $value) : null,
+                default => is_scalar($value) && (string) $value !== '' ? (string) $value : null,
+            };
+            $text === null || $banner['details'][] = ['label' => (string) ($texts[$field['label']] ?? $field['label']), 'value' => $text];
+        }
+
+        return $banner;
     }
 
     /**
