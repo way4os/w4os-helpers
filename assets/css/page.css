@@ -50,23 +50,8 @@ h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 
 /* The profile of an avatar, the search of the web */
 .block-profile .block-title { display: flex; align-items: center; gap: 1rem; }
-/* The pictures of a profile in their own proportions, never cut nor stretched; the in-world and real life tabs as the viewer's: the
-   picture, then the rest beside it (under it on a narrow screen) */
-/* The banner of a profile, over every tab: its picture beside its name and what the engine marks for it (birth, role) */
-.profile-banner { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem; }
-.profile-banner .profile-photo { max-width: min(100%, 12rem); max-height: 9rem; }
-.profile-banner .block-title { margin: 0 0 .25rem; }
-.profile-banner .profile-banner-details { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: .15rem .75rem; }
-.profile-banner .profile-banner-bare { margin: .15rem 0 0; }
-.profile-banner-details dt, .profile-banner-details dd { margin: 0; }
-.profile-identity { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
-.profile-photo { display: block; flex: none; width: auto; height: auto; max-width: min(100%, 20rem); max-height: 16rem; object-fit: contain; border-radius: .4rem; }
-.profile-identity-details { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: .25rem 1rem; }
-.profile-identity-details dd { margin: 0; }
 .profile-meta { color: var(--muted); margin-top: 0; }
-/* The details of a profile (its groups, its interests...), label left and value right, label bold */
-.profile-details { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .25rem 1rem; margin: 0 0 1rem; }
-.profile-details dt, .profile-details dd { margin: 0; }
+/* The labels of the details of a profile bold (their layout: profile.css, the files of the block) */
 .profile-details dt { font-weight: 600; }
 /* The sections of a profile as the viewer's tabs (links to each without the script), spaced as Grav's form tabs */
 .profile-tabs .tabs-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; list-style: none; margin: 1rem 0 1.5rem; padding: 0; border-bottom: 1px solid var(--line); }

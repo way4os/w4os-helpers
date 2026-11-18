@@ -78,6 +78,13 @@ final class I18n
         return (string) (new \IntlDateFormatter(self::$current, $day, $hour, $date->getTimezone()))->format($date);
     }
 
+    /** A time told relatively in the language in use, as Carbon says it in each language (`2 hours ago`, `il y a 2 heures`). */
+    public static function ago(int $time, ?int $now = null): string
+    {
+        return \Carbon\Carbon::createFromTimestamp($time)->locale(self::$current)
+            ->diffForHumans(\Carbon\Carbon::createFromTimestamp($now ?? time()), \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW);
+    }
+
     /** The locale of the helpers for a language tag (fr, fr-FR, pt-br), `en` for English, null for one they do not have. */
     public static function locale(string $tag): ?string
     {

@@ -166,10 +166,11 @@ final class ProfileBlock implements Block
     }
 
     /**
-     * A post of the stream as the page shows it: its text escaped, its addresses links, its date in the language of the page.
+     * A post of the stream as the page shows it: its text escaped, its addresses links, its date in the language of the page, told
+     * relatively (`ago`) with its full date and time (`full`).
      *
      * @param array{id:string,content:string,created:int} $post
-     * @return array{id:string,text:string,html:string,created:int,date:string}
+     * @return array{id:string,text:string,html:string,created:int,date:string,ago:string,full:string}
      */
     public static function post(array $post): array
     {
@@ -185,6 +186,8 @@ final class ProfileBlock implements Block
             'html' => nl2br((string) $html),
             'created' => $post['created'],
             'date' => I18n::date($post['created']),
+            'ago' => I18n::ago($post['created']),
+            'full' => I18n::date($post['created'], 'long'),
         ];
     }
 

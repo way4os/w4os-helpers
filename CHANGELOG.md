@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (profile): the stream reads as a timeline, each post its date first, relative (Carbon, in the language of the page) small and muted in a margin on the left, its full date and time as its tip, then its message; the date above the message where the block is narrow; the styles of a profile in their own file, for every page that shows the block (`css/profile.css`, `View::blockFiles('profile')`)
 - update (profile): it opens on its first tab that has something (About for a stream with nothing); no key, the viewer shows it; the role alone in its banner, as the engine says it (`bare`); the details label left and value right
 - update (blocks): the profile, the search and the guide leave their title to the page that shows them when it asks it so (an empty `title`), as the other blocks do: a site's theme shows the title of its page
 - update (profile): a banner over every tab, the picture, the name, the birth and the role of the avatar as the engine marks them in its form (`banner`); the stream first, then About (the rest of the in-world tab: the key, the partner, the about, the groups), then the other tabs; a viewer gets the stream, About and the interests, its own windows showing the rest; `feed_only` the stream alone

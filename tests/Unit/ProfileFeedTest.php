@@ -69,6 +69,17 @@ describe('The stream of a profile', function () {
             ->and($sections(['client' => 'browser', 'feed_only' => 'true']))->toBe(['feed']);
     });
 
+    test('reads as a timeline: each post its date first, relative and small, its full date and time as its tip, then its message', function () {
+        $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', feed_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
+        $post = OpenSim\Helpers\Block\ProfileBlock::post(['id' => 'p1', 'content' => 'Hi', 'created' => time() - 7200]);
+
+        expect($post['ago'])->toBe('2 hours ago')
+            ->and($post['full'])->toBe(OpenSim\Helpers\I18n::date(time() - 7200, 'long'))
+            ->and($html)->toMatch('#<article id="profile-post-[^"]+" class="profile-post"><time class="profile-post-date" datetime="[^"]+" title="[^"]+">[^<]+ ago</time><p class="profile-post-text">See #')
+            // Its files, for whoever shows the block: the styles of a profile
+            ->and(View::blockFiles('profile')['css'])->toBe(['css/profile.css']);
+    });
+
     test('is a JSON Feed and an RSS feed too', function () {
         $json = json_decode((string) feed_get('/helpers/profile/Ada.Love?format=feed')->getBody(), true);
         $rss = feed_get('/helpers/profile/Ada.Love?format=rss');

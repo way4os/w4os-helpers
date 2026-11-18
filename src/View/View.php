@@ -29,6 +29,7 @@ final class View
     private const BLOCK_FILES = [
         'destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']],
         'popular_places' => ['css' => ['css/places.css'], 'js' => []],
+        'profile' => ['css' => ['css/profile.css'], 'js' => []],
     ];
 
     /**

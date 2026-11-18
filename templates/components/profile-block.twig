@@ -32,10 +32,8 @@
                 <section id="profile-feed" class="profile-section">
                     <h2>{{ labels.feed }}</h2>
                     {% for post in feed %}
-                        <article id="profile-post-{{ post.id }}" class="profile-post">
-                            <p class="profile-post-text">{{ post.html|raw }}</p>
-                            <p class="profile-post-date"><time datetime="{{ post.created|date('c') }}">{{ post.date }}</time></p>
-                        </article>
+                        {# A timeline: the date first, relative and small, its full date and time as its tip, then the message #}
+                        <article id="profile-post-{{ post.id }}" class="profile-post"><time class="profile-post-date" datetime="{{ post.created|date('c') }}" title="{{ post.full }}">{{ post.ago }}</time><p class="profile-post-text">{{ post.html|raw }}</p></article>
                     {% else %}
                         <p class="profile-none">{{ labels.none }}</p>
                     {% endfor %}
