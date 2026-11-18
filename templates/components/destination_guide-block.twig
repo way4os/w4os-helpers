@@ -15,7 +15,7 @@
                 <a class="item" href="{{ item.url }}">
                     <img class="thumbnail" src="{{ assets }}/{{ item.picture ?: placeholder }}.jpg" alt="" loading="lazy">
                     <span class="name">{{ item.name }}</span>
-                    {% if item.data %}<span class="data">{{ item.data }}</span>{% endif %}
+                    {% if item.data %}<span class="data" title="{{ item.data }}">{{ item.data }}</span>{% endif %}
                 </a>
             {% endfor %}
         </div>

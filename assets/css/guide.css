@@ -114,6 +114,9 @@ body.viewer #guide .list {
 #guide .data {
 	font-size: 0.75rem;
 	color: var(--guide-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 #guide .item:hover .name,
 #guide .item:focus .name {
