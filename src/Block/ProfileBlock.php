@@ -68,10 +68,10 @@ final class ProfileBlock implements Block
         if ($published) {
             // What the viewer shows of each (the engine's Avatar::place()): picture, place, teleport link
             foreach ($avatar->picks() as $pick) {
-                $data['picks'][] = self::item($pick, $grid->loginUrl(), $args);
+                $data['picks'][] = self::item($pick, $grid, $args);
             }
             foreach ($avatar->classifieds() as $ad) {
-                $data['classifieds'][] = self::item($ad, $grid->loginUrl(), $args);
+                $data['classifieds'][] = self::item($ad, $grid, $args);
             }
         }
 
@@ -109,7 +109,7 @@ final class ProfileBlock implements Block
      * @param array<string,mixed> $row
      * @return array{name:string, description:string, picture:string, place:string, url:?string, until:?string}
      */
-    public static function item(array $row, ?string $login = null, array $args = []): array
+    public static function item(array $row, ?Grid $grid = null, array $args = []): array
     {
         $position = is_array($row['position'] ?? null) ? ' (' . implode(', ', $row['position']) . ')' : '';
         $until = (int) ($row['expirationdate'] ?? $row['expires'] ?? 0);
@@ -120,7 +120,7 @@ final class ProfileBlock implements Block
             'picture' => (string) ($row['picture'] ?? '') ?: WebAssets::PLACEHOLDER,
             'place' => implode(', ', array_filter([$row['parcel'] ?? null, $row['region'] ?? null])) . (($row['region'] ?? null) === null ? '' : $position),
             // The teleport of the engine (hop://) as the link for where it is shown (Links::to())
-            'url' => ($row['teleport'] ?? null) === null ? null : Links::to((string) $row['teleport'], $login, $args),
+            'url' => ($row['teleport'] ?? null) === null || $grid === null ? ($row['teleport'] ?? null) : Links::to($grid, (string) $row['teleport'], $args),
             'until' => $until > 0 ? I18n::date($until) : null,
         ];
     }

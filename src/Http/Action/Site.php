@@ -51,9 +51,9 @@ final class Site
             return $this->asset($response, $grid, $m[1]);
         }
         if (preg_match('#^/blocks/([\w-]+)$#', $path, $m) === 1) {
-            // Where the block is shown: a site says it (`viewer`), else the user agent of the request
+            // Where the block is shown: a site gives the user agent of its visitor (`agent`), else the one of the request
             $query = $request->getQueryParams();
-            $query['viewer'] ??= View::isViewer($request->getHeaderLine('User-Agent')) ? '1' : '';
+            $query['agent'] ??= $request->getHeaderLine('User-Agent');
 
             return $this->block($response, $grid, $m[1], $query);
         }

@@ -57,7 +57,7 @@ final class DestinationGuideBlock implements Block
             'items' => array_map(
                 static fn(array $d): array => [
                     'name' => $d['name'],
-                    'url' => Links::to(Destination::uri($d['url'], $login), $login, $args),
+                    'url' => Links::to($grid, Destination::uri($d['url'], $login), $args),
                     'picture' => $d['picture'],
                     'data' => '',
                 ],

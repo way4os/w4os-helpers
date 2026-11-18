@@ -97,7 +97,7 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
     });
 
     test('in a viewer, a region of the grid is a local secondlife:// link, one of another grid the teleport of the viewer', function () {
-        $shown = guide_shown('big-display', 'http://speculoos.world:8002', ['viewer' => true])['destinations'];
+        $shown = guide_shown('big-display', 'http://speculoos.world:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'])['destinations'];
 
         expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => 'secondlife://Grand%20Place'])
             ->and($shown['Speculoos'][2])->toBe(['name' => 'Residences', 'url' => 'secondlife://Residences/128/128/30'])
@@ -276,7 +276,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
 
         expect(Blocks::data('popular_places', $grid)['rows'][0]['url'])->toBe('hop://grid.example.org:8002/Welcome/128/128/25')
-            ->and(Blocks::data('popular_places', $grid, ['viewer' => true])['rows'][0]['url'])->toBe('secondlife://Welcome/128/128/25');
+            ->and(Blocks::data('popular_places', $grid, ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'])['rows'][0]['url'])->toBe('secondlife://Welcome/128/128/25');
     });
 
     test('the grid info: its login address linked by hop:// on a page; in a viewer, already on the grid, no link', function () {
@@ -284,16 +284,16 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $login = fn (array $args) => array_column(Blocks::data('grid-info', $grid, $args)['rows'], 'url', 'label')['Login URI'];
 
         expect($login([]))->toBe('hop://grid.example.org:8002')
-            ->and($login(['viewer' => true]))->toBeNull();
+            ->and($login(['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBeNull();
     });
 
     test('the picks and the classifieds of a profile: the hop:// of the engine, as the link for where they are shown', function () {
         $row = ['name' => 'Beach', 'teleport' => 'hop://grid.example.org:8002/My%20Region/10/20/30'];
-        $item = fn (string $login, array $args) => OpenSim\Helpers\Block\ProfileBlock::item($row, $login, $args)['url'];
+        $item = fn (string $login, array $args) => OpenSim\Helpers\Block\ProfileBlock::item($row, guide_grid('edge-cases', $login), $args)['url'];
 
         expect($item('http://grid.example.org:8002', []))->toBe('hop://grid.example.org:8002/My%20Region/10/20/30')
-            ->and($item('http://grid.example.org:8002', ['viewer' => true]))->toBe('secondlife://My%20Region/10/20/30')
-            ->and($item('http://other.example.org:8002', ['viewer' => true]))->toBe('secondlife:///app/teleport/grid.example.org:8002:My%20Region/10/20/30');
+            ->and($item('http://grid.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://My%20Region/10/20/30')
+            ->and($item('http://other.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife:///app/teleport/grid.example.org:8002:My%20Region/10/20/30');
     });
 
     test('a page knows where it is shown from the user agent, and its blocks link for it: the login screen of a viewer', function () {
@@ -305,13 +305,13 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
             ->and($view()->page('splash', $grid, 'Mozilla/5.0 Chrome/131'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"');
     });
 
-    test('a block asked by a site says where it is shown (viewer), else the user agent of the request does', function () {
+    test('a block asked by a site gives the user agent of its visitor (agent), else the one of the request is read', function () {
         OpenSim\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $app = OpenSim\Helpers\App::create(static fn (string $nick) => $grid);
         $get = fn (string $path, string $agent) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', $agent))->getBody();
 
-        expect($get('/blocks/popular_places?viewer=1', 'Grav'))->toContain('href="secondlife://Welcome/128/128/25"')
+        expect($get('/blocks/popular_places?agent=' . rawurlencode('Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'), 'Grav'))->toContain('href="secondlife://Welcome/128/128/25"')
             ->and($get('/blocks/popular_places', 'Grav'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"')
             ->and($get('/blocks/popular_places', 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://Welcome/128/128/25"');
     });

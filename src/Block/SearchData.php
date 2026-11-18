@@ -53,7 +53,7 @@ final class SearchData
      * The link to a place the search knows, for where the block is shown (Links::to()), as the engine writes it: its grid (the
      * grid's own when the row has none), its region, its landing point (Destination::position()); null without a region.
      *
-     * @param array<string,mixed> $args the arguments of the block (`viewer`, `splash`)
+     * @param array<string,mixed> $args the arguments of the block (`agent`, `splash`)
      */
     public function teleport(string $gatekeeper, string $region, string $landing = '', array $args = []): ?string
     {
@@ -65,6 +65,6 @@ final class SearchData
         $point = Destination::position($landing);
         $uri = Destination::uri(rtrim($grid, '/') . '/' . $region . ($point === '' ? '' : '/' . str_replace(',', '/', $point)), $login !== '' ? $login : null);
 
-        return Links::to($uri, $login !== '' ? $login : null, $args);
+        return Links::to($this->grid, $uri, $args);
     }
 }

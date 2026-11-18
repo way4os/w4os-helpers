@@ -18,7 +18,7 @@ final class GridInfoBlock implements Block
             $rows[] = [
                 'label' => _('Login URI'),
                 'value' => (string) Destination::format($login, Destination::TXT),
-                'url' => Links::to((string) $login, (string) $login, $args),
+                'url' => Links::to($grid, (string) $login, $args),
             ];
         }
 

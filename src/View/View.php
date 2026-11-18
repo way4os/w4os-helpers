@@ -8,6 +8,7 @@ use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Helpers\Block\ProfileBlock;
 use OpenSim\Helpers\I18n;
+use OpenSim\Hypergrid\Destination;
 use OpenSim\Models\Grid;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
@@ -16,7 +17,6 @@ use Twig\Markup;
 /** Renders a page inside the layout; a viewer (the one that shows the splash page) gets the content alone. */
 final class View
 {
-    public const VIEWER_PATTERN = \OpenSim\Hypergrid\Destination::VIEWER_PATTERN;
 
     private Twig $twig;
     private FilesystemLoader $loader;
@@ -75,7 +75,7 @@ final class View
         return $this->found;
     }
 
-    /** @var array{viewer?:bool,splash?:bool} where the page being made is shown, for the links of its blocks (Links::to()) */
+    /** @var array{agent?:string,splash?:bool} where the page being made is shown, for the links of its blocks (Links::to()) */
     private array $where = [];
 
     public function __construct(string $templates, private string $assets = '')
@@ -109,7 +109,7 @@ final class View
     {
         $theme = self::theme($grid);
         $theme === null || !is_dir("$theme/templates") || $this->loader->prependPath("$theme/templates");
-        $this->where = ['viewer' => self::isViewer($agent), 'splash' => $page === 'splash'];
+        $this->where = ['agent' => $agent, 'splash' => $page === 'splash'];
         $block = Blocks::name($page);
         $template = "pages/$page-page.twig";
         if ($this->loader->exists($template)) {
@@ -128,7 +128,7 @@ final class View
 
         // Whether the page has what it shows: the main block's answer, not the one of the blocks of the layout
         $found = $this->found;
-        $viewer = self::isViewer($agent);
+        $viewer = Destination::isViewer($agent);
         $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         $config = is_dir($grid->directory()) ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']) : null;
         $logo = $config?->find('Helpers', 'LogoURL');
@@ -161,12 +161,6 @@ final class View
         $this->found = $found;
 
         return $html;
-    }
-
-    /** Whether a request comes from a viewer (its user agent): a page then shows its content alone. For the sites too. */
-    public static function isViewer(string $userAgent): bool
-    {
-        return \OpenSim\Hypergrid\Destination::isViewer($userAgent);
     }
 
     /** The folder of the theme of the grid, where what it holds replaces the files of the helpers (`templates/`, `assets/`). */
