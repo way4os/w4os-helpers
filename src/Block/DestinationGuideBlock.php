@@ -11,7 +11,7 @@ use OpenSim\Models\Grid;
 /**
  * The destinations of the grid, by category, as the viewers' guide shows them: a card for each category (the picture of one of its
  * places, its name, how many), then a card for each destination (the picture of its parcel, its name), linked as the viewers open
- * it (secondlife://host:port Region/x/y/z), a region named alone being one of the grid. One category is the guide itself. The
+ * it where it is shown (Links::to(): the engine's AUTO), a region named alone being one of the grid. One category is the guide itself. The
  * engine finds the pictures (Grid::guide()); the block shows them, the grid's placeholder where there is none.
  */
 final class DestinationGuideBlock implements Block
@@ -57,7 +57,7 @@ final class DestinationGuideBlock implements Block
             'items' => array_map(
                 static fn(array $d): array => [
                     'name' => $d['name'],
-                    'url' => Destination::format(Destination::uri($d['url'], $login), Destination::HG),
+                    'url' => Links::to(Destination::uri($d['url'], $login), $login, $args),
                     'picture' => $d['picture'],
                     'data' => '',
                 ],

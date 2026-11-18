@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (blocks): every teleport link (popular places, guide, search, grid info, picks and classifieds of a profile) is the one for where it is shown, as the engine writes it (`Destination::AUTO`, `Links::to()`): hop:// on a page; in a viewer and on its login screen, a local secondlife:// link for a region of the grid and the viewer's teleport for another grid; a page knows a viewer by its user agent, a block asked at `/blocks/{name}` by `viewer` (a site says it) or the user agent
 - update (guide): the pictures of the cards are the engine's (`Grid::guide()`: the parcel of each destination, of this grid or of another, the first of a section); the helpers only show them, the lookup of `SearchData::picture()` is gone; the sections are the titles of the list as the engine reads them (titles that follow each other are one, a title without a destination is left out)
 - update (blocks): the link of a place found or popular is written by the engine from its grid, its region and its landing point (`Destination::uri()`, `Destination::position()`: a height of zero lands at 21 m, a point as a script writes it read too), no longer assembled by hand
 - fix (guide): one destination is singular ("1 destination"), in every language (its plural forms, `ngettext`)

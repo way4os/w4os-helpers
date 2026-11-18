@@ -50,20 +50,21 @@ final class SearchData
     }
 
     /**
-     * The link a viewer follows to go to a place the search knows (`hop://`), as the engine writes it: its grid (the grid's own
-     * when the row has none), its region, its landing point (Destination::position()); null without a region.
+     * The link to a place the search knows, for where the block is shown (Links::to()), as the engine writes it: its grid (the
+     * grid's own when the row has none), its region, its landing point (Destination::position()); null without a region.
+     *
+     * @param array<string,mixed> $args the arguments of the block (`viewer`, `splash`)
      */
-    public function hop(string $gatekeeper, string $region, string $landing = ''): ?string
+    public function teleport(string $gatekeeper, string $region, string $landing = '', array $args = []): ?string
     {
         $login = (string) $this->grid->loginUrl();
         $grid = $gatekeeper !== '' ? $gatekeeper : $login;
         if ($region === '' || $grid === '') {
             return null;
         }
-        // A point as a script writes it (<x, y, z>) read as the engine reads x,y,z
-        $point = Destination::position((string) preg_replace('/[<>\s]/', '', $landing));
+        $point = Destination::position($landing);
         $uri = Destination::uri(rtrim($grid, '/') . '/' . $region . ($point === '' ? '' : '/' . str_replace(',', '/', $point)), $login !== '' ? $login : null);
 
-        return (string) Destination::format($uri, Destination::HOP) ?: null;
+        return Links::to($uri, $login !== '' ? $login : null, $args);
     }
 }

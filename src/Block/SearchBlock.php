@@ -88,7 +88,7 @@ final class SearchBlock implements Block
                     $params,
                 );
 
-                return array_map(fn($row) => $this->place($search, $row, '', $row['description']), $rows);
+                return array_map(fn($row) => $this->place($search, $row, '', $row['description'], $args), $rows);
             case 'land':
                 $where = $q === '' ? '' : 'WHERE s.parcelname LIKE :q OR r.regionname LIKE :q';
                 $rows = $search->rows(
@@ -97,7 +97,7 @@ final class SearchBlock implements Block
                 );
 
                 return array_map(
-                    fn($row) => $this->place($search, $row, sprintf('%s m², %s', number_format((int) $row['area']), number_format((int) $row['saleprice']))),
+                    fn($row) => $this->place($search, $row, sprintf('%s m², %s', number_format((int) $row['area']), number_format((int) $row['saleprice'])), '', $args),
                     $rows,
                 );
             case 'events':
@@ -109,7 +109,7 @@ final class SearchBlock implements Block
                 );
 
                 return array_map(
-                    fn($row) => $this->place($search, $row, I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(_('%d min'), (int) $row['duration']), $row['description']),
+                    fn($row) => $this->place($search, $row, I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(_('%d min'), (int) $row['duration']), $row['description'], $args),
                     $rows,
                 );
             case 'classifieds':
@@ -155,7 +155,7 @@ final class SearchBlock implements Block
     }
 
     /** @param array<string,mixed> $row */
-    private function place(SearchData $search, array $row, string $detail, mixed $text = ''): array
+    private function place(SearchData $search, array $row, string $detail, mixed $text = '', array $args = []): array
     {
         $region = (string) ($row['region'] ?? '');
 
@@ -163,7 +163,7 @@ final class SearchBlock implements Block
             'title' => (string) $row['name'],
             'detail' => trim($region !== '' && $detail !== '' ? "$region · $detail" : $region . $detail),
             'text' => trim((string) $text),
-            'url' => $search->hop((string) ($row['gatekeeper'] ?? ''), $region, (string) ($row['landingpoint'] ?? '')),
+            'url' => $search->teleport((string) ($row['gatekeeper'] ?? ''), $region, (string) ($row['landingpoint'] ?? ''), $args),
         ];
     }
 }

@@ -31,7 +31,7 @@ final class PopularPlacesBlock implements Block
                 'picture' => $picture === '' || in_array($picture, Uuid::NULL_KEYS, true) ? null : $picture,
                 'label' => (string) $row['name'],
                 'value' => $region,
-                'url' => $search->hop((string) $row['gatekeeper'], $region, (string) $row['landingpoint']),
+                'url' => $search->teleport((string) $row['gatekeeper'], $region, (string) $row['landingpoint'], $args),
             ];
         }
 

@@ -16,7 +16,7 @@ use Twig\Markup;
 /** Renders a page inside the layout; a viewer (the one that shows the splash page) gets the content alone. */
 final class View
 {
-    public const VIEWER_PATTERN = '/SecondLife|OpenSim|Firestorm|Singularity|Kokua|Alchemy|Catznip/i';
+    public const VIEWER_PATTERN = \OpenSim\Hypergrid\Destination::VIEWER_PATTERN;
 
     private Twig $twig;
     private FilesystemLoader $loader;
@@ -75,6 +75,9 @@ final class View
         return $this->found;
     }
 
+    /** @var array{viewer?:bool,splash?:bool} where the page being made is shown, for the links of its blocks (Links::to()) */
+    private array $where = [];
+
     public function __construct(string $templates, private string $assets = '')
     {
         $this->assets = $assets !== '' ? $assets : dirname($templates) . '/assets';
@@ -87,6 +90,8 @@ final class View
     {
         // A block a site makes in its own language (`lang`): the helpers are a library there, no request tells it
         isset($args['lang']) && I18n::use((string) $args['lang']);
+        // The blocks of a page are shown where the page is (a viewer, its login screen)
+        $args += $this->where;
         $data = Blocks::data($name, $grid, $args);
         foreach (self::BLOCK_FILES[$name] ?? [] as $kind => $files) {
             $this->files[$kind] = array_values(array_unique(array_merge($this->files[$kind], $files)));
@@ -104,6 +109,7 @@ final class View
     {
         $theme = self::theme($grid);
         $theme === null || !is_dir("$theme/templates") || $this->loader->prependPath("$theme/templates");
+        $this->where = ['viewer' => self::isViewer($agent), 'splash' => $page === 'splash'];
         $block = Blocks::name($page);
         $template = "pages/$page-page.twig";
         if ($this->loader->exists($template)) {
@@ -160,7 +166,7 @@ final class View
     /** Whether a request comes from a viewer (its user agent): a page then shows its content alone. For the sites too. */
     public static function isViewer(string $userAgent): bool
     {
-        return preg_match(self::VIEWER_PATTERN, $userAgent) === 1;
+        return \OpenSim\Hypergrid\Destination::isViewer($userAgent);
     }
 
     /** The folder of the theme of the grid, where what it holds replaces the files of the helpers (`templates/`, `assets/`). */
@@ -211,7 +217,7 @@ final class View
         I18n::use($lang);
 
         return $this->twig->render('components/profile-items.twig', [
-            'items' => array_map(ProfileBlock::item(...), $items),
+            'items' => array_map(static fn(array $row): array => ProfileBlock::item($row), $items),
             'kind' => $kind === 'classifieds' ? 'classified' : 'pick',
             'assets' => rtrim($assets, '/'),
             'labels' => self::labels(),
