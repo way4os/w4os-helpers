@@ -19,8 +19,8 @@
 /* The stream as a timeline: the date in a margin on the left, small and muted, the message on the right, its actions (a site's)
    at its end; spacing alone between the posts. Where the block is narrow (a viewer's panel, a phone), the date above its message */
 .block-profile { container-type: inline-size; }
-.profile-post { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) auto; gap: .1rem 1rem; align-items: baseline; margin: 0 0 1.25rem; }
-.profile-post-date { font-size: .8em; opacity: .6; white-space: nowrap; text-align: right; }
+.profile-post { display: grid; grid-template-columns: 9rem minmax(0, 1fr) auto; gap: .1rem 1rem; align-items: baseline; margin: 0 0 1.25rem; }
+.profile-post-date { font-size: .8em; line-height: 1.3; opacity: .6; text-align: right; }
 .profile-post-text { margin: 0; overflow-wrap: anywhere; }
 @container (max-width: 34rem) {
     .profile-post { grid-template-columns: minmax(0, 1fr) auto; }
