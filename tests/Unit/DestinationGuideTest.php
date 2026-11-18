@@ -315,4 +315,23 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
             ->and($get('/blocks/popular_places', 'Grav'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"')
             ->and($get('/blocks/popular_places', 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://Welcome/128/128/25"');
     });
+
+    test('a site may give the class of its visitor (client: viewer or browser) instead of its user agent; the class wins', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+        $link = fn (array $args) => Blocks::data('popular_places', $grid, $args)['rows'][0]['url'];
+        $app = OpenSim\Helpers\App::create(static fn (string $nick) => $grid);
+        $get = fn (string $path) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', 'Grav'))->getBody();
+
+        expect($link(['client' => 'viewer']))->toBe('secondlife://Welcome/128/128/25')
+            ->and($link(['client' => 'browser', 'agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('hop://grid.example.org:8002/Welcome/128/128/25')
+            ->and($get('/blocks/popular_places?client=viewer'))->toContain('href="secondlife://Welcome/128/128/25"')
+            ->and($get('/blocks/popular_places?client=browser'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"');
+    });
+
+    test('a place of the grid with a landing point in decimals keeps its region in a viewer', function () {
+        $search = new OpenSim\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
+
+        expect($search->teleport('http://grid.example.org:8002', 'Welcome', '116/136/21.75', ['client' => 'viewer']))->toBe('secondlife://Welcome/116/136/21.75');
+    });
 });

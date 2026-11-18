@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (blocks): a site may give the class of its visitor (`client`: viewer or browser, the engine's `Destination::client()`) instead of its user agent, for the teleport links; the class wins, and a site keeps one copy of a block per class
 - update (blocks): the engine tells a viewer for the teleport links (`Grid::link()`, Destination::AUTO reading the user agent): a block gives it the user agent of the page that shows it (`agent`, a site gives the one of its visitor at `/blocks/{name}`), no longer a viewer flag; `View::isViewer()` gone, the engine's `Destination::isViewer()` instead
 - update (blocks): every teleport link (popular places, guide, search, grid info, picks and classifieds of a profile) is the one for where it is shown, as the engine writes it (`Destination::AUTO`, `Links::to()`): hop:// on a page; in a viewer and on its login screen, a local secondlife:// link for a region of the grid and the viewer's teleport for another grid; a page knows a viewer by its user agent, a block asked at `/blocks/{name}` by `viewer` (a site says it) or the user agent
 - update (guide): the pictures of the cards are the engine's (`Grid::guide()`: the parcel of each destination, of this grid or of another, the first of a section); the helpers only show them, the lookup of `SearchData::picture()` is gone; the sections are the titles of the list as the engine reads them (titles that follow each other are one, a title without a destination is left out)
