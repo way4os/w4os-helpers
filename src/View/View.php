@@ -8,6 +8,7 @@ use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Helpers\Block\ProfileBlock;
 use OpenSim\Helpers\I18n;
+use OpenSim\Hypergrid\Destination;
 use OpenSim\Models\Grid;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
@@ -16,7 +17,6 @@ use Twig\Markup;
 /** Renders a page inside the layout; a viewer (the one that shows the splash page) gets the content alone. */
 final class View
 {
-    public const VIEWER_PATTERN = '/SecondLife|OpenSim|Firestorm|Singularity|Kokua|Alchemy|Catznip/i';
 
     private Twig $twig;
     private FilesystemLoader $loader;
@@ -25,8 +25,21 @@ final class View
     /** @var array{css:list<string>,js:list<string>} the files the blocks shown need, for the head of the layout */
     private array $files = ['css' => [], 'js' => []];
 
-    /** The files each block needs. */
-    private const BLOCK_FILES = ['destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']]];
+    /** The files each block needs, under the assets of the helpers. */
+    private const BLOCK_FILES = [
+        'destination_guide' => ['css' => ['css/guide.css'], 'js' => ['js/guide.js']],
+        'popular_places' => ['css' => ['css/places.css'], 'js' => []],
+    ];
+
+    /**
+     * The files a block needs, for a site that shows the block in its own pages (and links them from where it has the helpers).
+     *
+     * @return array{css:list<string>,js:list<string>} paths under the assets of the helpers (`assets/`)
+     */
+    public static function blockFiles(string $name): array
+    {
+        return (self::BLOCK_FILES[str_replace('-', '_', $name)] ?? []) + ['css' => [], 'js' => []];
+    }
 
     /** The levels of the notices to the visitor, as the sites name them too (Grav's messages). */
     public const NOTICE_LEVELS = ['info', 'warning', 'error'];
@@ -62,6 +75,9 @@ final class View
         return $this->found;
     }
 
+    /** @var array{agent?:string} where the page being made is shown, for the links of its blocks (Links::to()) */
+    private array $where = [];
+
     public function __construct(string $templates, private string $assets = '')
     {
         $this->assets = $assets !== '' ? $assets : dirname($templates) . '/assets';
@@ -74,6 +90,8 @@ final class View
     {
         // A block a site makes in its own language (`lang`): the helpers are a library there, no request tells it
         isset($args['lang']) && I18n::use((string) $args['lang']);
+        // The blocks of a page are shown where the page is (a viewer, its login screen)
+        $args += $this->where;
         $data = Blocks::data($name, $grid, $args);
         foreach (self::BLOCK_FILES[$name] ?? [] as $kind => $files) {
             $this->files[$kind] = array_values(array_unique(array_merge($this->files[$kind], $files)));
@@ -91,6 +109,7 @@ final class View
     {
         $theme = self::theme($grid);
         $theme === null || !is_dir("$theme/templates") || $this->loader->prependPath("$theme/templates");
+        $this->where = ['agent' => $agent];
         $block = Blocks::name($page);
         $template = "pages/$page-page.twig";
         if ($this->loader->exists($template)) {
@@ -109,7 +128,7 @@ final class View
 
         // Whether the page has what it shows: the main block's answer, not the one of the blocks of the layout
         $found = $this->found;
-        $viewer = self::isViewer($agent);
+        $viewer = Destination::isViewer($agent);
         $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         $config = is_dir($grid->directory()) ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']) : null;
         $logo = $config?->find('Helpers', 'LogoURL');
@@ -142,12 +161,6 @@ final class View
         $this->found = $found;
 
         return $html;
-    }
-
-    /** Whether a request comes from a viewer (its user agent): a page then shows its content alone. For the sites too. */
-    public static function isViewer(string $userAgent): bool
-    {
-        return preg_match(self::VIEWER_PATTERN, $userAgent) === 1;
     }
 
     /** The folder of the theme of the grid, where what it holds replaces the files of the helpers (`templates/`, `assets/`). */
@@ -198,7 +211,7 @@ final class View
         I18n::use($lang);
 
         return $this->twig->render('components/profile-items.twig', [
-            'items' => array_map(ProfileBlock::item(...), $items),
+            'items' => array_map(static fn(array $row): array => ProfileBlock::item($row), $items),
             'kind' => $kind === 'classifieds' ? 'classified' : 'pick',
             'assets' => rtrim($assets, '/'),
             'labels' => self::labels(),

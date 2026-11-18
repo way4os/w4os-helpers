@@ -1,0 +1,24 @@
+Local places|Welcome
+Welcome landing|Plaza|128,128,25
+// a comment
+# another comment
+Hypergrid
+Old format||0,0|grid.example.org:8002:Sandbox|10,20,30
+Trailing pipes|grid.example.org:8002:Trailing|||
+Hop address|hop://grid.example.org:8002/Hop/10/20/30
+Http address|http://grid.example.org:8002:Http
+Again|grid.example.org:8002:Trailing
+-
+|
+After the dash|grid.example.org:8002:After
+A long title, written on two lines
+because it did not fit on one
+Long title place|grid.example.org:8002:Long
+-
+A title without a destination before the next column
+-
+Apart
+|
+Kept apart|grid.example.org:8002:Apart
+
+Last|grid.example.org:8002:Last Region

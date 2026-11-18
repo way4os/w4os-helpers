@@ -13,8 +13,10 @@ msgstr "Guida delle destinazioni"
 msgid "This is a work in progress, please be indulgent."
 msgstr "Questo è un lavoro in corso, per favore sii indulgente."
 
-msgid "%s destinations"
-msgstr "destinazioni %s"
+msgid "%s destination"
+msgid_plural "%s destinations"
+msgstr[0] "%s destinazione"
+msgstr[1] "%s destinazioni"
 
 msgid "Back to categories"
 msgstr "Torna alle categorie"

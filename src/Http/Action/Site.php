@@ -8,6 +8,7 @@ use OpenSim\Config\Layout;
 use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Helpers\I18n;
 use OpenSim\Helpers\View\View;
+use OpenSim\Hypergrid\Destination;
 use OpenSim\Models\Grid;
 use OpenSim\Runtime\Environment;
 use OpenSim\Security\ApiKeys;
@@ -51,7 +52,12 @@ final class Site
             return $this->asset($response, $grid, $m[1]);
         }
         if (preg_match('#^/blocks/([\w-]+)$#', $path, $m) === 1) {
-            return $this->block($response, $grid, $m[1], $request->getQueryParams());
+            // Where the block is shown: a site gives the class of its visitor (`client`) or its user agent (`agent`), else the one of
+            // the request
+            $query = $request->getQueryParams();
+            $query['agent'] ??= $request->getHeaderLine('User-Agent');
+
+            return $this->block($response, $grid, $m[1], $query);
         }
         $page = $this->page($grid, $path);
         if ($page === null) {
@@ -79,7 +85,7 @@ final class Site
         if ($page === 'profile') {
             $query['name'] = rawurldecode(substr($path, (int) strrpos($path, '/') + 1));
             // The Feed tab of a viewer opens the page of the profile: its stream alone, the viewer shows the rest itself
-            View::isViewer($request->getHeaderLine('User-Agent')) && ($query['feed_only'] = 'true');
+            Destination::isViewer($request->getHeaderLine('User-Agent')) && ($query['feed_only'] = 'true');
             // Its stream for a reader: a JSON Feed, an RSS feed
             $format = (string) ($query['format'] ?? '');
             if (in_array($format, ['feed', 'rss'], true)) {

@@ -77,8 +77,8 @@ describe('the helpers serve only under their base', function () {
         $viewer = (string) base_get($app, '/helpers/search', 'Mozilla/5.0 SecondLife/7.1 (Firestorm)')->getBody();
         $browser = (string) base_get($app, '/helpers/search')->getBody();
 
-        expect(View::isViewer('Mozilla/5.0 (X11) Firestorm-Releasex64 7.1.11'))->toBeTrue()
-            ->and(View::isViewer('Mozilla/5.0 (Macintosh) Firefox/140.0'))->toBeFalse()
+        expect(OpenSim\Hypergrid\Destination::isViewer('Mozilla/5.0 (X11) Firestorm-Releasex64 7.1.11'))->toBeTrue()
+            ->and(OpenSim\Hypergrid\Destination::isViewer('Mozilla/5.0 (Macintosh) Firefox/140.0'))->toBeFalse()
             ->and($viewer)->not->toContain('class="topbar"')
             ->and($browser)->toContain('class="topbar"');
     });

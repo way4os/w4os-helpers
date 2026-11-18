@@ -49,17 +49,22 @@ final class SearchData
         return $statement ? $statement->fetchAll(\PDO::FETCH_ASSOC) : [];
     }
 
-    /** The link a viewer follows to go to a place (`hop://`), null without a region. */
-    public function hop(string $gatekeeper, string $region, string $landing = ''): ?string
+    /**
+     * The link to a place the search knows, for where the block is shown (Links::to()), as the engine writes it: its grid (the
+     * grid's own when the row has none), its region, its landing point (Destination::position()); null without a region.
+     *
+     * @param array<string,mixed> $args the arguments of the block (`client`, `agent`)
+     */
+    public function teleport(string $gatekeeper, string $region, string $landing = '', array $args = []): ?string
     {
-        $host = preg_replace('#^https?://#i', '', rtrim($gatekeeper !== '' ? $gatekeeper : (string) $this->grid->loginUrl(), '/'));
-        if ($region === '' || $host === '') {
+        $login = (string) $this->grid->loginUrl();
+        $grid = $gatekeeper !== '' ? $gatekeeper : $login;
+        if ($region === '' || $grid === '') {
             return null;
         }
-        $at = preg_match('/([\d.]+)\s*[\/,]\s*([\d.]+)\s*[\/,]\s*([\d.]+)/', $landing, $m)
-            ? sprintf('/%d/%d/%d', (float) $m[1], (float) $m[2], (float) $m[3])
-            : '';
+        $point = Destination::position($landing);
+        $uri = Destination::uri(rtrim($grid, '/') . '/' . $region . ($point === '' ? '' : '/' . str_replace(',', '/', $point)), $login !== '' ? $login : null);
 
-        return (string) Destination::format("$host/$region$at", Destination::HOP);
+        return Links::to($this->grid, $uri, $args);
     }
 }

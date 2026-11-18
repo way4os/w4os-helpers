@@ -67,12 +67,18 @@ describe('The links of a search a site shows', function () {
 });
 
 describe('A place found', function () {
-    test('is reached by the hop:// address of its region and its landing point', function () {
+    test('is reached by the link of its grid, its region and its landing point, for where it is shown', function () {
         $search = new OpenSim\Helpers\Block\SearchData(people_grid());
 
-        expect($search->hop('http://grid.example.org:8002', 'My Region', '<10.4, 20, 30.6>'))
-            ->toBe('hop://grid.example.org:8002/My+Region/10/20/30')
-            ->and($search->hop('http://grid.example.org:8002', ''))
+        // The landing point as the search keeps it (x/y/z), or as a script writes it (<x, y, z>); a height of zero lands at 21 m
+        expect($search->teleport('http://grid.example.org:8002', 'My Region', '<10.4, 20, 30.6>'))
+            ->toBe('hop://grid.example.org:8002/My%20Region/10.4/20/30.6')
+            ->and($search->teleport('http://grid.example.org:8002', 'My Region', '128/128/0'))
+            ->toBe('hop://grid.example.org:8002/My%20Region/128/128/21')
+            // In a viewer, the form of the viewer: secondlife://host:port/secondlife/Region
+            ->and($search->teleport('http://grid.example.org:8002', 'My Region', '128/128/25', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))
+            ->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/128/128/25')
+            ->and($search->teleport('http://grid.example.org:8002', ''))
             ->toBeNull();
     });
 });

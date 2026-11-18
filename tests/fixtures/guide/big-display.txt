@@ -1,0 +1,50 @@
+Speculoos
+Grand Place|speculoos.world:8002:Grand Place
+Welcome Area|speculoos.world:8002:Welcome
+Residences|speculoos.world:8002:Residences|128,128,30
+Speculoos Lab|speculoos.world:8002:Lab
+Cymru Fach|speculoos.world:8002:Redoutable
+#Belgium (OSGrid)|hg.osgrid.org:80:Belgium
+#|
+#OpenSimulator
+#Community
+#Conference
+#OSCC 2025|http://cc.opensimulator.org:8002/
+#W4OS Project|demo.w4os.org:3405
+-
+Hang out
+Le Petit Prince|hg.osgrid.org:80:Exupery
+Maritime Club Belfast|hg.osgrid.org:80:Maritime Club Belfast|28,11,26
+#Arcadia Asylum|arcadiaasylum.org:8002
+Wyldwood Bayou|wyldwoodbayou.com:8002
+The Guitar Factory|hg.osgrid.org:80:The Guitar Factory
+Le monde de Jo|qcgrid.mooo.com:8002
+Neiferleaf|grid.vibel.eu:8002:neiferleaf
+France RP|francerpgrid.fr:8002
+Hypergrid Safari Tour
+Ivory City|craft-world.org:8002:Ivory City
+Immersive|pangeagrid.de:8002:Immersive
+AI Dreams in Art|grid.kitely.com:8002:AI Dreams in Art
+-
+Find out
+RuthAndRoth|login.osgrid.org:RuthAndRoth
+Bodies & Clothing:login.friends-grid.com:8002:Bodies & Clothing
+#Luv Plaza (Ruth 2.0)|grid.hgluv.com:8302:luv plaza
+Paramour Shopping|hg.osgrid.org:80:Paramour Shopping
+Pop-Up Market|discoverygrid.net:8002:Seattle
+#Aaack Aardvark's shop|hg.osgrid.org:80:ArcadiaShop
+Savvy (La Baronnie)|bubblesz.nl:8002:Savvy
+OpenSimWorld|http://hg.osgrid.org:80:OpenSimWorld
+-
+Grid out
+OSGrid|hg.osgrid.org:80:Lbsa Plaza
+Twiztid Timez|login.twiztidtimez.com:8002
+#Ocean Grid|oceangrid.net:8002
+#Lost World|lostworld-os.com:8002
+Party Destination Grid|partydestinationgrid.com:8002
+Dorenas World|dorenas-world.de:8002
+Digiworldz|login.digiworldz.com:8002
+Kitely|grid.kitely.com:8002:Kitely Welcome Center
+Littlefield|lfgrid.com:8002
+#Perfect Grid|grid.perfect-life.ca:8002
+#German World Grid|germanworldgrid.de:8002
