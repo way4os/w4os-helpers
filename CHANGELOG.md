@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (guide, popular places): a card shows what you go to, then where, as the engine says it (`title` above, the largest: the name of the list here, the region on another grid; `label` under it: its region and point here, its grid elsewhere); a label breaks after a slash or a colon only
 - update (guide, popular places): each card shows the label of its destination under its name, the engine's (its region and point for this grid, its grid for another), no longer the bare name of its region; the popular places are the engine's (`Grid::popularPlaces()`), no longer a query of the helpers; the login screen takes the same links as the other pages
 - update (blocks): a site may give the class of its visitor (`client`: viewer or browser, the engine's `Destination::client()`) instead of its user agent, for the teleport links; the class wins, and a site keeps one copy of a block per class
 - update (blocks): the engine tells a viewer for the teleport links (`Grid::link()`, Destination::AUTO reading the user agent): a block gives it the user agent of the page that shows it (`agent`, a site gives the one of its visitor at `/blocks/{name}`), no longer a viewer flag; `View::isViewer()` gone, the engine's `Destination::isViewer()` instead

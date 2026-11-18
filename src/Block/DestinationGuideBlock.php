@@ -56,10 +56,10 @@ final class DestinationGuideBlock implements Block
             'category' => $category,
             'items' => array_map(
                 static fn(array $d): array => [
-                    'name' => $d['name'],
+                    // What you go to, then where, as the engine says it (Grid::card()): the title above, its label under it
+                    'name' => (string) ($d['title'] ?? $d['name']),
                     'url' => Links::to($grid, Destination::uri($d['url'], $login), $args),
                     'picture' => $d['picture'],
-                    // Its label under its name: its region and point for this grid, its grid for another (the engine's)
                     'data' => (string) ($d['label'] ?? ''),
                 ],
                 $sections[$category]['destinations'],

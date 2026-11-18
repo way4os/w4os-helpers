@@ -53,10 +53,10 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
         expect(guide_shown('big-display', 'http://speculoos.world:8002')['categories'])->toBe($old);
     });
 
-    test('the same destinations in each section; linked for where they are shown, no longer in the 2.x form (secondlife://host:port Region)', function () {
-        $names = fn (array $sections) => array_map(fn (array $places) => array_column($places, 'name'), $sections);
+    test('the same destinations in each section; a card of another grid titled by its region now, linked for where it is shown', function () {
+        $counts = fn (array $sections) => array_map('count', $sections);
 
-        expect($names(guide_shown('big-display', 'http://speculoos.world:8002')['destinations']))->toBe($names(guide_old('big-display')['destinations']));
+        expect($counts(guide_shown('big-display', 'http://speculoos.world:8002')['destinations']))->toBe($counts(guide_old('big-display')['destinations']));
     });
 
     test('the lines as the board reads them: comments left out, the old format, trailing pipes, an address once', function () {
@@ -90,7 +90,7 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
         $shown = guide_shown('big-display', 'http://speculoos.world:8002')['destinations'];
 
         expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => 'hop://speculoos.world:8002/Grand%20Place'])
-            ->and($shown['Hang out'][0])->toBe(['name' => 'Le Petit Prince', 'url' => 'hop://hg.osgrid.org:80/Exupery'])
+            ->and($shown['Hang out'][0])->toBe(['name' => 'Exupery', 'url' => 'hop://hg.osgrid.org:80/Exupery'])
             // A grid without its region, an address without its port
             ->and($shown['Hang out'][2])->toBe(['name' => 'Wyldwood Bayou', 'url' => 'hop://wyldwoodbayou.com:8002'])
             ->and($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'hop://login.osgrid.org:8002/RuthAndRoth']);
@@ -101,7 +101,7 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
 
         expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => 'secondlife://speculoos.world:8002/secondlife/Grand%20Place'])
             ->and($shown['Speculoos'][2])->toBe(['name' => 'Residences', 'url' => 'secondlife://speculoos.world:8002/secondlife/Residences/128/128/30'])
-            ->and($shown['Hang out'][0])->toBe(['name' => 'Le Petit Prince', 'url' => 'secondlife://hg.osgrid.org:80/secondlife/Exupery'])
+            ->and($shown['Hang out'][0])->toBe(['name' => 'Exupery', 'url' => 'secondlife://hg.osgrid.org:80/secondlife/Exupery'])
             ->and($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'secondlife://login.osgrid.org:8002/secondlife/RuthAndRoth']);
     });
 });
@@ -335,12 +335,12 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         expect($search->teleport('http://grid.example.org:8002', 'Welcome', '116/136/21.75', ['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/116/136/21.75');
     });
 
-    test('a card shows the label of its destination under its name: its region and point for this grid, its grid for another', function () {
-        $places = Blocks::data('destination_guide', guide_grid('big-display', 'http://speculoos.world:8002'), ['category' => 'Speculoos'])['items'];
-        $far = Blocks::data('destination_guide', guide_grid('big-display', 'http://speculoos.world:8002'), ['category' => 'Hang out'])['items'];
+    test('a card shows what you go to, then where: on this grid the name of the list and its region and point, on another its region and its grid', function () {
+        $grid = guide_grid('big-display', 'http://speculoos.world:8002');
+        $cards = fn (string $section) => array_map(fn (array $item) => [$item['name'], $item['data']], Blocks::data('destination_guide', $grid, ['category' => $section])['items']);
 
-        expect(array_column($places, 'data', 'name'))->toMatchArray(['Grand Place' => 'Grand Place', 'Residences' => 'Residences/128/128/30'])
-            ->and(array_column($far, 'data', 'name'))->toMatchArray(['Le Petit Prince' => 'hg.osgrid.org:80/Exupery', 'Wyldwood Bayou' => 'wyldwoodbayou.com:8002']);
+        expect($cards('Speculoos'))->toContain(['Grand Place', 'Grand Place'], ['Residences', 'Residences/128/128/30'])
+            ->and($cards('Hang out'))->toContain(['Exupery', 'hg.osgrid.org:80'], ['Wyldwood Bayou', 'wyldwoodbayou.com:8002']);
     });
 
     test('a popular place shows the label of its destination under its name, not the bare name of its region', function () {

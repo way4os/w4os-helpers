@@ -103,15 +103,16 @@ body.viewer #guide .list {
 	object-fit: cover;
 	background: #444;
 }
+/* What you go to, the largest; where it is under it */
 #guide .name {
 	margin-top: 6px;
-	font-size: 0.8rem;
+	font-size: 0.85rem;
 	font-weight: bold;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-/* A label on two lines at most, cut after a slash (the grid, then the region) */
+/* A label on two lines at most, cut after a slash or a colon only, never in a word */
 #guide .data {
 	font-size: 0.75rem;
 	color: var(--guide-muted);
