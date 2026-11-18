@@ -111,12 +111,15 @@ body.viewer #guide .list {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+/* A label on two lines at most, cut after a slash (the grid, then the region) */
 #guide .data {
 	font-size: 0.75rem;
 	color: var(--guide-muted);
-	white-space: nowrap;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	overflow: hidden;
-	text-overflow: ellipsis;
 }
 #guide .item:hover .name,
 #guide .item:focus .name {
