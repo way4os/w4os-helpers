@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (guide, popular places): each card shows the label of its destination under its name, the engine's (its region and point for this grid, its grid for another), no longer the bare name of its region; the popular places are the engine's (`Grid::popularPlaces()`), no longer a query of the helpers; the login screen takes the same links as the other pages
 - update (blocks): a site may give the class of its visitor (`client`: viewer or browser, the engine's `Destination::client()`) instead of its user agent, for the teleport links; the class wins, and a site keeps one copy of a block per class
 - update (blocks): the engine tells a viewer for the teleport links (`Grid::link()`, Destination::AUTO reading the user agent): a block gives it the user agent of the page that shows it (`agent`, a site gives the one of its visitor at `/blocks/{name}`), no longer a viewer flag; `View::isViewer()` gone, the engine's `Destination::isViewer()` instead
 - update (blocks): every teleport link (popular places, guide, search, grid info, picks and classifieds of a profile) is the one for where it is shown, as the engine writes it (`Destination::AUTO`, `Links::to()`): hop:// on a page; in a viewer and on its login screen, a local secondlife:// link for a region of the grid and the viewer's teleport for another grid; a page knows a viewer by its user agent, a block asked at `/blocks/{name}` by `viewer` (a site says it) or the user agent

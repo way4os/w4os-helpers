@@ -59,7 +59,8 @@ final class DestinationGuideBlock implements Block
                     'name' => $d['name'],
                     'url' => Links::to($grid, Destination::uri($d['url'], $login), $args),
                     'picture' => $d['picture'],
-                    'data' => '',
+                    // Its label under its name: its region and point for this grid, its grid for another (the engine's)
+                    'data' => (string) ($d['label'] ?? ''),
                 ],
                 $sections[$category]['destinations'],
             ),

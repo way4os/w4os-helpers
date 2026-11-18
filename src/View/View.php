@@ -75,7 +75,7 @@ final class View
         return $this->found;
     }
 
-    /** @var array{agent?:string,splash?:bool} where the page being made is shown, for the links of its blocks (Links::to()) */
+    /** @var array{agent?:string} where the page being made is shown, for the links of its blocks (Links::to()) */
     private array $where = [];
 
     public function __construct(string $templates, private string $assets = '')
@@ -109,7 +109,7 @@ final class View
     {
         $theme = self::theme($grid);
         $theme === null || !is_dir("$theme/templates") || $this->loader->prependPath("$theme/templates");
-        $this->where = ['agent' => $agent, 'splash' => $page === 'splash'];
+        $this->where = ['agent' => $agent];
         $block = Blocks::name($page);
         $template = "pages/$page-page.twig";
         if ($this->loader->exists($template)) {

@@ -115,7 +115,7 @@ function guide_search(): OpenSim\Data\OSPDO
     $pdo = new OpenSim\Data\OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
     $pdo->exec('CREATE TABLE regionsregister (regionUUID CHAR(36), regionname VARCHAR(255))');
     $pdo->exec('CREATE TABLE parcels (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), landingpoint VARCHAR(255), imageUUID CHAR(36), gatekeeperURL VARCHAR(255), dwell FLOAT DEFAULT 0)');
-    $pdo->exec('CREATE TABLE popularplaces (parcelUUID CHAR(36), name VARCHAR(255), dwell FLOAT, has_picture INT)');
+    $pdo->exec('CREATE TABLE popularplaces (parcelUUID CHAR(36), name VARCHAR(255), dwell FLOAT, has_picture INT, gatekeeperURL VARCHAR(255))');
     $pdo->exec("INSERT INTO regionsregister VALUES ('r1', 'Welcome'), ('r2', 'Sandbox'), ('r3', 'Elsewhere'), ('r4', 'Plaza')");
     $pdo->exec("INSERT INTO parcels VALUES
         ('p1', 'r1', 'Local places', '128/128/25', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'http://grid.example.org:8002', 40),
@@ -123,7 +123,7 @@ function guide_search(): OpenSim\Data\OSPDO
         ('p3', 'r2', 'Sandbox', '10/20/30', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'http://grid.example.org:8002/', 0),
         ('p4', 'r3', 'Elsewhere', '128/128/25', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'http://other.example.org:8002', 0),
         ('p5', 'r4', 'Square', '128/128/25', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'http://grid.example.org:8002', 0)");
-    $pdo->exec("INSERT INTO popularplaces VALUES ('p1', 'Local places', 40, 1), ('p2', 'Garden', 10, 0)");
+    $pdo->exec("INSERT INTO popularplaces VALUES ('p1', 'Local places', 40, 1, 'http://grid.example.org:8002'), ('p2', 'Garden', 10, 0, 'http://grid.example.org:8002')");
 
     return $pdo;
 }
@@ -333,5 +333,20 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $search = new OpenSim\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
 
         expect($search->teleport('http://grid.example.org:8002', 'Welcome', '116/136/21.75', ['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/116/136/21.75');
+    });
+
+    test('a card shows the label of its destination under its name: its region and point for this grid, its grid for another', function () {
+        $places = Blocks::data('destination_guide', guide_grid('big-display', 'http://speculoos.world:8002'), ['category' => 'Speculoos'])['items'];
+        $far = Blocks::data('destination_guide', guide_grid('big-display', 'http://speculoos.world:8002'), ['category' => 'Hang out'])['items'];
+
+        expect(array_column($places, 'data', 'name'))->toMatchArray(['Grand Place' => 'Grand Place', 'Residences' => 'Residences/128/128/30'])
+            ->and(array_column($far, 'data', 'name'))->toMatchArray(['Le Petit Prince' => 'hg.osgrid.org:80/Exupery', 'Wyldwood Bayou' => 'wyldwoodbayou.com:8002']);
+    });
+
+    test('a popular place shows the label of its destination under its name, not the bare name of its region', function () {
+        OpenSim\Data\Connections::using(fn () => guide_search());
+        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
+
+        expect($html)->toMatch('#<span class="place-name">Local places</span>\s*<span class="place-region">Welcome/128/128/25</span>#');
     });
 });
