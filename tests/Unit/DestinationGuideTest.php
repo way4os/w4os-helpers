@@ -174,6 +174,21 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
+    test('the popular places take the options of w4os-wp 2.x: the other grids and the land for sale, both shown unless told not', function () {
+        $search = guide_search();
+        $search->exec("INSERT INTO popularplaces VALUES ('p4', 'Elsewhere', 50, 1, 'http://other.example.org:8002')");
+        $search->exec('CREATE TABLE parcelsales (parcelUUID CHAR(36), regionUUID CHAR(36))');
+        $search->exec("INSERT INTO parcelsales VALUES ('p2', 'r1')");
+        OpenSim\Data\Connections::using(fn () => $search);
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+        $labels = fn (array $args): array => array_column(Blocks::data('popular_places', $grid, $args)['rows'], 'label');
+
+        expect($labels([]))->toBe(['Elsewhere', 'Local places', 'Garden'])
+            ->and($labels(['include_hypergrid' => 'false']))->toBe(['Local places', 'Garden'])
+            ->and($labels(['include_landsales' => '0']))->toBe(['Elsewhere', 'Local places'])
+            ->and($labels(['include_hypergrid' => false, 'include_landsales' => 'no']))->toBe(['Local places']);
+    });
+
     test('an open category is headed by its name, whatever title the page gives the guide', function () {
         OpenSim\Data\Connections::using(fn () => guide_search());
         $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['category' => 'Hypergrid', 'title' => 'The guide', 'client' => 'viewer']);
