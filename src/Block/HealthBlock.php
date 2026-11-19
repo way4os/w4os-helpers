@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenSim\Helpers\Block;
 
 use OpenSim\Assets\WebAssets;
-use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Http\Action\Engine;
 use OpenSim\Helpers\I18n;
 use OpenSim\Health\Health;
@@ -16,9 +15,7 @@ final class HealthBlock implements Block
 {
     public function data(Grid $grid, array $args = []): array
     {
-        $config = is_dir($grid->directory())
-            ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini'])
-            : null;
+        $config = $grid->config();
         $groups = Health::answers(
             Health::grid(['config' => $config, 'live' => $grid->gridInfo(), 'login' => (string) $grid->loginUrl()]),
         );

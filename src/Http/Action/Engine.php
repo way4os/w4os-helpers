@@ -62,18 +62,32 @@ final class Engine
     /** The API of the engine for a grid, with its tasks; what it leaves for after the answer is done by finish(). */
     public static function api(Grid $grid): Api
     {
-        $api = new Api($grid->environment(), self::scheduler($grid));
+        $api = self::apiOf($grid);
         self::$apis[] = $api;
 
         return $api;
+    }
+
+    /**
+     * The API of the engine for the grid served: the grid and its config as the helpers have them (its folder on the machine, or
+     * the settings a site gives), the other grids the ones of the machine.
+     */
+    private static function apiOf(Grid $grid): Api
+    {
+        return new Api(
+            $grid->environment(),
+            self::scheduler($grid),
+            static fn(Grid $asked): ?GridConfig => $asked->config(),
+            grids: static fn(string $nick): ?Grid => $nick === $grid->nick() ? $grid : Grid::find($grid->environment(), $nick),
+        );
     }
 
     /** The tasks of a grid: its search tasks (the snapshots of the simulators, the events), when it has a search database. */
     public static function scheduler(Grid $grid): Scheduler
     {
         $scheduler = Scheduler::for($grid->environment());
-        if (is_dir($grid->directory())) {
-            SearchTasks::add($scheduler, $grid->environment(), GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']));
+        if (($config = $grid->config()) !== null) {
+            SearchTasks::add($scheduler, $grid->environment(), $config);
         }
 
         return $scheduler;
@@ -94,7 +108,7 @@ final class Engine
         $apis = self::$apis;
         self::$apis = [];
         if ($apis === [] && self::$served !== null) {
-            $apis = [new Api(self::$served->environment(), self::scheduler(self::$served))];
+            $apis = [self::apiOf(self::$served)];
         }
         foreach ($apis as $api) {
             $api->finish();

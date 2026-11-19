@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\View;
 
-use OpenSim\Config\GridConfig;
 use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Helpers\Block\ProfileBlock;
 use OpenSim\Helpers\I18n;
@@ -131,7 +130,7 @@ final class View
         $found = $this->found;
         $viewer = Destination::isViewer($agent);
         $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
-        $config = is_dir($grid->directory()) ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini']) : null;
+        $config = $grid->config();
         $logo = $config?->find('Helpers', 'LogoURL');
         foreach (['svg', 'png'] as $ext) {
             $logo ??= $this->asset($grid, "images/logos/logo.$ext") === null ? null : "$prefix/assets/images/logos/logo.$ext";

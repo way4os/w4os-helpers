@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- feature (sites): the helpers serve the grid a site gives them (App::create), read from nowhere on the machine: its config is the one the site gives (`Grid::config()` of the engine), the keys of its health, its cache and its tasks are in the folders of the site (the environment of the grid), the API of the engine they call serves that grid; HelpersLayout is only the default, for the helpers of the machine. Needs the engine with `Grid::config()` and the grids of the API (ede43b1)
 - change (routes): the helpers answer only the pages the grid sets under their base: the address a page of the site would have under the helpers (/helpers/guide, /helpers/profile/...) is nobody's, a 404, no longer sent to the site; an address the grid does not set is no address of the grid (the engine gives none)
 - update (health): the page shows the path of a folder or a file where the engine gives it (`path`); the tasks of a grid include the check of its health (`health`)
 - update (profile): the sections of a profile are the engine's, in its order (`Avatar::form()`, as the grid has them): no Web tab when the grid does not allow the web address of a profile (`AllowUserProfileWebURLs` false); a viewer still gets the stream, About and the interests

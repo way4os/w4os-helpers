@@ -20,9 +20,7 @@ final class SearchData
 
     public function __construct(public readonly Grid $grid)
     {
-        $this->config = is_dir($grid->directory())
-            ? GridConfig::fromFolder($grid->directory(), ['Helpers' => 'Helpers.ini'])
-            : null;
+        $this->config = $grid->config();
         $db = $this->config === null ? null : Connections::pdo($this->config, Database::Search);
         $this->db = $db !== null && $db->connected ? $db : null;
     }
