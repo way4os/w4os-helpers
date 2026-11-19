@@ -2,6 +2,9 @@
 
 ### Unreleased
 
+- feature (blocks): each block says which it is on its root (`data-helpers-block`), for the health to find it on a page
+- fix (routes): an address of the grid on another server is not routed to the helpers, whatever its path
+- fix (routes): what the helpers do not provide here is refused with its reason, in XML-RPC for the viewers, never an empty 404
 - change (blocks): the popular places leave out the other grids and the land for sale by default, as w4os-wp 2.x
 - feature (blocks): popular places take the `include_hypergrid` and `include_landsales` options
 - feature (sites): the helpers serve the grid a site gives them (`App::create`)

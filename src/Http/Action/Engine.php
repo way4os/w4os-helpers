@@ -134,6 +134,8 @@ final class Engine
         $prefix = (string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH);
         $paths = [];
         foreach ($urls as $service => $url) {
+            // An address of another server (the service is provided elsewhere) is not routed here, whatever its path
+            $url !== null && $grid->helpersUrl() !== null && !$grid->servedByHelpers($url) && ($url = null);
             $path = $url === null ? '' : (string) parse_url($url, PHP_URL_PATH);
             if ($path !== '') {
                 $paths[$service] = $prefix !== '' && str_starts_with($path, "$prefix/") ? substr($path, strlen($prefix)) : $path;

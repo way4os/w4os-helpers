@@ -83,3 +83,63 @@ describe('the helpers serve only under their base', function () {
             ->and($browser)->toContain('class="topbar"');
     });
 });
+
+describe('a service the grid does not provide here', function () {
+    /** A grid whose economy and search are served elsewhere, its helpers under https://example.com/helpers. */
+    function elsewhere_app(): Slim\App
+    {
+        $dir = sys_get_temp_dir() . '/helpers-elsewhere-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[Const]\nWebURL = \"https://example.com\"\n[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\neconomy = \"https://shop.example.org/money/\"\n");
+        file_put_contents("$dir/OpenSim.ini", "[Search]\nSearchURL = \"https://search.example.org/query.php\"\n");
+        file_put_contents("$dir/Helpers.ini", "[Helpers]\nHelpersURL = \"https://example.com/helpers\"\n");
+        $grid = Grid::at(Environment::system(Layout::load()), $dir);
+
+        return App::create(static fn(string $nick) => $grid);
+    }
+
+    test('is refused in the format the viewer reads for the currency and the search, with its reason', function () {
+        $app = elsewhere_app();
+        $post = static fn(string $path): Psr\Http\Message\ResponseInterface => $app->handle(
+            (new ServerRequestFactory())->createServerRequest('POST', $path)->withHeader('Content-Type', 'text/xml')
+                ->withBody((new Slim\Psr7\Factory\StreamFactory())->createStream(OpenSim\Services\XmlRpc::request('getCurrencyQuote', [['agentId' => '00000000-0000-0000-0000-000000000000', 'currencyBuy' => 1000]]))),
+        );
+
+        foreach (['/helpers/currency.php', '/helpers/landtool.php', '/helpers/query.php'] as $path) {
+            $answer = $post($path);
+            // As the engine answers the viewers (the format of the extension of PHP): success false, the reason
+            $body = (string) $answer->getBody();
+            expect($answer->getStatusCode())->toBe(200)
+                ->and($answer->getHeaderLine('Content-Type'))->toContain('xml')
+                ->and($body)->toContain('<name>success</name>')
+                ->and($body)->toContain('<boolean>0</boolean>')
+                ->and($body)->toContain('<name>errorMessage</name>')
+                ->and($body)->toContain('not provided here');
+        }
+    });
+
+    test('is a 404 that says so, never an empty answer', function () {
+        $app = elsewhere_app();
+
+        foreach (['/helpers/register.php', '/helpers/offline.php', '/helpers/guide', '/helpers/nothing'] as $path) {
+            $answer = base_get($app, $path);
+            expect($answer->getStatusCode())->toBe(404)
+                ->and($answer->getHeaderLine('Content-Type'))->toContain('text/plain')
+                ->and((string) $answer->getBody())->toContain('not provided here');
+        }
+    });
+});
+
+describe('a block of the helpers', function () {
+    test('says which it is, for the health to find it on a page of the site', function () {
+        $dir = sys_get_temp_dir() . '/helpers-blocks-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"http://grid.example.org:8002/\"\n");
+        $grid = Grid::at(Environment::system(Layout::load()), $dir);
+        $view = new View(dirname(__DIR__, 2) . '/templates');
+
+        foreach (['destination_guide', 'grid-info', 'grid-status', 'search', 'profile', 'popular_places', 'motd', 'new_users', 'directory_info'] as $block) {
+            expect($view->block($block, $grid, ['client' => 'browser']))->toContain('data-helpers-block="' . $block . '"');
+        }
+    });
+});

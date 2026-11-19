@@ -1,4 +1,4 @@
-<section class="block block-search">
+<section class="block block-search" data-helpers-block="{{ helpers_block }}">
     {% if title %}<{{ level }} class="block-title">{{ title }}</{{ level }}>{% endif %}
     <form class="search-form" action="{{ action }}{% if topic %}/{{ topic }}/{% endif %}" method="get" role="search">
         <label class="visually-hidden" for="search-q">{{ labels.search_for }}</label>
