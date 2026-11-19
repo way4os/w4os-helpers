@@ -70,7 +70,8 @@ final class Site
         if ($page === 'grid_status' && (($query['format'] ?? '') === 'text' || str_contains($request->getHeaderLine('Accept'), 'text/plain'))) {
             return GridStatus::respondText($response, $grid);
         }
-        // The health is for who manages the grid: a key of the install that serves it (the machine, or the folder of a site)
+        // The health is for who manages the grid: the keys of the environment of the grid served (the application's, never the install
+        // of the server)
         if ($page === 'health') {
             if (!ApiKeys::for($grid->environment())->allows(ApiKeys::token($request->getHeaderLine('Authorization')))) {
                 return $response->withStatus(401)->withHeader('WWW-Authenticate', 'Bearer');

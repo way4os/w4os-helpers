@@ -94,3 +94,14 @@ test('every page the site serves is in the OpenAPI document of the engine', func
 
     expect(array_values(array_diff($served, $paths)))->toBe([]);
 });
+
+test('the health takes the API keys of the grid it is given, never the ones of the install of the server', function () {
+    $machine = new OpenSim\Testing\Machine();
+    $grid = Grid::find($machine->environment, 'demo');
+    $key = OpenSim\Security\ApiKeys::for($machine->environment)->create('site')['key'];
+    $app = App::create(static fn(string $nick) => $grid);
+    $asked = (new ServerRequestFactory())->createServerRequest('GET', '/health')->withHeader('Authorization', "Bearer $key");
+
+    expect($app->handle($asked)->getStatusCode())->not->toBe(401)
+        ->and(helpers_get($app, '/health')->getStatusCode())->toBe(401);
+});
