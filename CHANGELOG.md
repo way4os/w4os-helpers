@@ -2,55 +2,55 @@
 
 ### Unreleased
 
-- feature (blocks): the popular places take the options of w4os-wp 2.x, `include_hypergrid` and `include_landsales`
-- feature (sites): the helpers serve the grid a site gives them (App::create), read from nowhere on the machine: its config is the one the site gives (`Grid::config()` of the engine), the keys of its health, its cache and its tasks are in the folders of the site (the environment of the grid), the API of the engine they call serves that grid; HelpersLayout is only the default, for the helpers of the machine. Needs the engine with `Grid::config()` and the grids of the API (ede43b1)
-- change (routes): the helpers answer only the pages the grid sets under their base: the address a page of the site would have under the helpers (/helpers/guide, /helpers/profile/...) is nobody's, a 404, no longer sent to the site; an address the grid does not set is no address of the grid (the engine gives none)
-- update (health): the page shows the path of a folder or a file where the engine gives it (`path`); the tasks of a grid include the check of its health (`health`)
-- update (profile): the sections of a profile are the engine's, in its order (`Avatar::form()`, as the grid has them): no Web tab when the grid does not allow the web address of a profile (`AllowUserProfileWebURLs` false); a viewer still gets the stream, About and the interests
-- fix (grid status): the status of the block is the text of its level in the language of the page (Online, En ligne), no longer the keyword of the viewers in capitals; the text and the feed the viewers read keep it (ONLINE)
-- fix (places): the cards of the popular places two a row at least on a narrow screen, cards rather than banners as wide as the page
-- update (blocks): the picture of nothing (the grid's placeholder, where a parcel or a place has none) is half seen in the guide and the popular places, in a browser and in a viewer (`no-picture`, `--helpers-placeholder-opacity` of the new `assets/css/blocks.css`, set in one place, given by `View::blockFiles()`); a real picture stays whole
-- update (guide): the hypergrid destinations the pictures are tried with (`tests/fixtures/guide/hypergrid-examples.txt`): Watta (v3) and Speculoos (v2), Craft World, LFGrid, Alternate Metaverse and OSGrid, each with a picture, and Kitely without one
-- update (guide): in a browser the guide is a block of the page as the popular places are: on the column of the content, without a background, in the colours of the theme (light or dark), its title the one of the blocks (`block-title`, at the level the page gives), its pictures smaller than theirs; in a viewer it keeps the dark look of the Destinations panel; the class of the client (`client-viewer`, `client-browser`, from `client` or the user agent, the engine's `Destination::client()`) is on the guide, so that every site that shows it gets the same rule (`assets/css/guide.css`)
-- update (profile): the stream reads as a timeline, each post its date first, relative (Carbon, in the language of the page) small and muted in a margin on the left, its full date and time as its tip, then its message; the date above the message where the block is narrow; the styles of a profile in their own file, for every page that shows the block (`css/profile.css`, `View::blockFiles('profile')`)
-- update (profile): it opens on its first tab that has something (About for a stream with nothing); no key, the viewer shows it; the role alone in its banner, as the engine says it (`bare`); the details label left and value right
-- update (blocks): the profile, the search and the guide leave their title to the page that shows them when it asks it so (an empty `title`), as the other blocks do: a site's theme shows the title of its page
-- update (profile): a banner over every tab, the picture, the name, the birth and the role of the avatar as the engine marks them in its form (`banner`); the stream first, then About (the rest of the in-world tab: the key, the partner, the about, the groups), then the other tabs; a viewer gets the stream, About and the interests, its own windows showing the rest; `feed_only` the stream alone
-- fix (profile): a viewer gets the stream of a profile alone wherever the block is shown (a site's page too, the `web_profile_url` of a grid), the engine telling a viewer (`Destination::client()`: the class a site gives, else the user agent); the rule is the block's, no longer the page route's
-- feature (profile): the stream of the avatar (w4os-flux), its posts newest first in the Feed tab of the page, after the in-world one; a viewer gets it alone (its Feed tab opens the page of the profile, `web_profile_url`), and whoever asks `feed_only=true`; a JSON Feed (`?format=feed`) and an RSS feed (`?format=rss`) of it; needs opensim-engine with `OpenSim\Flux\Posts`
-- update (guide, popular places): a card shows what you go to, then where, as the engine says it (`title` above, the largest: the name of the list here, the region on another grid; `label` under it: its region and point here, its grid elsewhere); a label breaks after a slash or a colon only
-- update (guide, popular places): each card shows the label of its destination under its name, the engine's (its region and point for this grid, its grid for another), no longer the bare name of its region; the popular places are the engine's (`Grid::popularPlaces()`), no longer a query of the helpers; the login screen takes the same links as the other pages
-- update (blocks): a site may give the class of its visitor (`client`: viewer or browser, the engine's `Destination::client()`) instead of its user agent, for the teleport links; the class wins, and a site keeps one copy of a block per class
-- update (blocks): the engine tells a viewer for the teleport links (`Grid::link()`, Destination::AUTO reading the user agent): a block gives it the user agent of the page that shows it (`agent`, a site gives the one of its visitor at `/blocks/{name}`), no longer a viewer flag; `View::isViewer()` gone, the engine's `Destination::isViewer()` instead
-- update (blocks): every teleport link (popular places, guide, search, grid info, picks and classifieds of a profile) is the one for where it is shown, as the engine writes it (`Destination::AUTO`, `Links::to()`): hop:// on a page; in a viewer and on its login screen, a local secondlife:// link for a region of the grid and the viewer's teleport for another grid; a page knows a viewer by its user agent, a block asked at `/blocks/{name}` by `viewer` (a site says it) or the user agent
-- update (guide): the pictures of the cards are the engine's (`Grid::guide()`: the parcel of each destination, of this grid or of another, the first of a section); the helpers only show them, the lookup of `SearchData::picture()` is gone; the sections are the titles of the list as the engine reads them (titles that follow each other are one, a title without a destination is left out)
-- update (blocks): the link of a place found or popular is written by the engine from its grid, its region and its landing point (`Destination::uri()`, `Destination::position()`: a height of zero lands at 21 m, a point as a script writes it read too), no longer assembled by hand
-- fix (guide): one destination is singular ("1 destination"), in every language (its plural forms, `ngettext`)
-- update (guide): the guide as the viewers' Destinations panel shows it: a card for each category (the picture of one of its places, its name, how many destinations), then for each destination (the picture of its parcel, its name), dark as the panel; one row scrolling sideways in a viewer, as many rows as needed on a web page
-- update (blocks): the popular places are a grid of cards, the picture of each parcel with its name and its region, as many rows as needed (`assets/css/places.css`)
-- new (blocks): the picture of the parcel a destination leads to, as the search has it (`SearchData::picture()`: the parcel of that name in the region, else the one of that landing point, else the only parcel of the region; never another parcel), the grid's placeholder without one; `View::blockFiles()` gives a site the styles and scripts of a block it shows in its pages
-- fix (guide): the destinations of the guide are linked as the viewers open them and as the 2.x guide linked them (`secondlife://host:port Region/x/y/z`, `Destination::HG`), no longer the line of the list as it is; a region named alone is one of the grid; tested against what the 2.x guide showed on the same lists (`tests/fixtures/guide`)
-- update (blocks): the dates the blocks show are in the language of the page (`I18n::date()`, PHP's Intl formatter), no longer ISO: a recent user's arrival as a short date with its time, today and yesterday by their name; the birth of a profile and the end of a classified as a medium date; an event and the time of the health check as a medium date with its time (UTC)
-- fix (security): the engine answers the services of the helpers locked (`Locked`): only what it says is public (`Router::PUBLIC`: what the viewers and the simulators call, the pictures), whatever key a request brings; the address of the offline messages takes their two methods only (SaveMessage, RetrieveMessages)
-- change (api): the helpers no longer serve the API of the engine: `/api/...` is a 404 here, the engine serves it from its own entry point (`public/index.php` of opensim-engine, `opensim web GRID api`); the pictures of the grid a page shows are at `/pictures/<uuid>.<format>` (were `/api/grids/<grid>/assets/...`); the due tasks of the grid still run after the pages, as before (`Engine::serving()`)
-- update (blocks): the links of a block a site shows (the form and the topics of the search, the profiles of the people found, of the recent users, of the partner of a profile) are at the addresses the site gives (`search_url`, `web_profile_url` with `[AGENT_NAME]`), in its language (`/fr/search`, `/fr/profile/…`); without them, the grid's
-- update (i18n): "Wants to" is "Souhaite" in French (was "J'aimerais")
-- refactor (blocks): whether a profile is published is the engine's (`Avatar::isPublished()`), not a bit read by hand; the hop:// link of a place found is written from its URI as the engine writes one (`host:port/Region/x/y/z`, `Destination::HOP`)
-- update (blocks): the links to a profile (the recent users, the search of people, the partner of a profile) are the address the grid gives (`web_profile_url`, `[AGENT_NAME]` as First.Last, its host and what follows kept), made by the engine (`Avatar::profileAt()`); none when the grid gives none
-- update (profile): a profile without its picture, in-world or of the real life, shows the silhouette of a person of the engine (`WebAssets::PERSON`, `?default=person` for a picture that is missing), not the landscape of nothing
-- update (profile): the tabs of a profile are named for any grid, "In-world" and "Real life" (the engine's `profile_tab_inworld` and `profile_tab_real_life`), not after Second Life; the sections are `inworld` and `real-life` (`#profile-inworld`, `#profile-real-life`)
-- update (packaging): the helpers depend on the engine that has everything they call (`opensim-engine (>= 3.0.0~beta.13.459)`)
-- test (blocks): the recent users leave out an avatar waiting for the confirmation of its email, as well as a disabled one
-- update (profile): the tabs of a profile are named by the catalog of the engine (`profile_tab_*`, `profile_sections`), as on every site, in the language of the page; the helpers keep no copy of them
-- test (packaging): the check of the package is the one of the Slim application: the real .deb on a clean Debian with php-fpm and Caddy (the snippet of the kit) and MariaDB, the folders of the web server, the tasks of the search after a visit, the health page, a picture cached, an upgrade, the zip
-- update (profile): a profile that is not published says "This profile is not public.", in every language
-- fix (install): the helpers write their tasks and their cache where the web server can, `/var/cache/opensim-helpers/{tasks,cache}`, made by the package for `www-data` (HelpersLayout), when the folders of the install are not writable and nothing else is given; they take `OPENSIM_TASKS_ROOT`, `OPENSIM_CACHE_ROOT` and the other `OPENSIM_*` the web server gives; the health page tells both folders
-- fix (search): the search index fills by itself: the API of the engine has the search tasks of the grid, and once the answer is sent (`fastcgi_finish_request`) a simulator that registered is read and the tasks that are due run, on every visit (`Engine::finish()`, the pseudo cron of the engine); no cron needed
-- fix (search): the search of people finds only the avatars who published their profile ("show in search" in the viewer), as the web profile already did
-- feature (blocks): `new_users`, the people who joined last (5, `count` up to 50), as the recent users of w4os: the newest active avatars of the engine, never a model, the account of the services or an account without an email; the name links to the profile, the email is not shown
-- refactor: Slim 4 application (public/index.php, src/); the former scripts are gone
-- update: `gettext` is recommended, not required: without it the messages stay in English
-- update: the logos of w4os and OpenSimulator come from opensim-engine: composer install and update refresh them in assets/images/logos (composer logos), the four sizes the engine added included
+- feature (blocks): popular places take the `include_hypergrid` and `include_landsales` options
+- feature (sites): the helpers serve the grid a site gives them (`App::create`)
+- change (routes): the helpers answer only the pages the grid sets under their base, anything else is a 404
+- update (health): the page shows folder and file paths; grid tasks include the health check
+- update (profile): the sections follow the engine's form; no Web tab when web profile URLs are not allowed
+- fix (grid status): the block shows the status text in the page language, not the capitalized keyword
+- fix (places): popular place cards show at least two per row on narrow screens
+- update (blocks): the no-picture placeholder is half transparent in the guide and popular places
+- update (guide): test hypergrid destinations are Watta, Speculoos, Craft World, LFGrid, Alternate Metaverse, OSGrid, Kitely
+- update (guide): in a browser the guide is a themed block like the popular places; viewers keep the dark look
+- update (profile): the stream is a timeline with relative dates; profile styles in `css/profile.css`
+- update (profile): opens on its first non-empty tab; role alone in its banner; details label left, value right
+- update (blocks): profile, search and guide leave their title to the page when `title` is empty
+- update (profile): a banner over every tab; stream first, then About; `feed_only` shows the stream alone
+- fix (profile): a viewer gets the stream alone wherever the block is shown, as the engine tells
+- feature (profile): the avatar stream (w4os-flux) in a Feed tab, with JSON Feed and RSS (`?format=feed`, `?format=rss`)
+- update (guide, popular places): cards show a title and a label as the engine gives them
+- update (guide, popular places): cards show the engine's destination label; places come from `Grid::popularPlaces()`
+- update (blocks): a site may give the visitor class (`client`) instead of its user agent
+- update (blocks): the engine detects viewers for teleport links; blocks pass the user agent (`agent`)
+- update (blocks): every teleport link is written by the engine for where it is shown (`Destination::AUTO`)
+- update (guide): card pictures come from the engine (`Grid::guide()`); sections follow the list titles
+- update (blocks): place links are written by the engine (`Destination::uri()`)
+- fix (guide): "1 destination" is singular in every language
+- update (guide): laid out like the viewers' Destinations panel, with category and destination cards
+- update (blocks): popular places are a grid of cards showing the parcel picture
+- new (blocks): parcel picture of a destination (`SearchData::picture()`); `View::blockFiles()` for sites
+- fix (guide): destinations are linked as viewers and the 2.x guide open them (`Destination::HG`)
+- update (blocks): dates show in the page language (`I18n::date()`)
+- fix (security): the engine answers helper services locked; only public routes open
+- change (api): the helpers no longer serve the engine API; pictures are at `/pictures/<uuid>.<format>`
+- update (blocks): block links use the site's `search_url` and `web_profile_url`
+- update (i18n): "Wants to" is "Souhaite" in French
+- refactor (blocks): profile publication and hop:// links come from the engine (`Avatar::isPublished()`)
+- update (blocks): profile links use `web_profile_url`, built by `Avatar::profileAt()`
+- update (profile): a profile without a picture shows the engine's person silhouette
+- update (profile): tabs are named "In-world" and "Real life" for any grid
+- update (packaging): depend on `opensim-engine (>= 3.0.0~beta.13.459)`
+- test (blocks): recent users leave out avatars awaiting email confirmation
+- update (profile): tab names come from the engine catalog (`profile_tab_*`)
+- test (packaging): the package check installs the real .deb on a clean Debian
+- update (profile): an unpublished profile says "This profile is not public." in every language
+- fix (install): tasks and cache default to `/var/cache/opensim-helpers/{tasks,cache}`; `OPENSIM_*` variables are read
+- fix (search): the search index fills by itself on visits (`Engine::finish()`)
+- fix (search): the people search finds only avatars with a published profile
+- feature (blocks): `new_users` lists the newest avatars
+- refactor: Slim 4 application (`public/index.php`, `src/`)
+- update: `gettext` is recommended, not required
+- update: logos come from opensim-engine (`composer logos`)
 
 ### 3.0.0-beta.6
 
