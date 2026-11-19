@@ -32,7 +32,14 @@ final class SearchBlock implements Block
             if ($kind === 'people' && $q === '') {
                 continue;
             }
-            $items = $this->find($search, $kind, $q, $args);
+            try {
+                $items = $this->find($search, $kind, $q, $args);
+            } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+                // The places, the land, the events and the classifieds share the search: told once
+                $this->unavailable || Blocks::unreachable($e);
+                $this->unavailable = true;
+                $items = [];
+            }
             $items === [] ||
                 ($groups[] = ['topic' => $kind, 'title' => self::title($kind), 'items' => $items, 'url' => self::url($grid, $kind, $q, $args)]);
         }
@@ -84,7 +91,8 @@ final class SearchBlock implements Block
     {
         $like = ['q' => '%' . addcslashes($q, '%_\\') . '%'];
         $params = $q === '' ? [] : $like;
-        $regions = $search->regions();
+        // The table of the regions, for the kinds that join it
+        $regions = in_array($kind, ['places', 'land'], true) ? $search->regions() : '';
         $limit = self::LIMIT;
         switch ($kind) {
             case 'places':
