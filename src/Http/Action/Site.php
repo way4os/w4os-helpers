@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace OpenSim\Helpers\Http\Action;
 
-use OpenSim\Config\Layout;
 use OpenSim\Helpers\Block\Blocks;
 use OpenSim\Helpers\I18n;
 use OpenSim\Helpers\View\View;
 use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
 use OpenSim\Security\ApiKeys;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -73,10 +71,10 @@ final class Site
         if ($page === 'grid_status' && (($query['format'] ?? '') === 'text' || str_contains($request->getHeaderLine('Accept'), 'text/plain'))) {
             return GridStatus::respondText($response, $grid);
         }
-        // The health is for who manages the grid
+        // The health is for who manages the grid: the keys of the environment of the grid served (the application's, never the install
+        // of the server)
         if ($page === 'health') {
-            $environment = Environment::system(Layout::load());
-            if (!ApiKeys::for($environment)->allows(ApiKeys::token($request->getHeaderLine('Authorization')))) {
+            if (!ApiKeys::for($grid->environment())->allows(ApiKeys::token($request->getHeaderLine('Authorization')))) {
                 return $response->withStatus(401)->withHeader('WWW-Authenticate', 'Bearer');
             }
         }
