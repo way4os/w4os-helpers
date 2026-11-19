@@ -102,7 +102,10 @@ final class Site
         $html = $this->view->page($page, $grid, $request->getHeaderLine('User-Agent'), $query);
         $response->getBody()->write($html);
 
-        return $response->withStatus($this->view->found() ? 200 : 404)->withHeader('Content-Type', 'text/html; charset=utf-8');
+        // Unavailable for now (a database of the grid that cannot be reached) is no missing page
+        $status = $this->view->unavailable() ? 503 : ($this->view->found() ? 200 : 404);
+
+        return $response->withStatus($status)->withHeader('Content-Type', 'text/html; charset=utf-8');
     }
 
     /**
@@ -159,12 +162,14 @@ final class Site
             return $response->withStatus(404);
         }
         if (($query['format'] ?? '') === 'json') {
-            $response->getBody()->write((string) json_encode(Blocks::data($name, $grid, $query)));
+            $data = Blocks::data($name, $grid, $query);
+            $response->getBody()->write((string) json_encode($data));
 
-            return $response->withHeader('Content-Type', 'application/json');
+            return $response->withStatus(empty($data['unavailable']) ? 200 : 503)->withHeader('Content-Type', 'application/json');
         }
         $response->getBody()->write($this->view->block($name, $grid, $query));
-        $response = $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+        // Unavailable for now (a database of the grid that cannot be reached): an error the site that shows it can tell
+        $response = $response->withStatus($this->view->unavailable() ? 503 : 200)->withHeader('Content-Type', 'text/html; charset=utf-8');
         // The notices of the block, for the zone of messages of the site that shows it
         $notices = View::notices();
 

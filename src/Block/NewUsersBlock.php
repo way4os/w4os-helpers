@@ -29,8 +29,10 @@ final class NewUsersBlock implements Block
                     'sort' => 'created desc',
                     'perPage' => $count,
                 ])->items();
-        } catch (\OpenSim\Exceptions\ChannelUnavailable) {
+        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+            Blocks::unreachable($e);
             $avatars = [];
+            $unavailable = true;
         }
         $profiles = Blocks::siteAddress($args, 'web_profile_url') ?? (string) $grid->address('web-profile');
         $rows = [];
@@ -43,6 +45,6 @@ final class NewUsersBlock implements Block
             ];
         }
 
-        return ['title' => _('Recent users'), 'rows' => $rows];
+        return ['title' => _('Recent users'), 'rows' => $rows] + (isset($unavailable) ? ['unavailable' => true] : []);
     }
 }

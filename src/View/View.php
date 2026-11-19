@@ -19,6 +19,8 @@ final class View
 
     private Twig $twig;
     private FilesystemLoader $loader;
+    private bool $unavailable = false;
+
     private bool $found = true;
 
     /** @var array{css:list<string>,js:list<string>} the files the blocks shown need, for the head of the layout */
@@ -75,6 +77,12 @@ final class View
         return $this->found;
     }
 
+    /** Whether the last block shown could not be made for now (a database of the grid that cannot be reached: a 503). */
+    public function unavailable(): bool
+    {
+        return $this->unavailable;
+    }
+
     /** @var array{agent?:string} where the page being made is shown, for the links of its blocks (Links::to()) */
     private array $where = [];
 
@@ -97,6 +105,7 @@ final class View
             $this->files[$kind] = array_values(array_unique(array_merge($this->files[$kind], $files)));
         }
         $this->found = (($data['found'] ?? true) !== false);
+        $this->unavailable = !empty($data['unavailable']);
 
         // The pictures of the grid: the address the site gives (`assets`), else the API of the helpers
         $assets = (string) ($args['assets'] ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/pictures');
@@ -233,6 +242,7 @@ final class View
             'search_nothing' => _('Nothing found.'),
             'search_empty' => _('Type something to look for.'),
             'profile_not_found' => _('This profile does not exist.'),
+            'unavailable' => _('This is temporarily unavailable. Please try again later.'),
             'member_since' => _('Member since'),
             'profile_private' => _('This profile is not public.'),
             'partner' => _('Partner'),

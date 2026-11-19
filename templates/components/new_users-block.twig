@@ -1,5 +1,6 @@
 {% extends 'components/block-component.twig' %}
 {% block body %}
+    {% if unavailable ?? false %}<p class="block-unavailable">{{ labels.unavailable }}</p>{% endif %}
     <ul class="new-users">
         {% for row in rows %}
             <li>{% if row.url %}<a href="{{ row.url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}{% if row.value %} <small>{{ row.value }}</small>{% endif %}</li>
