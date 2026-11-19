@@ -105,3 +105,13 @@ test('the health takes the API keys of the grid it is given, never the ones of t
     expect($app->handle($asked)->getStatusCode())->not->toBe(401)
         ->and(helpers_get($app, '/health')->getStatusCode())->toBe(401);
 });
+
+test('a picture the grid sends to its external web assets service is sent there, not a missing picture', function () {
+    $machine = new OpenSim\Testing\Machine();
+    $machine->write($machine->grid . '/Helpers.ini', "[Helpers]\n    HelpersURL = \"https://play.example.org/helpers\"\n    AssetsURL = \"https://assets.example.org/a\"\n");
+    $grid = Grid::find($machine->environment, 'demo');
+    $picture = helpers_get(App::create(static fn(string $nick) => $grid), '/helpers/pictures/cb2052ae-d161-43e9-b11b-c834217823cd.jpg');
+
+    expect([$picture->getStatusCode(), $picture->getHeaderLine('Location')])
+        ->toBe([302, 'https://assets.example.org/a/cb2052ae-d161-43e9-b11b-c834217823cd.jpg']);
+})->skip(fn() => OpenSim\Assets\ImagickConverter::available(), 'imagick reads JPEG 2000 here');
