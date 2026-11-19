@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (blocks): the message of the day in the language of the page, one sentence of the catalog of the engine
 - fix (blocks): the grid status shows the regions online only, its rows in the words and the order of w4os-wp
 - fix (texts): the texts of the profiles and the errors, missing from the catalogs, translated
 - feature (blocks): each block says which it is on its root (`data-helpers-block`), for the health to find it on a page
