@@ -19,12 +19,18 @@ final class DestinationGuideBlock implements Block
     public function data(Grid $grid, array $args = []): array
     {
         // The sections of the guide with their pictures, the engine's to find (Grid::guide())
-        $sections = $grid->guide();
         $data = [
             'title' => _('Destinations Guide'),
             'disclaimer' => _('This is a work in progress, please be indulgent.'),
             'placeholder' => WebAssets::PLACEHOLDER,
         ];
+        try {
+            $sections = $grid->guide();
+        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+            Blocks::unreachable($e);
+
+            return $data + ['unavailable' => true, 'items' => []];
+        }
         if ($sections === []) {
             return $data + [
                 'reason' => 'no destination: GuideSource of Helpers.ini is not set, not readable or empty',

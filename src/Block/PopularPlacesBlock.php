@@ -19,6 +19,13 @@ final class PopularPlacesBlock implements Block
     public function data(Grid $grid, array $args = []): array
     {
         $count = max(1, min(50, (int) ($args['count'] ?? self::COUNT)));
+        try {
+            $places = $grid->popularPlaces($count);
+        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+            Blocks::unreachable($e);
+            $places = [];
+            $unavailable = true;
+        }
         $rows = array_map(
             static fn(array $place): array => [
                 'picture' => $place['picture'],
@@ -27,9 +34,10 @@ final class PopularPlacesBlock implements Block
                 'value' => (string) $place['label'],
                 'url' => Links::to($grid, (string) $place['url'], $args),
             ],
-            $grid->popularPlaces($count),
+            $places,
         );
 
-        return ['title' => _('Popular places'), 'rows' => $rows, 'placeholder' => WebAssets::PLACEHOLDER];
+        return ['title' => _('Popular places'), 'rows' => $rows, 'placeholder' => WebAssets::PLACEHOLDER]
+            + (isset($unavailable) ? ['unavailable' => true] : []);
     }
 }

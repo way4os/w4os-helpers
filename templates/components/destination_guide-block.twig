@@ -10,7 +10,9 @@
         <span class="disclaimer">{{ disclaimer }}</span>
     </div>
     {% if reason is defined %}<!-- {{ reason }} -->{% endif %}
-    {% if text is defined %}
+    {% if unavailable ?? false %}
+        <p class="block-unavailable">{{ labels.unavailable }}</p>
+    {% elseif text is defined %}
         <div class="error">{{ text }}</div>
     {% else %}
         <div class="list">

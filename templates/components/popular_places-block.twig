@@ -2,6 +2,7 @@
 {# A grid of cards, as many rows as it needs: the picture of the parcel (the grid's placeholder without one), its name over it, its
    region under it (assets/css/places.css) #}
 {% block body %}
+    {% if unavailable ?? false %}<p class="block-unavailable">{{ labels.unavailable }}</p>{% endif %}
     <div class="places">
         {% for row in rows %}
             <a class="place" {% if row.url %}href="{{ row.url }}"{% endif %}>

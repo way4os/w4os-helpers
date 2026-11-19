@@ -65,6 +65,22 @@ describe('A block whose database cannot be reached', function () {
             ->and(count(View::notices()))->toBeGreaterThanOrEqual(2);
     });
 
+    test('says the popular places and the guide of the search are unavailable for now, not an error, and tells why', function () {
+        $grid = database_grid();
+        Connections::using(static fn() => null);
+        View::notices();
+        $view = new View(dirname(__DIR__, 2) . '/templates');
+        $places = $view->block('popular_places', $grid);
+        $placesUnavailable = $view->unavailable();
+        $guide = $view->block('destination_guide', $grid);
+
+        expect($places)->toContain('temporarily unavailable')
+            ->and($placesUnavailable)->toBeTrue()
+            ->and($guide)->toContain('temporarily unavailable')
+            ->and($view->unavailable())->toBeTrue()
+            ->and(count(View::notices()))->toBeGreaterThanOrEqual(2);
+    });
+
     test('is answered with an error the site can tell from a page that does not exist', function () {
         $grid = database_grid();
         Connections::using(static fn() => null);
