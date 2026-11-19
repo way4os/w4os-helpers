@@ -1,5 +1,5 @@
 {# What every block has: its section and its title. The template of a block fills `body`. #}
-<section class="block block-{{ name }}">
+<section class="block block-{{ name }}" data-helpers-block="{{ helpers_block }}">
     {% if title %}<{{ level }} class="block-title">{{ title }}</{{ level }}>{% endif %}
     {% block body %}{% endblock %}
 </section>

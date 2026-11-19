@@ -60,7 +60,7 @@ final class Site
         // would have under the helpers (an address the grid does not set is no address of the grid)
         $page = $this->page($grid, $path);
         if ($page === null) {
-            return $response->withStatus(404);
+            return self::notProvided($response, $path);
         }
         if ($page === 'grid_status_rss') {
             return GridStatus::respondRss($response, $grid);
@@ -106,6 +106,26 @@ final class Site
         $status = $this->view->unavailable() ? 503 : ($this->view->found() ? 200 : 404);
 
         return $response->withStatus($status)->withHeader('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    /** The scripts the viewers and the simulators call in XML-RPC, which read an answer in that format: an error as they read it. */
+    private const XMLRPC = ['currency.php', 'landtool.php', 'query.php'];
+
+    /**
+     * The answer to what the helpers do not provide here (the grid gives it another address, or none): in XML-RPC, with its reason,
+     * for what a viewer or a simulator reads so (the currency, the land tool, the search), else a 404 that says so, never an empty one.
+     */
+    private static function notProvided(ResponseInterface $response, string $path): ResponseInterface
+    {
+        $reason = sprintf(_('%s is not provided here: the grid gives it another address, or none.'), $path);
+        if (in_array(basename($path), self::XMLRPC, true)) {
+            $response->getBody()->write(\OpenSim\Services\XmlRpc::encode(\OpenSim\Services\XmlRpc::envelope(false, $reason)));
+
+            return $response->withHeader('Content-Type', 'text/xml; charset=utf-8');
+        }
+        $response->getBody()->write($reason . "\n");
+
+        return $response->withStatus(404)->withHeader('Content-Type', 'text/plain; charset=utf-8');
     }
 
     /**

@@ -1,4 +1,4 @@
-<section class="block block-profile">
+<section class="block block-profile" data-helpers-block="{{ helpers_block }}">
     {# The banner, over every tab: the picture, the name and what the engine marks for it (its birth, its role) #}
     <header class="profile-banner">
         {% if banner.picture is defined and banner.picture %}<img class="profile-photo" src="{{ assets }}/{{ banner.picture }}.jpg?default=person" alt="">{% endif %}

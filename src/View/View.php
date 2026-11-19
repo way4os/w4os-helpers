@@ -111,7 +111,8 @@ final class View
         // The pictures of the grid: the address the site gives (`assets`), else the API of the helpers
         $assets = (string) ($args['assets'] ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/pictures');
 
-        return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets]);
+        // Its name on its root (data-helpers-block), for a site, and the health, to find it in a page
+        return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets, 'helpers_block' => $name]);
     }
 
     /** @param array<string,mixed> $args the arguments of the request, for the block the page is */
