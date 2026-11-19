@@ -33,7 +33,7 @@ final class DestinationGuideBlock implements Block
         }
         if ($sections === []) {
             return $data + [
-                'reason' => 'no destination: GuideSource of Helpers.ini is not set, not readable or empty',
+                'reason' => 'no destination: the source of the guide (GuideSource of Helpers.ini, else the guide of 2do.directory) is not readable or empty',
                 'text' => _(
                     'The realm of destinations you seek has eluded our grasp, spirited away by elusive knomes. Rally the grid managers, let them venture forth to curate a grand tapestry of remarkable places for your exploration!',
                 ),

@@ -437,3 +437,17 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         expect($html)->toMatch('#<span class="place-name">Local places</span>\s*<span class="place-region">Welcome/128/128/25</span>#');
     });
 });
+
+describe('the destination guide without destinations', function () {
+    test('says where its list is read: its source, else the guide of 2do.directory', function () {
+        $dir = sys_get_temp_dir() . '/helpers-guide-empty-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"http://example.org:8002/\"\n");
+        file_put_contents("$dir/empty.txt", '');
+        file_put_contents("$dir/Helpers.ini", "[Helpers]\nGuideSource = \"$dir/empty.txt\"\n");
+
+        $data = Blocks::data('destination_guide', Grid::at(Environment::system(Layout::load()), $dir));
+
+        expect($data['reason'] ?? '')->toContain('GuideSource')->toContain('2do.directory');
+    });
+});
