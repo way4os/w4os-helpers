@@ -1,11 +1,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: opensim-helpers\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-19 11:16-0400\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#, php-format
+msgid "The database of the grid cannot be reached: %s"
+msgstr "La base de données de la grille est injoignable : %s"
 
 msgid "Destinations Guide"
 msgstr "Guide des destinations"
@@ -13,6 +19,17 @@ msgstr "Guide des destinations"
 msgid "This is a work in progress, please be indulgent."
 msgstr "Ceci est un travail en cours, veuillez faire preuve d'indulgence."
 
+msgid ""
+"The realm of destinations you seek has eluded our grasp, spirited away by "
+"elusive knomes. Rally the grid managers, let them venture forth to curate a "
+"grand tapestry of remarkable places for your exploration!"
+msgstr ""
+"Le royaume des destinations que vous recherchez nous échappe, emporté par "
+"des lutins insaisissables. Rassemblez les gestionnaires de la grille, "
+"laissez-les s'aventurer pour créer une grande collection de lieux "
+"remarquables à explorer !"
+
+#, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"
 msgstr[0] "%s destination"
@@ -21,19 +38,22 @@ msgstr[1] "%s destinations"
 msgid "Back to categories"
 msgstr "Retour aux catégories"
 
+msgid "Directory Info"
+msgstr "Infos de l’annuaire"
+
+#, php-format
 msgid "%d region"
 msgid_plural "%d regions"
 msgstr[0] "%d région"
 msgstr[1] "%d régions"
 
+#, php-format
 msgid "%d parcel"
 msgid_plural "%d parcels"
 msgstr[0] "%d parcelle"
 msgstr[1] "%d parcelles"
 
-msgid "Directory Info"
-msgstr "Infos de l’annuaire"
-
+#, php-format
 msgid "%d grid"
 msgid_plural "%d grids"
 msgstr[0] "%d grille"
@@ -60,8 +80,8 @@ msgstr "Membres sur la grille"
 msgid "Active users (30 days)"
 msgstr "Utilisateurs actifs (30 jours)"
 
-msgid "Users in world"
-msgstr "Utilisateurs dans le monde"
+msgid "Total users in world"
+msgstr "Utilisateurs sur la grille"
 
 msgid "Status"
 msgstr "Statut"
@@ -69,8 +89,8 @@ msgstr "Statut"
 msgid "Regions"
 msgstr "Régions"
 
-msgid "Area"
-msgstr "Superficie"
+msgid "Total area"
+msgstr "Surface totale"
 
 msgid "Grid Status"
 msgstr "Statut de la grille"
@@ -87,8 +107,14 @@ msgstr "Message du jour"
 msgid "traveler"
 msgstr "voyageur"
 
+msgid "Recent users"
+msgstr "Utilisateurs récents"
+
 msgid "Popular places"
 msgstr "Lieux populaires"
+
+msgid "Profile"
+msgstr "Profil"
 
 msgid "Profile not found"
 msgstr "Profil introuvable"
@@ -111,8 +137,13 @@ msgstr "Petites annonces"
 msgid "People"
 msgstr "Personnes"
 
+#, php-format
 msgid "%d min"
 msgstr "%d min"
+
+#, php-format
+msgid "%s is not provided here: the grid gives it another address, or none."
+msgstr "%s n'est pas fourni ici : la grille lui donne une autre adresse, ou aucune."
 
 msgid "Home"
 msgstr "Accueil"
@@ -141,6 +172,9 @@ msgstr "Tapez ce que vous cherchez."
 msgid "This profile does not exist."
 msgstr "Ce profil n’existe pas."
 
+msgid "This is temporarily unavailable. Please try again later."
+msgstr "Ceci est temporairement indisponible. Veuillez réessayer plus tard."
+
 msgid "Member since"
 msgstr "Membre depuis"
 
@@ -159,5 +193,43 @@ msgstr "Souhaite"
 msgid "Skills"
 msgstr "Compétences"
 
-msgid "Recent users"
-msgstr "Utilisateurs récents"
+msgid "About"
+msgstr "À propos"
+
+#. The in-world tab of a profile, as the viewer shows it
+msgid "Name"
+msgstr "Nom"
+
+msgid "Key"
+msgstr "Clé"
+
+msgid "Born"
+msgstr "Naissance"
+
+msgid "Account"
+msgstr "Compte"
+
+msgid "Groups"
+msgstr "Groupes"
+
+#. A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
+msgid "None."
+msgstr "Aucun."
+
+msgid "No description given."
+msgstr "Aucune description."
+
+msgid "Location"
+msgstr "Lieu"
+
+msgid "Teleport"
+msgstr "Téléportation"
+
+msgid "Until"
+msgstr "Jusqu'au"
+
+#~ msgid "Users in world"
+#~ msgstr "Utilisateurs dans le monde"
+
+#~ msgid "Area"
+#~ msgstr "Superficie"

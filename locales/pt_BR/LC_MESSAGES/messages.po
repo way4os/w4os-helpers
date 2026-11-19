@@ -1,11 +1,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: opensim-helpers\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-19 11:16-0400\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#, php-format
+msgid "The database of the grid cannot be reached: %s"
+msgstr "O banco de dados do grid não pode ser acessado: %s"
 
 msgid "Destinations Guide"
 msgstr "Guia de Destinos"
@@ -13,6 +19,17 @@ msgstr "Guia de Destinos"
 msgid "This is a work in progress, please be indulgent."
 msgstr "Este é um trabalho em andamento, por favor, seja indulgente."
 
+msgid ""
+"The realm of destinations you seek has eluded our grasp, spirited away by "
+"elusive knomes. Rally the grid managers, let them venture forth to curate a "
+"grand tapestry of remarkable places for your exploration!"
+msgstr ""
+"The magical realm of destinations you're searching for has slipped through "
+"our fingers, hidden away by mischievous creatures. Let's gather the grid "
+"managers and send them on a quest to curate a magnificent collection of "
+"extraordinary places for you to explore!"
+
+#, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"
 msgstr[0] "%s destino"
@@ -21,19 +38,22 @@ msgstr[1] "%s destinos"
 msgid "Back to categories"
 msgstr "Voltar para categorias"
 
+msgid "Directory Info"
+msgstr "Informações do diretório"
+
+#, php-format
 msgid "%d region"
 msgid_plural "%d regions"
 msgstr[0] "%d região"
 msgstr[1] "%d regiões"
 
+#, php-format
 msgid "%d parcel"
 msgid_plural "%d parcels"
 msgstr[0] "%d lote"
 msgstr[1] "%d lotes"
 
-msgid "Directory Info"
-msgstr "Informações do diretório"
-
+#, php-format
 msgid "%d grid"
 msgid_plural "%d grids"
 msgstr[0] "%d grid"
@@ -60,8 +80,8 @@ msgstr "Membros no mundo"
 msgid "Active users (30 days)"
 msgstr "Usuários ativos (30 dias)"
 
-msgid "Users in world"
-msgstr "Usuários no mundo"
+msgid "Total users in world"
+msgstr "Total de usuários no mundo"
 
 msgid "Status"
 msgstr "Status"
@@ -69,8 +89,8 @@ msgstr "Status"
 msgid "Regions"
 msgstr "Regiões"
 
-msgid "Area"
-msgstr "Área"
+msgid "Total area"
+msgstr "Área total"
 
 msgid "Grid Status"
 msgstr "Status do Grid"
@@ -87,8 +107,14 @@ msgstr "Mensagem do dia"
 msgid "traveler"
 msgstr "viajante"
 
+msgid "Recent users"
+msgstr "Usuários recentes"
+
 msgid "Popular places"
 msgstr "Lugares populares"
+
+msgid "Profile"
+msgstr "Perfil"
 
 msgid "Profile not found"
 msgstr "Perfil não encontrado"
@@ -111,8 +137,13 @@ msgstr "Classificados"
 msgid "People"
 msgstr "Pessoas"
 
+#, php-format
 msgid "%d min"
 msgstr "%d min"
+
+#, php-format
+msgid "%s is not provided here: the grid gives it another address, or none."
+msgstr "%s não é fornecido aqui: o grid lhe dá outro endereço, ou nenhum."
 
 msgid "Home"
 msgstr "Início"
@@ -141,6 +172,9 @@ msgstr "Digite algo para buscar."
 msgid "This profile does not exist."
 msgstr "Este perfil não existe."
 
+msgid "This is temporarily unavailable. Please try again later."
+msgstr "Isto está temporariamente indisponível. Tente novamente mais tarde."
+
 msgid "Member since"
 msgstr "Membro desde"
 
@@ -159,5 +193,43 @@ msgstr "Quer"
 msgid "Skills"
 msgstr "Habilidades"
 
-msgid "Recent users"
-msgstr "Usuários recentes"
+msgid "About"
+msgstr "Sobre"
+
+#. The in-world tab of a profile, as the viewer shows it
+msgid "Name"
+msgstr "Nome"
+
+msgid "Key"
+msgstr "Chave"
+
+msgid "Born"
+msgstr "Nascido"
+
+msgid "Account"
+msgstr "Conta"
+
+msgid "Groups"
+msgstr "Grupos"
+
+#. A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
+msgid "None."
+msgstr "Nenhum."
+
+msgid "No description given."
+msgstr "Nenhuma descrição informada."
+
+msgid "Location"
+msgstr "Local"
+
+msgid "Teleport"
+msgstr "Teleportar"
+
+msgid "Until"
+msgstr "Até"
+
+#~ msgid "Users in world"
+#~ msgstr "Usuários no mundo"
+
+#~ msgid "Area"
+#~ msgstr "Área"

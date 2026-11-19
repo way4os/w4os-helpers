@@ -2,6 +2,8 @@
 
 ### Unreleased
 
+- fix (blocks): the grid status shows the regions online only, its rows in the words and the order of w4os-wp
+- fix (texts): the texts of the profiles and the errors, missing from the catalogs, translated
 - feature (blocks): each block says which it is on its root (`data-helpers-block`), for the health to find it on a page
 - fix (routes): an address of the grid on another server is not routed to the helpers, whatever its path
 - fix (routes): what the helpers do not provide here is refused with its reason, in XML-RPC for the viewers, never an empty 404

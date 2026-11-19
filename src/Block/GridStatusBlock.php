@@ -47,7 +47,7 @@ final class GridStatusBlock implements Block
         return (string) $format->format($value);
     }
 
-    /** @return array<string,string> the label of each number of the monitor */
+    /** @return array<string,string> the label of each number of the monitor, as w4os-wp says them */
     private static function labels(): array
     {
         return [
@@ -55,30 +55,35 @@ final class GridStatusBlock implements Block
             'active_members' => _('Active members (30 days)'),
             'members_in_world' => _('Members in world'),
             'active_users' => _('Active users (30 days)'),
-            'total_users' => _('Users in world'),
+            'total_users' => _('Total users in world'),
         ];
+    }
+
+    /**
+     * The rows of the block, as w4os-wp shows them: the status, the numbers of the users, the regions online, the total area.
+     *
+     * @param array<string,mixed> $monitor what GridMonitor::of() says
+     * @return list<array{label:string,value:string}>
+     */
+    public static function rows(array $monitor, string $locale = 'en'): array
+    {
+        $rows = [];
+        $label = self::label($monitor, $locale);
+        $label === null || ($rows[] = ['label' => _('Status'), 'value' => $label]);
+        $users = (array) ($monitor['users'] ?? []);
+        foreach (self::labels() as $key => $text) {
+            isset($users[$key]) && ($rows[] = ['label' => $text, 'value' => self::number((float) $users[$key], $locale)]);
+        }
+        $rows[] = ['label' => _('Regions'), 'value' => self::number((float) ($monitor['regions']['online'] ?? 0), $locale)];
+        isset($users['area']) && ($rows[] = ['label' => _('Total area'), 'value' => self::area((float) $users['area'], $locale)]);
+
+        return $rows;
     }
 
     public function data(Grid $grid, array $args = []): array
     {
         $monitor = GridMonitor::of($grid);
-        $rows = [];
-        $locale = I18n::current();
-        $label = self::label($monitor, $locale);
-        $label === null || ($rows[] = ['label' => _('Status'), 'value' => $label]);
-        $rows[] = [
-            'label' => _('Regions'),
-            'value' => self::number($monitor['regions']['online'], $locale) . ' / ' . self::number($monitor['regions']['total'], $locale),
-        ];
-        $labels = self::labels();
-        foreach ((array) ($monitor['users'] ?? []) as $key => $count) {
-            if ($key === 'regions') {
-                continue; // the row of the regions above, online and total
-            }
-            $rows[] = $key === 'area'
-                ? ['label' => _('Area'), 'value' => self::area((float) $count, $locale)]
-                : ['label' => $labels[$key] ?? ucfirst(str_replace('_', ' ', (string) $key)), 'value' => self::number((float) $count, $locale)];
-        }
+        $rows = self::rows($monitor, I18n::current());
 
         return ['title' => _('Grid Status'), 'rows' => $rows, 'monitor' => $monitor];
     }

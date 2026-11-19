@@ -1,11 +1,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: opensim-helpers\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-19 11:16-0400\n"
 "Language: cy_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n==2) ? 1 : (n != 8 && n != 11) ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n==2) ? 1 : (n != 8 && n != "
+"11) ? 2 : 3;\n"
+
+#, php-format
+msgid "The database of the grid cannot be reached: %s"
+msgstr "Ni ellir cyrraedd cronfa ddata'r grid: %s"
 
 msgid "Destinations Guide"
 msgstr "Canllaw cyrchfannau"
@@ -13,6 +20,17 @@ msgstr "Canllaw cyrchfannau"
 msgid "This is a work in progress, please be indulgent."
 msgstr "Mae hyn yn waith ar y gweill, fodlonwch os gwelwch yn dda."
 
+msgid ""
+"The realm of destinations you seek has eluded our grasp, spirited away by "
+"elusive knomes. Rally the grid managers, let them venture forth to curate a "
+"grand tapestry of remarkable places for your exploration!"
+msgstr ""
+"Yr ystafellau o cyrchfannau rydych chi'n eu chwilio amdanynt wedi eu dwyn "
+"oddi ar ein gafael, wedi'u cludo i ffwrdd gan gnomes anhysbys. Raliwch y "
+"rheolwyr grid, gadewch iddynt anturio ymlaen i guradu taflen fawr o leoedd "
+"rhyfeddol ar gyfer eich archwilio!"
+
+#, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"
 msgstr[0] "%s cyrchfan"
@@ -23,6 +41,10 @@ msgstr[3] "%s cyrchfan"
 msgid "Back to categories"
 msgstr "Nôl i gategorïau"
 
+msgid "Directory Info"
+msgstr "Gwybodaeth y cyfeiriadur"
+
+#, php-format
 msgid "%d region"
 msgid_plural "%d regions"
 msgstr[0] "%d rhanbarth"
@@ -30,6 +52,7 @@ msgstr[1] "%d ranbarth"
 msgstr[2] "%d rhanbarth"
 msgstr[3] "%d rhanbarth"
 
+#, php-format
 msgid "%d parcel"
 msgid_plural "%d parcels"
 msgstr[0] "%d llain"
@@ -37,9 +60,7 @@ msgstr[1] "%d llain"
 msgstr[2] "%d llain"
 msgstr[3] "%d llain"
 
-msgid "Directory Info"
-msgstr "Gwybodaeth y cyfeiriadur"
-
+#, php-format
 msgid "%d grid"
 msgid_plural "%d grids"
 msgstr[0] "%d grid"
@@ -68,8 +89,8 @@ msgstr "Aelodau yn y byd"
 msgid "Active users (30 days)"
 msgstr "Defnyddwyr gweithredol (30 diwrnod)"
 
-msgid "Users in world"
-msgstr "Defnyddwyr yn y byd"
+msgid "Total users in world"
+msgstr "Cyfanswm y defnyddwyr yn y byd"
 
 msgid "Status"
 msgstr "Statws"
@@ -77,8 +98,8 @@ msgstr "Statws"
 msgid "Regions"
 msgstr "Rhanbarthau"
 
-msgid "Area"
-msgstr "Arwynebedd"
+msgid "Total area"
+msgstr "Cyfanswm arwynebedd"
 
 msgid "Grid Status"
 msgstr "Statws grid"
@@ -95,8 +116,14 @@ msgstr "Neges y dydd"
 msgid "traveler"
 msgstr "teithiwr"
 
+msgid "Recent users"
+msgstr "Defnyddwyr diweddar"
+
 msgid "Popular places"
 msgstr "Lleoedd poblogaidd"
+
+msgid "Profile"
+msgstr "Proffil"
 
 msgid "Profile not found"
 msgstr "Proffil heb ei ganfod"
@@ -119,8 +146,13 @@ msgstr "Hysbysebion"
 msgid "People"
 msgstr "Pobl"
 
+#, php-format
 msgid "%d min"
 msgstr "%d mun"
+
+#, php-format
+msgid "%s is not provided here: the grid gives it another address, or none."
+msgstr "Nid yw %s yn cael ei ddarparu yma: mae'r grid yn rhoi cyfeiriad arall iddo, neu ddim un."
 
 msgid "Home"
 msgstr "Hafan"
@@ -149,6 +181,9 @@ msgstr "Teipiwch rywbeth i chwilio amdano."
 msgid "This profile does not exist."
 msgstr "Nid yw’r proffil hwn yn bodoli."
 
+msgid "This is temporarily unavailable. Please try again later."
+msgstr "Nid yw hyn ar gael dros dro. Rhowch gynnig arall arni yn nes ymlaen."
+
 msgid "Member since"
 msgstr "Aelod ers"
 
@@ -167,5 +202,43 @@ msgstr "Eisiau"
 msgid "Skills"
 msgstr "Sgiliau"
 
-msgid "Recent users"
-msgstr "Defnyddwyr diweddar"
+msgid "About"
+msgstr "Ynghylch"
+
+#. The in-world tab of a profile, as the viewer shows it
+msgid "Name"
+msgstr "Enw"
+
+msgid "Key"
+msgstr "Allwedd"
+
+msgid "Born"
+msgstr "Eni"
+
+msgid "Account"
+msgstr "Cyfrif"
+
+msgid "Groups"
+msgstr "Grwpiau"
+
+#. A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
+msgid "None."
+msgstr "Dim."
+
+msgid "No description given."
+msgstr "Dim disgrifiad."
+
+msgid "Location"
+msgstr "Lleoliad"
+
+msgid "Teleport"
+msgstr "Teleportio"
+
+msgid "Until"
+msgstr "Tan"
+
+#~ msgid "Users in world"
+#~ msgstr "Defnyddwyr yn y byd"
+
+#~ msgid "Area"
+#~ msgstr "Arwynebedd"

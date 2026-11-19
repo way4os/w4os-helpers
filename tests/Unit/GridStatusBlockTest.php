@@ -20,4 +20,26 @@ describe('grid status', function () {
             ->and(GridStatusBlock::label($level(GridMonitor::DOWN), 'fr_FR'))->toBe('Hors ligne')
             ->and(GridStatusBlock::keyword($level(GridMonitor::OK)))->toBe('ONLINE');
     });
+
+    test('its rows are the ones of w4os-wp, in its words and its order: the regions online only', function () {
+        $monitor = ['level' => GridMonitor::OK, 'regions' => ['online' => 5, 'total' => 7], 'users' => [
+            'members' => 1234, 'active_members' => 12, 'members_in_world' => 3, 'active_users' => 40, 'total_users' => 6, 'regions' => 7, 'area' => 0.327680,
+        ]];
+
+        $rows = GridStatusBlock::rows($monitor);
+
+        expect(array_column($rows, 'value', 'label'))->toBe([
+            'Status' => 'Online',
+            'Members' => '1,234',
+            'Active members (30 days)' => '12',
+            'Members in world' => '3',
+            'Active users (30 days)' => '40',
+            'Total users in world' => '6',
+            'Regions' => '5',
+            'Total area' => '0.33 km²',
+        ])
+            // Without the numbers of the users, the regions still
+            ->and(GridStatusBlock::rows(['level' => GridMonitor::DOWN, 'regions' => ['online' => 0, 'total' => 7]]))
+            ->toBe([['label' => 'Status', 'value' => 'Offline'], ['label' => 'Regions', 'value' => '0']]);
+    });
 });

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 14:42-0400\n"
+"POT-Creation-Date: 2026-11-19 11:16-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,51 +18,56 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: src/Block/DestinationGuideBlock.php:15
+#: src/Block/Blocks.php:30
+#, php-format
+msgid "The database of the grid cannot be reached: %s"
+msgstr ""
+
+#: src/Block/DestinationGuideBlock.php:23
 msgid "Destinations Guide"
 msgstr ""
 
-#: src/Block/DestinationGuideBlock.php:15
+#: src/Block/DestinationGuideBlock.php:24
 msgid "This is a work in progress, please be indulgent."
 msgstr ""
 
-#: src/Block/DestinationGuideBlock.php:20
+#: src/Block/DestinationGuideBlock.php:38
 msgid ""
 "The realm of destinations you seek has eluded our grasp, spirited away by "
 "elusive knomes. Rally the grid managers, let them venture forth to curate a "
 "grand tapestry of remarkable places for your exploration!"
 msgstr ""
 
-#: src/Block/DestinationGuideBlock.php:34
+#: src/Block/DestinationGuideBlock.php:53
 #, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Block/DestinationGuideBlock.php:47
+#: src/Block/DestinationGuideBlock.php:73
 msgid "Back to categories"
 msgstr ""
 
-#: src/Block/DirectoryInfoBlock.php:32 src/Block/DirectoryInfoBlock.php:47
+#: src/Block/DirectoryInfoBlock.php:23 src/Block/DirectoryInfoBlock.php:46
+msgid "Directory Info"
+msgstr ""
+
+#: src/Block/DirectoryInfoBlock.php:36 src/Block/DirectoryInfoBlock.php:51
 #, php-format
 msgid "%d region"
 msgid_plural "%d regions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Block/DirectoryInfoBlock.php:33 src/Block/DirectoryInfoBlock.php:48
+#: src/Block/DirectoryInfoBlock.php:37 src/Block/DirectoryInfoBlock.php:52
 #, php-format
 msgid "%d parcel"
 msgid_plural "%d parcels"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Block/DirectoryInfoBlock.php:42
-msgid "Directory Info"
-msgstr ""
-
-#: src/Block/DirectoryInfoBlock.php:46
+#: src/Block/DirectoryInfoBlock.php:50
 #, php-format
 msgid "%d grid"
 msgid_plural "%d grids"
@@ -81,47 +86,47 @@ msgstr ""
 msgid "Grid Information"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:45
+#: src/Block/GridStatusBlock.php:54
 msgid "Members"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:46
+#: src/Block/GridStatusBlock.php:55
 msgid "Active members (30 days)"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:47
+#: src/Block/GridStatusBlock.php:56
 msgid "Members in world"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:48
+#: src/Block/GridStatusBlock.php:57
 msgid "Active users (30 days)"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:49
-msgid "Users in world"
+#: src/Block/GridStatusBlock.php:58
+msgid "Total users in world"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:58
+#: src/Block/GridStatusBlock.php:72
 msgid "Status"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:61
+#: src/Block/GridStatusBlock.php:77
 msgid "Regions"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:70
-msgid "Area"
+#: src/Block/GridStatusBlock.php:78
+msgid "Total area"
 msgstr ""
 
-#: src/Block/GridStatusBlock.php:74
+#: src/Block/GridStatusBlock.php:88
 msgid "Grid Status"
 msgstr ""
 
-#: src/Block/HealthBlock.php:43
+#: src/Block/HealthBlock.php:41
 msgid "Health"
 msgstr ""
 
-#: src/Block/HealthBlock.php:46
+#: src/Block/HealthBlock.php:44
 msgid "Certificate"
 msgstr ""
 
@@ -137,99 +142,158 @@ msgstr ""
 msgid "Recent users"
 msgstr ""
 
-#: src/Block/PopularPlacesBlock.php:34
+#: src/Block/PopularPlacesBlock.php:41
 msgid "Popular places"
 msgstr ""
 
 #: src/Block/ProfileBlock.php:29
+msgid "Profile"
+msgstr ""
+
+#: src/Block/ProfileBlock.php:33
 msgid "Profile not found"
 msgstr ""
 
-#: src/Block/SearchBlock.php:36 src/View/View.php:167
+#: src/Block/SearchBlock.php:48 src/View/View.php:241
 msgid "Search"
 msgstr ""
 
-#: src/Block/SearchBlock.php:64
+#: src/Block/SearchBlock.php:81
 msgid "Places"
 msgstr ""
 
-#: src/Block/SearchBlock.php:65
+#: src/Block/SearchBlock.php:82
 msgid "Land for sale"
 msgstr ""
 
-#: src/Block/SearchBlock.php:66
+#: src/Block/SearchBlock.php:83
 msgid "Events"
 msgstr ""
 
-#: src/Block/SearchBlock.php:67
+#: src/Block/SearchBlock.php:84
 msgid "Classifieds"
 msgstr ""
 
-#: src/Block/SearchBlock.php:68
+#: src/Block/SearchBlock.php:85
 msgid "People"
 msgstr ""
 
-#: src/Block/SearchBlock.php:108
+#: src/Block/SearchBlock.php:126
 #, php-format
 msgid "%d min"
 msgstr ""
 
-#: src/View/View.php:150
+#: src/Http/Action/Site.php:120
+#, php-format
+msgid "%s is not provided here: the grid gives it another address, or none."
+msgstr ""
+
+#: src/View/View.php:205
 msgid "Home"
 msgstr ""
 
-#: src/View/View.php:151
+#: src/View/View.php:206
 msgid "Guide"
 msgstr ""
 
-#: src/View/View.php:152
+#: src/View/View.php:207
 msgid "Directory"
 msgstr ""
 
-#: src/View/View.php:165
+#: src/View/View.php:239
 msgid "Skip to content"
 msgstr ""
 
-#: src/View/View.php:168
+#: src/View/View.php:242
 msgid "Search for"
 msgstr ""
 
-#: src/View/View.php:169
+#: src/View/View.php:243
 msgid "All"
 msgstr ""
 
-#: src/View/View.php:170
+#: src/View/View.php:244
 msgid "Nothing found."
 msgstr ""
 
-#: src/View/View.php:171
+#: src/View/View.php:245
 msgid "Type something to look for."
 msgstr ""
 
-#: src/View/View.php:172
+#: src/View/View.php:246
 msgid "This profile does not exist."
 msgstr ""
 
-#: src/View/View.php:173
+#: src/View/View.php:247
+msgid "This is temporarily unavailable. Please try again later."
+msgstr ""
+
+#: src/View/View.php:248
 msgid "Member since"
 msgstr ""
 
-#: src/View/View.php:174
+#: src/View/View.php:249
 msgid "This profile is not public."
 msgstr ""
 
-#: src/View/View.php:175
+#: src/View/View.php:250
 msgid "Partner"
 msgstr ""
 
-#: src/View/View.php:176
+#: src/View/View.php:251
 msgid "Languages"
 msgstr ""
 
-#: src/View/View.php:177
+#: src/View/View.php:252
 msgid "Wants to"
 msgstr ""
 
-#: src/View/View.php:178
+#: src/View/View.php:253
 msgid "Skills"
+msgstr ""
+
+#: src/View/View.php:259
+msgid "About"
+msgstr ""
+
+#. The in-world tab of a profile, as the viewer shows it
+#: src/View/View.php:265
+msgid "Name"
+msgstr ""
+
+#: src/View/View.php:266
+msgid "Key"
+msgstr ""
+
+#: src/View/View.php:267
+msgid "Born"
+msgstr ""
+
+#: src/View/View.php:268
+msgid "Account"
+msgstr ""
+
+#: src/View/View.php:269
+msgid "Groups"
+msgstr ""
+
+#. A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
+#: src/View/View.php:271
+msgid "None."
+msgstr ""
+
+#: src/View/View.php:272
+msgid "No description given."
+msgstr ""
+
+#: src/View/View.php:273
+msgid "Location"
+msgstr ""
+
+#: src/View/View.php:274
+msgid "Teleport"
+msgstr ""
+
+#: src/View/View.php:275
+msgid "Until"
 msgstr ""
