@@ -1,6 +1,10 @@
 {% extends 'components/block-component.twig' %}
 {% block body %}
-    <p class="totals"><strong>{{ summary[0] }}</strong>, {{ summary[1] }}, {{ summary[2] }}</p>
+    {% if unavailable ?? false %}
+        <p class="block-unavailable">{{ labels.unavailable }}</p>
+    {% else %}
+        <p class="totals"><strong>{{ summary[0] }}</strong>, {{ summary[1] }}, {{ summary[2] }}</p>
+    {% endif %}
     <ul class="grids">
         {% for grid in grids %}
             <li><a href="?gatekeeperURL={{ grid.url|url_encode }}">{{ grid.name }}</a> {{ grid.detail }}</li>

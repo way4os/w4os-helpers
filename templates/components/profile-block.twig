@@ -13,7 +13,9 @@
             {% endif %}
         </div>
     </header>
-    {% if not found %}
+    {% if unavailable ?? false %}
+        <p class="block-unavailable">{{ labels.unavailable }}</p>
+    {% elseif not found %}
         <p>{{ labels.profile_not_found }}</p>
     {% else %}
         {% if not published %}

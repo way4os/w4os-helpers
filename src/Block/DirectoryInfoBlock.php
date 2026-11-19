@@ -12,15 +12,19 @@ final class DirectoryInfoBlock implements Block
     public function data(Grid $grid, array $args = []): array
     {
         $search = new SearchData($grid);
-        $regions = $search->regions();
+        try {
+            $regions = $search->regions();
+            $counts = $search->rows(
+                "SELECT r.gatekeeperURL AS gatekeeper, COUNT(DISTINCT p.regionUUID) AS regions, COUNT(*) AS parcels FROM parcels AS p INNER JOIN $regions AS r ON p.regionUUID = r.regionUUID GROUP BY r.gatekeeperURL",
+            );
+        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+            Blocks::unreachable($e);
+
+            return ['title' => _('Directory Info'), 'grids' => [], 'rows' => [], 'unavailable' => true];
+        }
         $grids = [];
         $total = ['grids' => 0, 'regions' => 0, 'parcels' => 0];
-        foreach (
-            $search->rows(
-                "SELECT r.gatekeeperURL AS gatekeeper, COUNT(DISTINCT p.regionUUID) AS regions, COUNT(*) AS parcels FROM parcels AS p INNER JOIN $regions AS r ON p.regionUUID = r.regionUUID GROUP BY r.gatekeeperURL",
-            )
-            as $row
-        ) {
+        foreach ($counts as $row) {
             $gatekeeper = (string) $row['gatekeeper'];
             $r = (int) $row['regions'];
             $p = (int) $row['parcels'];

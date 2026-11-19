@@ -20,6 +20,16 @@ final class Blocks
         'profile' => ProfileBlock::class,
     ];
 
+    /**
+     * A database of the grid that cannot be reached, for a block that needs it: the visitor is told why (View::notify(), the site
+     * shows it in its zone of messages), and the block says it is unavailable for now (its data `unavailable`), never empty or
+     * missing; the helpers answer it with an error (503).
+     */
+    public static function unreachable(\OpenSim\Exceptions\ChannelUnavailable $e): void
+    {
+        \OpenSim\Helpers\View\View::notify('error', sprintf(_('The database of the grid cannot be reached: %s'), $e->getMessage()));
+    }
+
     public const LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];
 
     /** The name of a block from a slug or the name of a variable (`grid_info` is `grid-info`), null when none is called so. */

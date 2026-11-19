@@ -10,7 +10,10 @@
         <a href="{{ all_url }}"{% if not topic %} aria-current="page"{% endif %}>{{ labels.search_all }}</a>
         {% for t in topics %}<a href="{{ t.url }}"{% if t.current %} aria-current="page"{% endif %}>{{ t.title }}</a>{% endfor %}
     </nav>
-    {% if not groups %}
+    {% if unavailable ?? false %}
+        <p class="block-unavailable">{{ labels.unavailable }}</p>
+    {% endif %}
+    {% if not groups and not (unavailable ?? false) %}
         <p class="search-none">{% if q %}{{ labels.search_nothing }}{% else %}{{ labels.search_empty }}{% endif %}</p>
     {% endif %}
     {% for group in groups %}

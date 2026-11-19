@@ -22,8 +22,11 @@ final class ProfileBlock implements Block
         [$first, $last] = array_pad(explode('.', explode('@', $name)[0], 2), 2, '');
         try {
             $avatar = $config === null ? null : Avatar::find($config, "$first.$last");
-        } catch (\OpenSim\Exceptions\ChannelUnavailable) {
-            $avatar = null;
+        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+            // Unknown for now, not missing
+            Blocks::unreachable($e);
+
+            return ['title' => _('Profile'), 'found' => false, 'unavailable' => true, 'name' => $name];
         }
         // The account of the services of the grid, or one that is not active, has no page
         if ($avatar === null || $avatar->isTechnical() || !$avatar->isEnabled()) {
@@ -79,7 +82,9 @@ final class ProfileBlock implements Block
             // Its stream (w4os-flux), newest first: none when the grid keeps no posts
             try {
                 $data['feed'] = array_map(self::post(...), Posts::for($config)->of((string) $d['uuid']));
-            } catch (\OpenSim\Exceptions\ChannelUnavailable) {
+            } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+                // The rest of the profile is there: its stream said unavailable, not empty
+                Blocks::unreachable($e);
                 $data['feed'] = [];
             }
         }

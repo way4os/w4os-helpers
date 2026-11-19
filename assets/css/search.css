@@ -1,0 +1,10 @@
+/* The search wherever its block is shown (the pages of the helpers, a site in any theme), in the colors of the page */
+.search-form { display: flex; gap: .5rem; margin: 0 0 .75rem; }
+.search-form input[type=search] { flex: 1; padding: .375rem .5rem; font: inherit; }
+.search-form button { padding: .375rem .875rem; font: inherit; }
+.search-topics { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin-bottom: 1rem; }
+.search-topics a[aria-current=page] { font-weight: 700; text-decoration: none; color: inherit; }
+.search-group { font-size: 1.0625rem; margin: 1.25rem 0 .25rem; }
+.search-results { padding-left: 1.25rem; }
+.search-results li { margin: .5rem 0; }
+.block-search .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

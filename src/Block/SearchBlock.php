@@ -14,8 +14,12 @@ final class SearchBlock implements Block
     public const TOPICS = ['places', 'land', 'events', 'classifieds', 'people'];
     public const LIMIT = 30;
 
+    /** Whether a part of the search could not be done (a database of the grid that cannot be reached) */
+    private bool $unavailable = false;
+
     public function data(Grid $grid, array $args = []): array
     {
+        $this->unavailable = false;
         $search = new SearchData($grid);
         $q = trim((string) ($args['q'] ?? ''));
         $topic = in_array($args['topic'] ?? '', self::TOPICS, true) ? $args['topic'] : '';
@@ -28,7 +32,14 @@ final class SearchBlock implements Block
             if ($kind === 'people' && $q === '') {
                 continue;
             }
-            $items = $this->find($search, $kind, $q, $args);
+            try {
+                $items = $this->find($search, $kind, $q, $args);
+            } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+                // The places, the land, the events and the classifieds share the search: told once
+                $this->unavailable || Blocks::unreachable($e);
+                $this->unavailable = true;
+                $items = [];
+            }
             $items === [] ||
                 ($groups[] = ['topic' => $kind, 'title' => self::title($kind), 'items' => $items, 'url' => self::url($grid, $kind, $q, $args)]);
         }
@@ -46,6 +57,8 @@ final class SearchBlock implements Block
             ),
             'all_url' => self::url($grid, '', $q, $args),
             'groups' => $groups,
+            // What could not be searched (a database of the grid that cannot be reached): unavailable for now, not nothing found
+            'unavailable' => $this->unavailable,
         ];
     }
 
@@ -78,7 +91,8 @@ final class SearchBlock implements Block
     {
         $like = ['q' => '%' . addcslashes($q, '%_\\') . '%'];
         $params = $q === '' ? [] : $like;
-        $regions = $search->regions();
+        // The table of the regions, for the kinds that join it
+        $regions = in_array($kind, ['places', 'land'], true) ? $search->regions() : '';
         $limit = self::LIMIT;
         switch ($kind) {
             case 'places':
@@ -135,7 +149,9 @@ final class SearchBlock implements Block
                 try {
                     // Only who published their profile ("show in search" in the viewer), as the search of the viewers does
                     $people = Avatar::all($search->config, ['search' => $q, 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => $limit])->array();
-                } catch (\OpenSim\Exceptions\ChannelUnavailable) {
+                } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+                    Blocks::unreachable($e);
+                    $this->unavailable = true;
                     $people = [];
                 }
                 $profile = Blocks::siteAddress($args, 'web_profile_url') ?? (string) $search->grid->address('web-profile');
