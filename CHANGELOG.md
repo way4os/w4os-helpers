@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (blocks): the popular places leave out the other grids and the land for sale by default, as w4os-wp 2.x
 - feature (blocks): popular places take the `include_hypergrid` and `include_landsales` options
 - feature (sites): the helpers serve the grid a site gives them (`App::create`)
 - change (routes): the helpers answer only the pages the grid sets under their base, anything else is a 404

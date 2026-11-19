@@ -174,7 +174,7 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
-    test('the popular places take the options of w4os-wp 2.x: the other grids and the land for sale, both shown unless told not', function () {
+    test('the popular places take the options of w4os-wp 2.x and its defaults: the other grids and the land for sale, both left out unless asked', function () {
         $search = guide_search();
         $search->exec("INSERT INTO popularplaces VALUES ('p4', 'Elsewhere', 50, 1, 'http://other.example.org:8002')");
         $search->exec('CREATE TABLE parcelsales (parcelUUID CHAR(36), regionUUID CHAR(36))');
@@ -183,10 +183,11 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $labels = fn (array $args): array => array_column(Blocks::data('popular_places', $grid, $args)['rows'], 'label');
 
-        expect($labels([]))->toBe(['Elsewhere', 'Local places', 'Garden'])
-            ->and($labels(['include_hypergrid' => 'false']))->toBe(['Local places', 'Garden'])
-            ->and($labels(['include_landsales' => '0']))->toBe(['Elsewhere', 'Local places'])
-            ->and($labels(['include_hypergrid' => false, 'include_landsales' => 'no']))->toBe(['Local places']);
+        expect($labels([]))->toBe(['Local places'])
+            ->and($labels(['include_hypergrid' => 'true']))->toBe(['Elsewhere', 'Local places'])
+            ->and($labels(['include_landsales' => '1']))->toBe(['Local places', 'Garden'])
+            ->and($labels(['include_hypergrid' => true, 'include_landsales' => 'yes']))->toBe(['Elsewhere', 'Local places', 'Garden'])
+            ->and($labels(['include_hypergrid' => 'false']))->toBe(['Local places']);
     });
 
     test('an open category is headed by its name, whatever title the page gives the guide', function () {

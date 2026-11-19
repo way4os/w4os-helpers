@@ -10,8 +10,8 @@ use OpenSim\Models\Grid;
 /**
  * The parcels with the most visitors, as a grid of cards: the picture of the parcel (its snapshot), what you go to (its name here,
  * its region on another grid) and where under it (its region and point here, its grid elsewhere), as the engine gives them
- * (Grid::popularPlaces()). The options of w4os-wp 2.x: `include_hypergrid` and `include_landsales`, false to leave out the places of
- * the other grids and the land for sale (both shown by default).
+ * (Grid::popularPlaces()). The options of w4os-wp 2.x and its defaults: `include_hypergrid` and `include_landsales`, true to show the
+ * places of the other grids and the land for sale (both left out by default).
  */
 final class PopularPlacesBlock implements Block
 {
@@ -42,11 +42,11 @@ final class PopularPlacesBlock implements Block
             + (isset($unavailable) ? ['unavailable' => true] : []);
     }
 
-    /** An option of the block that is true unless it is told not (false, 0, no, off). */
+    /** An option of the block that is false unless it is told so (true, 1, yes, on). */
     private static function option(array $args, string $name): bool
     {
-        $value = $args[$name] ?? true;
+        $value = $args[$name] ?? false;
 
-        return is_bool($value) ? $value : !in_array(strtolower(trim((string) $value)), ['false', '0', 'no', 'off'], true);
+        return is_bool($value) ? $value : in_array(strtolower(trim((string) $value)), ['true', '1', 'yes', 'on'], true);
     }
 }
