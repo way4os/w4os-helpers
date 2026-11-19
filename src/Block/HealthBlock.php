@@ -31,6 +31,8 @@ final class HealthBlock implements Block
                 Health::writable('tasks', Engine::scheduler($grid)->directory()),
             ],
         ];
+        // What the health says, in the language of the page
+        $groups = Health::translate(Health::withTexts($groups), I18n::current());
         $seen = [];
         foreach ($groups as &$group) {
             $group['first_of_file'] = !isset($seen[$group['file']]);
