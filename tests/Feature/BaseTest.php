@@ -36,15 +36,15 @@ function base_get(Slim\App $app, string $path, string $agent = 'Mozilla/5.0'): P
 }
 
 describe('the helpers serve only under their base', function () {
-    test('the default base: their pages there, a page of the site redirected there, nothing outside', function () {
+    test('their base: the pages the grid sets there, nothing at the address a page of the site would have there, nothing outside', function () {
         $app = base_app('/helpers', ['search' => 'https://example.com/helpers/search'], 'https://example.com/guide');
 
         expect(base_get($app, '/helpers/search')->getStatusCode())->toBe(200)
             ->and(base_get($app, '/helpers/')->getStatusCode())->toBe(200)
             ->and(base_get($app, '/search')->getStatusCode())->toBe(404)
             ->and(base_get($app, '/guide')->getStatusCode())->toBe(404);
-        $guide = base_get($app, '/helpers/guide');
-        expect($guide->getStatusCode())->toBe(302)->and($guide->getHeaderLine('Location'))->toBe('https://example.com/guide');
+        // The guide is the site's: /helpers/guide is no address of the grid, the helpers do not take it
+        expect(base_get($app, '/helpers/guide')->getStatusCode())->toBe(404);
     });
 
     test('another base: /helpers is nobody\'s', function () {
@@ -53,7 +53,7 @@ describe('the helpers serve only under their base', function () {
         expect(base_get($app, '/helperz/search')->getStatusCode())->toBe(200)
             ->and(base_get($app, '/helpers/search')->getStatusCode())->toBe(404)
             ->and(base_get($app, '/helpers/')->getStatusCode())->toBe(404)
-            ->and(base_get($app, '/helperz/guide')->getHeaderLine('Location'))->toBe('https://example.com/guide');
+            ->and(base_get($app, '/helperz/guide')->getStatusCode())->toBe(404);
     });
 
     test('the base at the root: every page the grid gives, the minimal site', function () {
@@ -66,10 +66,10 @@ describe('the helpers serve only under their base', function () {
             ->and(base_get($app, '/profile/Nobody.Here')->getStatusCode())->toBe(404);
     });
 
-    test('a profile on the site: the default path of the helpers leads there, with the name', function () {
+    test('a profile on the site: the address it would have under the helpers is nobody\'s', function () {
         $app = base_app('/helpers', ['web_profile_url' => 'https://example.com/profile/[AGENT_NAME]']);
 
-        expect(base_get($app, '/helpers/profile/Ada.Love?lang=fr')->getHeaderLine('Location'))->toBe('https://example.com/profile/Ada.Love?lang=fr');
+        expect(base_get($app, '/helpers/profile/Ada.Love?lang=fr')->getStatusCode())->toBe(404);
     });
 
     test('a viewer gets the content alone', function () {
