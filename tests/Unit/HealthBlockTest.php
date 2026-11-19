@@ -12,7 +12,7 @@ describe('The health page of the helpers', function () {
         $groups = array_column(Blocks::data('health', $grid)['groups'], null, 'file');
 
         expect(array_column($groups['cache']['rows'] ?? [], 'label'))->toBe(['assets', 'tasks'])
-            ->and(array_column($groups['cache']['rows'], 'detail'))->toBe([
+            ->and(array_column($groups['cache']['rows'], 'path'))->toBe([
                 OpenSim\Assets\WebAssets::folder($grid),
                 $machine->environment->layout->tasksRoot(),
             ]);

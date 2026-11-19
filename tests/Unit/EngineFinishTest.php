@@ -40,7 +40,7 @@ describe('What waits for the answer', function () {
         Engine::finish();
 
         expect($before)
-            ->toBe(['search-parse' => null, 'events-parse' => null, 'guide-pictures' => null])
+            ->toBe(['search-parse' => null, 'events-parse' => null, 'guide-pictures' => null, 'health' => null])
             ->and(search_tasks_runs($grid)['search-parse'])
             ->not->toBeNull();
     });

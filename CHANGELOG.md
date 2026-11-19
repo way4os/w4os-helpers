@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (health): the page shows the path of a folder or a file where the engine gives it (`path`); the tasks of a grid include the check of its health (`health`)
 - update (profile): the sections of a profile are the engine's, in its order (`Avatar::form()`, as the grid has them): no Web tab when the grid does not allow the web address of a profile (`AllowUserProfileWebURLs` false); a viewer still gets the stream, About and the interests
 - fix (grid status): the status of the block is the text of its level in the language of the page (Online, En ligne), no longer the keyword of the viewers in capitals; the text and the feed the viewers read keep it (ONLINE)
 - fix (places): the cards of the popular places two a row at least on a narrow screen, cards rather than banners as wide as the page
