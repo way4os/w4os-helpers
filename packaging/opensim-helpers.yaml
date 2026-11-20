@@ -35,6 +35,10 @@ suggests:
   - php-imagick
 
 contents:
+  - src: packaging/opensim-helpers.copyright
+    dst: /usr/share/doc/opensim-helpers/copyright
+    file_info:
+      mode: 0644
   - src: build/opensim-helpers
     dst: /usr/share/opensim-helpers
     type: tree

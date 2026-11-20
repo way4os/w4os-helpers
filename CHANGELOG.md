@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (packaging): the copyright file of the package
 - change (guide): a grid that sets no GuideSource shows the guide of 2do.directory (the engine's default)
 - fix (blocks): the health in the language of the page, the sentences of the catalog of the engine
 - fix (blocks): the message of the day in the language of the page, one sentence of the catalog of the engine
