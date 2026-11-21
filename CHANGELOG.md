@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- update (git): .gitignore is the projects' template (macOS, editors, AI files, config, generated content, data) with this project's own rules after it; phpunit.xml is phpunit.xml.dist (a local phpunit.xml overrides it), .phpactor.json no longer tracked
 - fix (packaging): the engine and rest-php are links in the package whatever the machine that builds it has; the web configs that name /usr/share/opensim-helpers moved to /usr/share/w4os-helpers at the upgrade; the packaging check reads the links and upgrades such a config
 - fix (tests): tests/Packaging/check takes where its container runs on its command line (--connection NAME, or --local), never from the environment, and refuses to run on macOS without it; a named connection must exist, and the machine used is the one podman itself reports; the upgrade installs the empty package first, as apt does
 - update (rename): the helpers are w4os-helpers: the namespace W4OS\Helpers on the engine's W4OS\Engine, the package w4os-helpers in /usr/share/w4os-helpers (opensim-helpers an empty package that brings it), their folder /var/cache/w4os-helpers (the one of before moved there), the repository way4os/w4os-helpers, the composer name w4os/w4os-helpers
