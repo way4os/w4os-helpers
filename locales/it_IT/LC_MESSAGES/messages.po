@@ -16,9 +16,6 @@ msgstr "Il database della griglia non è raggiungibile: %s"
 msgid "Destinations Guide"
 msgstr "Guida delle destinazioni"
 
-msgid "This is a work in progress, please be indulgent."
-msgstr "Questo è un lavoro in corso, per favore sii indulgente."
-
 msgid ""
 "The realm of destinations you seek has eluded our grasp, spirited away by "
 "elusive knomes. Rally the grid managers, let them venture forth to curate a "

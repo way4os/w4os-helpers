@@ -16,9 +16,6 @@ msgstr "De database van het grid is niet bereikbaar: %s"
 msgid "Destinations Guide"
 msgstr "Gids voor bestemmingen"
 
-msgid "This is a work in progress, please be indulgent."
-msgstr "Dit is nog een work in progress, wees alsjeblieft geduldig."
-
 msgid ""
 "The realm of destinations you seek has eluded our grasp, spirited away by "
 "elusive knomes. Rally the grid managers, let them venture forth to curate a "

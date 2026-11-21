@@ -16,9 +16,6 @@ msgstr "La base de données de la grille est injoignable : %s"
 msgid "Destinations Guide"
 msgstr "Guide des destinations"
 
-msgid "This is a work in progress, please be indulgent."
-msgstr "Ceci est un travail en cours, veuillez faire preuve d'indulgence."
-
 msgid ""
 "The realm of destinations you seek has eluded our grasp, spirited away by "
 "elusive knomes. Rally the grid managers, let them venture forth to curate a "

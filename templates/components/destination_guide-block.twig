@@ -3,11 +3,11 @@
    is its Destinations panel (client-viewer); in a browser a block of the page as the others (client-browser): its title is theirs #}
 <div id="guide" class="block block-guide client-{{ client }}" data-helpers-block="{{ helpers_block }}">
     <div class="header">
-        {% set heading = (category is defined and category and back is defined and back) ? category : (category ?? title) %}
-        {% if heading and client != 'viewer' %}<{{ level }} class="block-title">{{ heading }}</{{ level }}>
-        {% elseif category is defined and category and back is defined and back %}<h2>{{ category }}</h2>{% elseif heading %}<h1>{{ heading }}</h1>{% endif %}
+        {% set browsing = category is defined and category and back is defined and back %}
+        {# In a browser, the title of the guide; the category under it while the categories are browsed #}
+        {% if client != 'viewer' %}{% if title %}<{{ level }} class="block-title">{{ title }}</{{ level }}>{% endif %}{% if browsing %}<span class="category">{{ category }}</span>{% endif %}
+        {% elseif browsing %}<h2>{{ category }}</h2>{% elseif category ?? title %}<h1>{{ category ?? title }}</h1>{% endif %}
         {% if back is defined and back %}<a href="{{ back.url }}" class="back">{{ back.label }}</a>{% endif %}
-        <span class="disclaimer">{{ disclaimer }}</span>
     </div>
     {% if reason is defined %}<!-- {{ reason }} -->{% endif %}
     {% if unavailable ?? false %}

@@ -21,7 +21,6 @@ final class DestinationGuideBlock implements Block
         // The sections of the guide with their pictures, the engine's to find (Grid::guide())
         $data = [
             'title' => _('Destinations Guide'),
-            'disclaimer' => _('This is a work in progress, please be indulgent.'),
             'placeholder' => WebAssets::PLACEHOLDER,
         ];
         try {

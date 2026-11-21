@@ -27,10 +27,6 @@ msgstr ""
 msgid "Destinations Guide"
 msgstr ""
 
-#: src/Block/DestinationGuideBlock.php:24
-msgid "This is a work in progress, please be indulgent."
-msgstr ""
-
 #: src/Block/DestinationGuideBlock.php:38
 msgid ""
 "The realm of destinations you seek has eluded our grasp, spirited away by "

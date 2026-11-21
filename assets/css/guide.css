@@ -31,10 +31,8 @@
 #guide .header > .block-title {
 	flex-basis: 100%;
 }
-#guide .disclaimer {
-	margin-left: auto;
-	font-size: 0.75rem;
-	color: var(--guide-muted);
+#guide .header > .category {
+	font-weight: bold;
 }
 #guide a {
 	color: inherit;

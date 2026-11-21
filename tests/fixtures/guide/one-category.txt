@@ -1,0 +1,3 @@
+Popular places
+Welcome|grid.example.org:8002:Welcome
+Garden|grid.example.org:8002:Welcome/64/64/22

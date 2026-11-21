@@ -217,6 +217,24 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->toContain('<h1>Destinations Guide</h1>');
     });
 
+    test('in a browser, carries its own title whatever its one category is called, and no line about the work in progress', function () {
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+
+        $one = $view->block('destination_guide', guide_grid('one-category', 'http://grid.example.org:8002'), ['client' => 'browser', 'level' => 'h2']);
+        $browsed = $view->block('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['client' => 'browser', 'level' => 'h2', 'category' => 'Hypergrid']);
+
+        expect($one)
+            ->toContain('<h2 class="block-title">Destinations Guide</h2>')
+            ->not->toContain('<h2 class="block-title">Popular places</h2>')
+            ->not->toContain('disclaimer')
+            ->not->toContain('work in progress')
+            ->and($browsed)
+            ->toContain('<h2 class="block-title">Destinations Guide</h2>')
+            ->toContain('<span class="category">Hypergrid</span>')
+            ->toContain('class="back"');
+    });
+
     test('the picture of nothing is lighter than a picture: half seen, in the guide and the popular places, set in one place', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
