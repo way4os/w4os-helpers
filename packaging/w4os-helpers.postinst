@@ -2,10 +2,41 @@
 # postinst of w4os-helpers: the folder the helpers write as the web server (www-data): the state of their tasks (the search
 # index fills itself at the end of a visit) and their cache (the pictures). The folders of the install are its account's
 # (opensim), which the web server cannot write; the helpers use these instead (HelpersLayout). A web server that runs as
-# another user gives OPENSIM_TASKS_ROOT and OPENSIM_CACHE_ROOT to the helpers, or owns these folders.
+# another user gives OPENSIM_TASKS_ROOT and OPENSIM_CACHE_ROOT to the helpers, or owns these folders. The web configs of before
+# w4os on the paths of now.
 set -e
 
 folder=/var/cache/w4os-helpers
+package=w4os-helpers
+
+# The web configs written from the snippets of before w4os (`opensim web <grid> ...`, by hand, under any name): the paths, socket
+# and pool of now, in place, and the services that read them reloaded. A file that names none of the old ones is left as it is.
+migrate_web_configs() { # sed expressions, then -- and the pattern a file to migrate matches
+    sed_args=
+    while [ "$1" != -- ]; do
+        sed_args="$sed_args -e $1"
+        shift
+    done
+    pattern=$2
+    changed=
+    for file in /etc/apache2/conf-available/*.conf /etc/apache2/sites-available/*.conf /etc/nginx/conf.d/*.conf \
+        /etc/nginx/sites-available/* /etc/caddy/Caddyfile /etc/caddy/*.caddyfile /etc/caddy/*/*.caddyfile /etc/caddy/*/* \
+        /etc/php/*/fpm/pool.d/*.conf; do
+        [ -f "$file" ] && [ ! -L "$file" ] && grep -qE "$pattern" "$file" || continue
+        # shellcheck disable=SC2086
+        set -f
+        sed -i $sed_args "$file"
+        set +f
+        echo "$package: $file now names the paths of $package" >&2
+        changed=yes
+    done
+    [ -n "$changed" ] && [ -d /run/systemd/system ] || return 0
+    # The pools first (their sockets), then the web servers that reach them
+    for unit in $(systemctl list-units --type=service --state=active --plain --no-legend 'php*-fpm.service' | awk '{print $1}') \
+        $(systemctl list-units --type=service --state=active --plain --no-legend apache2.service nginx.service caddy.service | awk '{print $1}'); do
+        systemctl reload "$unit" || echo "$package: could not reload $unit" >&2
+    done
+}
 
 case "$1" in
     configure)
@@ -24,6 +55,7 @@ case "$1" in
         else
             echo "w4os-helpers: no www-data user: give the web server $folder/tasks and $folder/cache, or set OPENSIM_TASKS_ROOT and OPENSIM_CACHE_ROOT" >&2
         fi
+        migrate_web_configs 's#/usr/share/opensim-helpers\b#/usr/share/w4os-helpers#g' -- '/usr/share/opensim-helpers\b'
         ;;
 esac
 
