@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Http\Action;
+namespace W4OS\Helpers\Http\Action;
 
-use OpenSim\Api\Api;
-use OpenSim\Api\Handler;
-use OpenSim\Config\GridConfig;
-use OpenSim\Models\Grid;
-use OpenSim\Scheduling\Scheduler;
-use OpenSim\Security\Locked;
-use OpenSim\Services\SearchTasks;
+use W4OS\Engine\Api\Api;
+use W4OS\Engine\Api\Handler;
+use W4OS\Engine\Config\GridConfig;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Scheduling\Scheduler;
+use W4OS\Engine\Security\Locked;
+use W4OS\Engine\Services\SearchTasks;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Factory\ResponseFactory;
@@ -154,7 +154,7 @@ final class Engine
     {
         $path = '/' . trim($path, '/');
         // The pictures of the grid (a texture, a profile picture, a map tile), at a path of their own: the asset of the engine
-        if (preg_match('#^/pictures/([0-9a-fA-F-]{36}\.(?:' . implode('|', array_keys(\OpenSim\Models\Image::FORMATS)) . '))$#', $path, $m) === 1) {
+        if (preg_match('#^/pictures/([0-9a-fA-F-]{36}\.(?:' . implode('|', array_keys(\W4OS\Engine\Models\Image::FORMATS)) . '))$#', $path, $m) === 1) {
             return "/assets/{$m[1]}";
         }
         foreach ($paths as $service => $known) {

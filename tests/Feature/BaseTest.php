@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use OpenSim\Config\Layout;
-use OpenSim\Helpers\App;
-use OpenSim\Helpers\View\View;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
+use W4OS\Engine\Config\Layout;
+use W4OS\Helpers\App;
+use W4OS\Helpers\View\View;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\Environment;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /**
@@ -77,8 +77,8 @@ describe('the helpers serve only under their base', function () {
         $viewer = (string) base_get($app, '/helpers/search', 'Mozilla/5.0 SecondLife/7.1 (Firestorm)')->getBody();
         $browser = (string) base_get($app, '/helpers/search')->getBody();
 
-        expect(OpenSim\Hypergrid\Destination::isViewer('Mozilla/5.0 (X11) Firestorm-Releasex64 7.1.11'))->toBeTrue()
-            ->and(OpenSim\Hypergrid\Destination::isViewer('Mozilla/5.0 (Macintosh) Firefox/140.0'))->toBeFalse()
+        expect(W4OS\Engine\Hypergrid\Destination::isViewer('Mozilla/5.0 (X11) Firestorm-Releasex64 7.1.11'))->toBeTrue()
+            ->and(W4OS\Engine\Hypergrid\Destination::isViewer('Mozilla/5.0 (Macintosh) Firefox/140.0'))->toBeFalse()
             ->and($viewer)->not->toContain('class="topbar"')
             ->and($browser)->toContain('class="topbar"');
     });
@@ -102,7 +102,7 @@ describe('a service the grid does not provide here', function () {
         $app = elsewhere_app();
         $post = static fn(string $path): Psr\Http\Message\ResponseInterface => $app->handle(
             (new ServerRequestFactory())->createServerRequest('POST', $path)->withHeader('Content-Type', 'text/xml')
-                ->withBody((new Slim\Psr7\Factory\StreamFactory())->createStream(OpenSim\Services\XmlRpc::request('getCurrencyQuote', [['agentId' => '00000000-0000-0000-0000-000000000000', 'currencyBuy' => 1000]]))),
+                ->withBody((new Slim\Psr7\Factory\StreamFactory())->createStream(W4OS\Engine\Services\XmlRpc::request('getCurrencyQuote', [['agentId' => '00000000-0000-0000-0000-000000000000', 'currencyBuy' => 1000]]))),
         );
 
         foreach (['/helpers/currency.php', '/helpers/landtool.php', '/helpers/query.php'] as $path) {

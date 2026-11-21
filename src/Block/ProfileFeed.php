@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
 /**
  * The stream of a profile as a feed, for a reader: a JSON Feed (1.1) or an RSS (2.0) one, made from what the page of the profile

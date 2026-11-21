@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Helpers\I18n;
-use OpenSim\Models\Grid;
+use W4OS\Helpers\I18n;
+use W4OS\Engine\Models\Grid;
 
 /** The message of the day, in the language of the page; a page does not know the name of the avatar: the word for a visitor. */
 final class MotdBlock implements Block

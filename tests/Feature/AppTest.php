@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use OpenSim\Config\Layout;
-use OpenSim\Helpers\App;
-use OpenSim\Helpers\Http\Action\Engine;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
+use W4OS\Engine\Config\Layout;
+use W4OS\Helpers\App;
+use W4OS\Helpers\Http\Action\Engine;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\Environment;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 function helpers_get(Slim\App $app, string $path): Psr\Http\Message\ResponseInterface
@@ -63,7 +63,7 @@ test('a service is found at the address the grid has for it', function () {
 });
 
 test('the engine answers the helpers only what it says is public, whatever key a request brings', function () {
-    $grid = OpenSim\Models\Grid::find((new OpenSim\Testing\Machine())->environment, 'demo');
+    $grid = W4OS\Engine\Models\Grid::find((new W4OS\Engine\Testing\Machine())->environment, 'demo');
     $request = (new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', '/grids')
         ->withAttribute('grid', $grid)
         ->withHeader('Authorization', 'Bearer osk_anything');
@@ -73,7 +73,7 @@ test('the engine answers the helpers only what it says is public, whatever key a
 
 test('a profile that does not exist says so', function () {
     $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
-    $data = OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['name' => 'Nobody.Here']);
+    $data = W4OS\Helpers\Block\Blocks::data('profile', $grid, ['name' => 'Nobody.Here']);
 
     expect($data['found'])->toBeFalse();
 });
@@ -89,16 +89,16 @@ test('the assets are served, the theme first, and only known types', function ()
 });
 
 test('every page the site serves is in the OpenAPI document of the engine', function () {
-    $paths = array_keys(OpenSim\Api\Contract::document()['paths']);
+    $paths = array_keys(W4OS\Engine\Api\Contract::document()['paths']);
     $served = ['/search', '/welcome', '/guide', '/profile/{name}', '/health', '/directory_info', '/grid_status', '/grid_status.rss', '/get_grid_info', '/blocks/{name}', '/assets/{file}'];
 
     expect(array_values(array_diff($served, $paths)))->toBe([]);
 });
 
 test('the health takes the API keys of the grid it is given, never the ones of the install of the server', function () {
-    $machine = new OpenSim\Testing\Machine();
+    $machine = new W4OS\Engine\Testing\Machine();
     $grid = Grid::find($machine->environment, 'demo');
-    $key = OpenSim\Security\ApiKeys::for($machine->environment)->create('site')['key'];
+    $key = W4OS\Engine\Security\ApiKeys::for($machine->environment)->create('site')['key'];
     $app = App::create(static fn(string $nick) => $grid);
     $asked = (new ServerRequestFactory())->createServerRequest('GET', '/health')->withHeader('Authorization', "Bearer $key");
 
@@ -107,11 +107,11 @@ test('the health takes the API keys of the grid it is given, never the ones of t
 });
 
 test('a picture the grid sends to its external web assets service is sent there, not a missing picture', function () {
-    $machine = new OpenSim\Testing\Machine();
+    $machine = new W4OS\Engine\Testing\Machine();
     $machine->write($machine->grid . '/Helpers.ini', "[Helpers]\n    HelpersURL = \"https://play.example.org/helpers\"\n    AssetsURL = \"https://assets.example.org/a\"\n");
     $grid = Grid::find($machine->environment, 'demo');
     $picture = helpers_get(App::create(static fn(string $nick) => $grid), '/helpers/pictures/cb2052ae-d161-43e9-b11b-c834217823cd.jpg');
 
     expect([$picture->getStatusCode(), $picture->getHeaderLine('Location')])
         ->toBe([302, 'https://assets.example.org/a/cb2052ae-d161-43e9-b11b-c834217823cd.jpg']);
-})->skip(fn() => OpenSim\Assets\ImagickConverter::available(), 'imagick reads JPEG 2000 here');
+})->skip(fn() => W4OS\Engine\Assets\ImagickConverter::available(), 'imagick reads JPEG 2000 here');

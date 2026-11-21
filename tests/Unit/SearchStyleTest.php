@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use OpenSim\Helpers\View\View;
+use W4OS\Helpers\View\View;
 
 describe('The style of the search', function () {
     test('comes with the block, wherever it is shown: its topics spaced, its label hidden', function () {

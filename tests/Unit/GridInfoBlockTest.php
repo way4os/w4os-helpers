@@ -1,6 +1,6 @@
 <?php
 
-use OpenSim\Hypergrid\Destination;
+use W4OS\Engine\Hypergrid\Destination;
 
 describe('grid info', function () {
     test('the login URI is shown as host:port, linked to its teleport address', function () {

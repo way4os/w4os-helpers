@@ -2,7 +2,7 @@
  * css/blocks.css: what every block that shows pictures shares. The picture of nothing (the grid's placeholder, where a parcel or a
  * place has none) is lighter than a picture, so that it takes less room in the eye: its opacity is set here, in one place.
  *
- * @package    magicoli/opensim-helpers
+ * @package    w4os/w4os-helpers
  * @license    AGPLv3
  */
 :root {

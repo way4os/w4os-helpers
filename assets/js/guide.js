@@ -1,11 +1,11 @@
 /**
  * js/guide.js
  *
- * @package    magicoli/opensim-helpers
- * @subpackage    magicoli/opensim-helpers/guide
+ * @package    w4os/w4os-helpers
+ * @subpackage    w4os/w4os-helpers/guide
  *
  * @author     Gudule Lapointe <gudule@speculoos.world>
- * @link       https://github.com/magicoli/opensim-helpers
+ * @link       https://github.com/way4os/w4os-helpers
  * @license    AGPLv3
  */
 

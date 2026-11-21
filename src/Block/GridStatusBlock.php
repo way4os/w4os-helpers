@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Helpers\I18n;
-use OpenSim\I18n\Catalog;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\GridMonitor;
+use W4OS\Helpers\I18n;
+use W4OS\Engine\I18n\Catalog;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\GridMonitor;
 
 /** The state of the grid at a glance, from the monitor of the engine. */
 final class GridStatusBlock implements Block

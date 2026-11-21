@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use OpenSim\Config\Layout;
-use OpenSim\Helpers\App;
-use OpenSim\Helpers\View\View;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
+use W4OS\Engine\Config\Layout;
+use W4OS\Helpers\App;
+use W4OS\Helpers\View\View;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\Environment;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /** The answer of the helpers of a demo grid to a GET. */

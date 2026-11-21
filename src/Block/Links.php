@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Models\Grid;
+use W4OS\Engine\Models\Grid;
 
 /**
  * The teleport link of a destination for where a block is shown, the engine's to choose (Grid::link(), Destination::AUTO): it

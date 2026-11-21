@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Http\Middleware;
+namespace W4OS\Helpers\Http\Middleware;
 
-use OpenSim\Models\Grid;
+use W4OS\Engine\Models\Grid;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;

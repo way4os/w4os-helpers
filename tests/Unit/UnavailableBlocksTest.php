@@ -1,12 +1,12 @@
 <?php
 
-use OpenSim\Data\Connections;
-use OpenSim\Data\OSPDO;
-use OpenSim\Helpers\App;
-use OpenSim\Helpers\Block\Blocks;
-use OpenSim\Helpers\View\View;
-use OpenSim\Models\Grid;
-use OpenSim\Testing\Machine;
+use W4OS\Engine\Data\Connections;
+use W4OS\Engine\Data\OSPDO;
+use W4OS\Helpers\App;
+use W4OS\Helpers\Block\Blocks;
+use W4OS\Helpers\View\View;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Testing\Machine;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /** A grid whose accounts are in a database (its Robust's): reached through the connections the test gives. */
@@ -101,7 +101,7 @@ describe('A block whose database cannot be reached', function () {
         $accounts->exec('CREATE TABLE UserAccounts (PrincipalID CHAR(36) PRIMARY KEY, ScopeID CHAR(36), FirstName VARCHAR(64), LastName VARCHAR(64), Email VARCHAR(64), Created INT, UserLevel INT DEFAULT 0, UserFlags INT DEFAULT 0, UserTitle VARCHAR(64) DEFAULT \'\', active INT DEFAULT 1)');
         $accounts->exec("CREATE TABLE GridUser (UserID VARCHAR(255) PRIMARY KEY, HomeRegionID CHAR(36), LastRegionID CHAR(36), Online CHAR(5) DEFAULT 'false', Login CHAR(16) DEFAULT '0', Logout CHAR(16) DEFAULT '0')");
         $accounts->exec('CREATE TABLE userprofile (useruuid CHAR(36) PRIMARY KEY, profileImage CHAR(36), profileAboutText TEXT, profileURL VARCHAR(255), profilePartner CHAR(36), profileWantToText TEXT, profileSkillsText TEXT, profileLanguages TEXT, profileFirstImage CHAR(36), profileFirstText TEXT, profileWantToMask INT DEFAULT 0, profileSkillsMask INT DEFAULT 0)');
-        Connections::using(static fn($what) => $what === \OpenSim\Data\Database::Search ? null : $accounts);
+        Connections::using(static fn($what) => $what === \W4OS\Engine\Data\Database::Search ? null : $accounts);
         View::notices();
 
         expect(Blocks::data('search', $grid, ['q' => 'ada', 'topic' => 'people'])['unavailable'])->toBeFalse()

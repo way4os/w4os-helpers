@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Assets\WebAssets;
-use OpenSim\Hypergrid\Destination;
-use OpenSim\Models\Grid;
+use W4OS\Engine\Assets\WebAssets;
+use W4OS\Engine\Hypergrid\Destination;
+use W4OS\Engine\Models\Grid;
 
 /**
  * The destinations of the grid, by category, as the viewers' guide shows them: a card for each category (the picture of one of its
@@ -26,7 +26,7 @@ final class DestinationGuideBlock implements Block
         ];
         try {
             $sections = $grid->guide();
-        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+        } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
             Blocks::unreachable($e);
 
             return $data + ['unavailable' => true, 'items' => []];

@@ -1,6 +1,6 @@
 <?php
 
-use OpenSim\Helpers\I18n;
+use W4OS\Helpers\I18n;
 
 describe('language', function () {
     test('the locale of a language tag', function () {

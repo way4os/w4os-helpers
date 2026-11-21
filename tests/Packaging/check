@@ -40,7 +40,7 @@ COPYFILE_DISABLE=1 tar -chf - -C "$stage" dist deps | podman run --rm -i --memor
 tar -xf - --no-same-owner --warning=no-unknown-keyword -C /
 status=0
 check() { if eval "$2"; then echo "   ok: $1"; else echo "   FAILED: $1"; status=1; fi; }
-newest() { ls -v "$1"/*.deb 2>/dev/null | tail -1; }
+newest() { ls -v "$1"/"$2"_*.deb 2>/dev/null | tail -1; }
 http_code() { curl -s -o /dev/null -w %{http_code} "$1"; }
 # A previous version of a package, which had the libraries bundled as folders of vendor/magicoli (dpkg does not
 # replace a folder by a link when it upgrades): installed in place of the real one
@@ -66,16 +66,16 @@ if [ -n "$APT_HTTPS" ]; then
 fi
 apt-get update -qq >/dev/null
 apt-get install -y -qq curl unzip php-fpm caddy mariadb-server imagemagick \
-    "$(newest /deps/container)" "$(newest /deps/rest)" "$(newest /deps/engine)" "$(newest /dist)" >/tmp/apt.log 2>&1 ||
+    "$(newest /deps/container container-tools)" "$(newest /deps/rest opensim-rest-php)" "$(newest /deps/engine w4os-engine)" "$(newest /dist w4os-helpers)" >/tmp/apt.log 2>&1 ||
     { tail -20 /tmp/apt.log; exit 1; }
 php=$(php -r "echo PHP_MAJOR_VERSION . \".\" . PHP_MINOR_VERSION;")
 
 echo "The package"
-check "it is installed, it depends on the engine and rest-php" "dpkg -s opensim-helpers | grep -q \"^Depends:.*opensim-engine.*opensim-rest-php\""
-check "its application is in /usr/share/opensim-helpers, its document root public/" "[ -f /usr/share/opensim-helpers/public/index.php ] && [ -f /usr/share/opensim-helpers/src/App.php ] && [ -f /usr/share/opensim-helpers/vendor/autoload.php ]"
-check "the engine and rest-php come from their packages, by links" "[ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-engine ] && [ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/opensim-helpers/vendor/magicoli/opensim-engine/src/Models/Grid.php ]"
-check "the libraries it brings itself are in its vendor folder" "[ -d /usr/share/opensim-helpers/vendor/slim/slim ] && [ -d /usr/share/opensim-helpers/vendor/twig/twig ]"
-check "the folders it writes as the web server are made for www-data" "[ \"\$(stat -c %U /var/cache/opensim-helpers/tasks)\" = www-data ] && [ \"\$(stat -c %U /var/cache/opensim-helpers/cache)\" = www-data ]"
+check "it is installed, it depends on the engine and rest-php" "dpkg -s w4os-helpers | grep -q \"^Depends:.*w4os-engine.*opensim-rest-php\""
+check "its application is in /usr/share/w4os-helpers, its document root public/" "[ -f /usr/share/w4os-helpers/public/index.php ] && [ -f /usr/share/w4os-helpers/src/App.php ] && [ -f /usr/share/w4os-helpers/vendor/autoload.php ]"
+check "the engine and rest-php come from their packages, by links" "[ -L /usr/share/w4os-helpers/vendor/w4os/w4os-engine ] && [ -L /usr/share/w4os-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ]"
+check "the libraries it brings itself are in its vendor folder" "[ -d /usr/share/w4os-helpers/vendor/slim/slim ] && [ -d /usr/share/w4os-helpers/vendor/twig/twig ]"
+check "the folders it writes as the web server are made for www-data" "[ \"\$(stat -c %U /var/cache/w4os-helpers/tasks)\" = www-data ] && [ \"\$(stat -c %U /var/cache/w4os-helpers/cache)\" = www-data ]"
 check "the folders of the install are the account of the instances, which the web server cannot write" "getent passwd opensim >/dev/null && ! runuser -u www-data -- test -w /var/lib/opensim && ! runuser -u www-data -- test -w /var/cache/opensim"
 
 echo "A grid served by php-fpm and Caddy"
@@ -87,7 +87,7 @@ mkdir -p $grid/web
 printf "[Const]\n    BaseURL = \"http://127.0.0.1\"\n    WebURL = \"http://127.0.0.1:8080\"\n    PublicPort = \"8002\"\n    PrivatePort = \"8003\"\n[DatabaseService]\n    ConnectionString = \"Data Source=localhost;Database=robust;User ID=os;Password=pw;\"\n[GridInfoService]\n    gridname = \"Demo\"\n" >$grid/Robust.HG.ini
 # The config of a grid holds passwords: readable by the group of the web server only
 chgrp -R www-data $grid && chmod 640 $grid/Robust.HG.ini
-php -r "require \"/usr/share/opensim-engine/vendor/autoload.php\"; echo OpenSim\\Provisioning\\Web\\Snippets::render(\"caddy\", \"demo\", \"$grid\", \"/usr/share/opensim-helpers/public\", \"/run/php/php$php-fpm.sock\", \"http://127.0.0.1:8080\");" >$grid/web/demo.caddyfile
+php -r "require \"/usr/share/w4os-engine/vendor/autoload.php\"; echo W4OS\\Engine\\Provisioning\\Web\\Snippets::render(\"caddy\", \"demo\", \"$grid\", \"/usr/share/w4os-helpers/public\", \"/run/php/php$php-fpm.sock\", \"http://127.0.0.1:8080\");" >$grid/web/demo.caddyfile
 printf "{\n    admin off\n    auto_https off\n}\nhttp://127.0.0.1:8080 {\n    import $grid/web/demo.caddyfile\n}\n" >/etc/caddy/Caddyfile
 check "the snippet of the kit hands the helpers to php-fpm" "grep -q \"php_fastcgi unix//run/php/php$php-fpm.sock\" $grid/web/demo.caddyfile && grep -q \"env OPENSIM_GRID demo\" $grid/web/demo.caddyfile"
 "php-fpm$php" -D
@@ -96,14 +96,14 @@ for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:8080/ && break; s
 check "php-fpm runs the helpers as www-data" "ps -o user= -C php-fpm$php | grep -q www-data"
 check "the home page of the helpers answers, under their base" "[ \"\$(http_code http://127.0.0.1:8080/helpers/)\" = 200 ]"
 sleep 3
-check "the visit ran the tasks of the search, their state in the folder of the helpers" "grep -q \"\\\"status\\\":\\\"ran\\\"\" /var/cache/opensim-helpers/tasks/search-parse.demo.json"
+check "the visit ran the tasks of the search, their state in the folder of the helpers" "grep -q \"\\\"status\\\":\\\"ran\\\"\" /var/cache/w4os-helpers/tasks/search-parse.demo.json"
 check "the tables of the search are made" "mysql -N -e \"SHOW TABLES\" robust | grep -qx hostsregister"
 check "nothing is written in the folders of the install" "[ -z \"\$(ls -A /var/lib/opensim/cron 2>/dev/null)\" ]"
-key=$(php -r "require \"/usr/share/opensim-engine/vendor/autoload.php\"; echo OpenSim\\Security\\ApiKeys::for(OpenSim\\Runtime\\Environment::system(OpenSim\\Config\\Layout::resolve()))->create(\"check\")[\"key\"];")
+key=$(php -r "require \"/usr/share/w4os-engine/vendor/autoload.php\"; echo W4OS\\Engine\\Security\\ApiKeys::for(W4OS\\Engine\\Runtime\\Environment::system(W4OS\\Engine\\Config\\Layout::resolve()))->create(\"check\")[\"key\"];")
 check "the health page is closed without a key" "[ \"\$(http_code http://127.0.0.1:8080/helpers/health)\" = 401 ]"
 # One row a line, the spaces between the tags out
 curl -s -H "Authorization: Bearer $key" http://127.0.0.1:8080/helpers/health | tr -d "\n" | sed -e "s/>[[:space:]]*</></g" -e "s#<tr #\n<tr #g" >/tmp/health.rows
-check "the health page tells the folders of the tasks and the pictures can be written, the helpers own" "grep \"scope=.row.>tasks<\" /tmp/health.rows | grep -q \"health-ok.*/var/cache/opensim-helpers/tasks\" && grep \"scope=.row.>assets<\" /tmp/health.rows | grep -q \"health-ok.*/var/cache/opensim-helpers/cache\""
+check "the health page tells the folders of the tasks and the pictures can be written, the helpers own" "grep \"scope=.row.>tasks<\" /tmp/health.rows | grep -q \"health-ok.*/var/cache/w4os-helpers/tasks\" && grep \"scope=.row.>assets<\" /tmp/health.rows | grep -q \"health-ok.*/var/cache/w4os-helpers/cache\""
 
 echo "A picture of the grid"
 mysql robust -e "CREATE TABLE assets (name VARCHAR(64), description VARCHAR(64), assetType TINYINT, local TINYINT, temporary TINYINT, data LONGBLOB, id CHAR(36) PRIMARY KEY, create_time INT, access_time INT, asset_flags INT, CreatorID VARCHAR(128))"
@@ -111,16 +111,19 @@ convert -size 16x16 xc:red /tmp/red.jp2
 php -r "\$pdo = new PDO(\"mysql:host=localhost;dbname=robust\", \"os\", \"pw\"); \$pdo->prepare(\"INSERT INTO assets VALUES (\\\"red\\\", \\\"\\\", 0, 0, 0, ?, \\\"aaaaaaaa-0000-4000-8000-000000000001\\\", 0, 0, 0, \\\"\\\")\")->execute([file_get_contents(\"/tmp/red.jp2\")]);"
 picture=http://127.0.0.1:8080/helpers/pictures/aaaaaaaa-0000-4000-8000-000000000001.png
 check "a texture of the grid is served as a picture" "[ \"\$(curl -s -o /tmp/red.png -w %{content_type} $picture)\" = image/png ] && [ -s /tmp/red.png ]"
-check "the picture is kept in the cache of the helpers" "ls /var/cache/opensim-helpers/cache/demo/assets/images/ | grep -q aaaaaaaa-0000-4000-8000-000000000001"
+check "the picture is kept in the cache of the helpers" "ls /var/cache/w4os-helpers/cache/demo/assets/images/ | grep -q aaaaaaaa-0000-4000-8000-000000000001"
 
-echo "An upgrade, the zip"
+echo "An upgrade from the name of before w4os, the zip"
+dpkg -r opensim-helpers w4os-helpers >/dev/null 2>&1
 previous opensim-helpers opensim-engine opensim-rest-php
-dpkg -i "$(newest /dist)" >/dev/null 2>&1
-check "an upgrade from a version that bundled the libraries leaves links, not empty folders" "[ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-engine ] && [ -L /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/opensim-helpers/vendor/magicoli/opensim-engine/src/Models/Grid.php ]"
+mkdir -p /var/cache/opensim-helpers/tasks
+dpkg -i "$(newest /dist w4os-helpers)" "$(newest /dist opensim-helpers)" >/dev/null 2>&1
+check "an upgrade from opensim-helpers brings w4os-helpers, the old name an empty package" "dpkg -s w4os-helpers >/dev/null && dpkg -s opensim-helpers | grep -q \"^Depends:.*w4os-helpers\" && [ ! -e /usr/share/opensim-helpers ] && [ ! -e /var/cache/opensim-helpers ]"
+check "the libraries are links after the upgrade, not empty folders" "[ -L /usr/share/w4os-helpers/vendor/w4os/w4os-engine ] && [ -L /usr/share/w4os-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ]"
 mkdir /tmp/zip && cd /tmp/zip && unzip -q "$(ls -v /dist/*.zip | tail -1)"
-check "the zip has the helpers and a complete vendor folder, no composer.lock, no tests" "[ -f opensim-helpers/public/index.php ] && [ -f opensim-helpers/vendor/twig/twig/src/Environment.php ] && [ -f opensim-helpers/vendor/magicoli/opensim-engine/src/Models/Grid.php ] && [ ! -L opensim-helpers/vendor/magicoli/opensim-engine ] && [ ! -e opensim-helpers/composer.lock ] && [ ! -e opensim-helpers/tests ]"
+check "the zip has the helpers and a complete vendor folder, no composer.lock, no tests" "[ -f w4os-helpers/public/index.php ] && [ -f w4os-helpers/vendor/twig/twig/src/Environment.php ] && [ -f w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ] && [ ! -L w4os-helpers/vendor/w4os/w4os-engine ] && [ ! -e w4os-helpers/composer.lock ] && [ ! -e w4os-helpers/tests ]"
 chmod -R a+rX /tmp/zip
-(cd /tmp/zip/opensim-helpers/public && runuser -u www-data -- env OPENSIM_GRID=demo php -S 127.0.0.1:8092 index.php >/tmp/zip.log 2>&1 &)
+(cd /tmp/zip/w4os-helpers/public && runuser -u www-data -- env OPENSIM_GRID=demo php -S 127.0.0.1:8092 index.php >/tmp/zip.log 2>&1 &)
 sleep 2
 check "from the zip the home page answers too" "[ \"\$(http_code http://127.0.0.1:8092/helpers/)\" = 200 ]"
 [ $status = 0 ] || { echo "--- caddy"; tail -5 /tmp/caddy.log; echo "--- php-fpm"; tail -5 /var/log/php$php-fpm.log 2>/dev/null; echo "--- health"; head -c 300 /tmp/health.rows; grep -i "tasks\|assets" /tmp/health.rows | head -4; ls -l /var/lib/opensim/api-keys.json 2>&1; }

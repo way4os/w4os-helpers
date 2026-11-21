@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Assets\WebAssets;
-use OpenSim\Helpers\I18n;
-use OpenSim\I18n\Catalog;
-use OpenSim\Flux\Posts;
-use OpenSim\Models\Avatar;
-use OpenSim\Models\Grid;
+use W4OS\Engine\Assets\WebAssets;
+use W4OS\Helpers\I18n;
+use W4OS\Engine\I18n\Catalog;
+use W4OS\Engine\Flux\Posts;
+use W4OS\Engine\Models\Avatar;
+use W4OS\Engine\Models\Grid;
 
 /** The page of a profile; what the avatar did not publish ("Show in search") is not shown. */
 final class ProfileBlock implements Block
@@ -22,7 +22,7 @@ final class ProfileBlock implements Block
         [$first, $last] = array_pad(explode('.', explode('@', $name)[0], 2), 2, '');
         try {
             $avatar = $config === null ? null : Avatar::find($config, "$first.$last");
-        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+        } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
             // Unknown for now, not missing
             Blocks::unreachable($e);
 
@@ -82,7 +82,7 @@ final class ProfileBlock implements Block
             // Its stream (w4os-flux), newest first: none when the grid keeps no posts
             try {
                 $data['feed'] = array_map(self::post(...), Posts::for($config)->of((string) $d['uuid']));
-            } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+            } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                 // The rest of the profile is there: its stream said unavailable, not empty
                 Blocks::unreachable($e);
                 $data['feed'] = [];
@@ -92,11 +92,11 @@ final class ProfileBlock implements Block
         // The sections of the profile as tabs, in the order of the engine, its stream first, the empty ones too: every one in a browser; in a viewer, whose Feed tab
         // opens this page, the stream, About and the interests, its own windows showing the rest (the engine tells a viewer: the
         // class a site gives, else the user agent); the stream alone for whoever asks it so (feed_only, as the viewers of SL do)
-        $client = isset($args['client']) ? (string) $args['client'] : \OpenSim\Hypergrid\Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
+        $client = isset($args['client']) ? (string) $args['client'] : \W4OS\Engine\Hypergrid\Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
         // The sections are the engine's, as the grid has them (none the grid does not allow: the web address of a profile)
         $sections = array_column($avatar->form()->sections, 'name');
         $data['sections'] = array_values(array_intersect($sections, match (true) {
-            \OpenSim\Result::isTrue($args['feed_only'] ?? false) => ['feed'],
+            \W4OS\Engine\Result::isTrue($args['feed_only'] ?? false) => ['feed'],
             $client === 'viewer' => ['feed', 'about', 'interests'],
             default => $sections,
         }));

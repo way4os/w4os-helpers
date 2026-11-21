@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\View;
+namespace W4OS\Helpers\View;
 
-use OpenSim\Helpers\Block\Blocks;
-use OpenSim\Helpers\Block\ProfileBlock;
-use OpenSim\Helpers\I18n;
-use OpenSim\Hypergrid\Destination;
-use OpenSim\Models\Grid;
+use W4OS\Helpers\Block\Blocks;
+use W4OS\Helpers\Block\ProfileBlock;
+use W4OS\Helpers\I18n;
+use W4OS\Engine\Hypergrid\Destination;
+use W4OS\Engine\Models\Grid;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
 use Twig\Markup;
@@ -233,11 +233,11 @@ final class View
     public static function labels(): array
     {
         // The texts of the catalog of the engine in the language in use, the English ones where it has none
-        $texts = \OpenSim\I18n\Catalog::messages(\OpenSim\Helpers\I18n::current()) + \OpenSim\I18n\Catalog::MESSAGES;
+        $texts = \W4OS\Engine\I18n\Catalog::messages(\W4OS\Helpers\I18n::current()) + \W4OS\Engine\I18n\Catalog::MESSAGES;
 
         return [
             'skip' => _('Skip to content'),
-            'powered_by' => 'opensim-helpers',
+            'powered_by' => 'w4os-helpers',
             'search' => _('Search'),
             'search_for' => _('Search for'),
             'search_all' => _('All'),

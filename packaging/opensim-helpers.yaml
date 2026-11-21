@@ -1,54 +1,24 @@
-# The web helpers of an OpenSimulator grid, built by dev/build.sh (or apt-package) from build/opensim-helpers, prepared
-# by packaging/build. ${VERSION} comes from build-tools.
-# A Slim 4 application in /usr/share/opensim-helpers, to be served by a web server (nothing is enabled by installing it): the
-# document root is its public folder, whose index.php is the single entry. Its settings are the config of the grid (Robust.ini,
-# OpenSim.ini, Helpers.ini), read by the engine. The projects of the family it needs are their own packages (opensim-engine,
-# opensim-rest-php), linked into its vendor folder.
+# The name of the helpers before w4os: an empty package that brings w4os-helpers on an upgrade, dropped after one release.
 name: opensim-helpers
 arch: all
 platform: linux
 version: ${VERSION}
 version_schema: semver
-section: web
+section: oldlibs
 priority: optional
 maintainer: Gudule Lapointe <gudule@speculoos.world>
 description: |-
-  Web helpers of an OpenSimulator grid (economy, search, offline messages)
-  PHP scripts the viewers and the simulators query (economy, search, guide,
-  offline messages, message of the day) and the home and splash pages, installed
-  in /usr/share/opensim-helpers, to be served by a web server.
-homepage: https://github.com/GuduleLapointe/opensim-helpers
+  transitional package for w4os-helpers
+  The web helpers of an OpenSimulator grid are w4os-helpers now. This empty
+  package brings it on an upgrade; it can be removed.
+homepage: https://github.com/way4os/w4os-helpers
 license: AGPL-3.0-or-later
 
 depends:
-  # The first engine with everything the helpers call (d02a515: the silhouette of a person)
-  - opensim-engine (>= 3.0.0~beta.13)
-  - opensim-rest-php
-  - php-curl
-  - php-intl
-  - php-mbstring
-  - php-mysql
-  - php-xml
-suggests:
-  - caddy | nginx | apache2
-  - php-fpm | libapache2-mod-php
-  - php-imagick
+  - w4os-helpers (= ${DEB_VERSION})
 
 contents:
-  - src: packaging/opensim-helpers.copyright
+  - src: packaging/w4os-helpers.copyright
     dst: /usr/share/doc/opensim-helpers/copyright
     file_info:
       mode: 0644
-  - src: build/opensim-helpers
-    dst: /usr/share/opensim-helpers
-    type: tree
-  - src: /usr/share/opensim-engine
-    dst: /usr/share/opensim-helpers/vendor/magicoli/opensim-engine
-    type: symlink
-  - src: /usr/share/opensim-rest-php
-    dst: /usr/share/opensim-helpers/vendor/magicoli/opensim-rest-php
-    type: symlink
-
-scripts:
-  preinstall: packaging/opensim-helpers.preinst
-  postinstall: packaging/opensim-helpers.postinst

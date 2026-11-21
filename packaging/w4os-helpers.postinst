@@ -1,0 +1,30 @@
+#!/bin/sh
+# postinst of w4os-helpers: the folder the helpers write as the web server (www-data): the state of their tasks (the search
+# index fills itself at the end of a visit) and their cache (the pictures). The folders of the install are its account's
+# (opensim), which the web server cannot write; the helpers use these instead (HelpersLayout). A web server that runs as
+# another user gives OPENSIM_TASKS_ROOT and OPENSIM_CACHE_ROOT to the helpers, or owns these folders.
+set -e
+
+folder=/var/cache/w4os-helpers
+
+case "$1" in
+    configure)
+        # The folder of before w4os: moved when there is no new one, else dropped (a cache and the state of tasks that run again)
+        if [ -d /var/cache/opensim-helpers ]; then
+            if [ -e "$folder" ]; then
+                rm -rf /var/cache/opensim-helpers
+            else
+                mv /var/cache/opensim-helpers "$folder"
+            fi
+        fi
+        if getent passwd www-data >/dev/null; then
+            for sub in tasks cache; do
+                install -d -o www-data -g www-data -m 0755 "$folder/$sub"
+            done
+        else
+            echo "w4os-helpers: no www-data user: give the web server $folder/tasks and $folder/cache, or set OPENSIM_TASKS_ROOT and OPENSIM_CACHE_ROOT" >&2
+        fi
+        ;;
+esac
+
+exit 0

@@ -1,5 +1,5 @@
 {
-    "name": "magicoli/opensim-helpers",
+    "name": "w4os/w4os-helpers",
     "description": "Helpers needed to enable common functionalties like search, currency, events in OpenSimulator grids.",
     "type": "library",
     "license": "AGPL-3.0-or-later",
@@ -21,7 +21,7 @@
         "ext-session": "*",
         "ext-simplexml": "*",
         "magicoli/opensim-rest-php": "@dev",
-        "magicoli/opensim-engine": "@dev",
+        "w4os/w4os-engine": "@dev",
         "twig/twig": "^3.8",
         "slim/slim": "^4",
         "slim/psr7": "^1",
@@ -40,7 +40,7 @@
     },
     "repositories": [
         {
-            "name": "magicoli/opensim-engine",
+            "name": "w4os/w4os-engine",
             "url": "../opensim-engine/",
             "type": "path",
             "options": {
@@ -59,7 +59,7 @@
     "minimum-stability": "dev",
     "scripts": {
         "test": "pest",
-        "logos": "php -r 'if (getenv(\"COMPOSER_DEV_MODE\") === \"0\") { exit; } foreach (glob(\"vendor/magicoli/opensim-engine/share/images/logos/*.png\") ?: [] as $logo) { copy($logo, \"assets/images/logos/\" . basename($logo)); }'",
+        "logos": "php -r 'if (getenv(\"COMPOSER_DEV_MODE\") === \"0\") { exit; } foreach (glob(\"vendor/w4os/w4os-engine/share/images/logos/*.png\") ?: [] as $logo) { copy($logo, \"assets/images/logos/\" . basename($logo)); }'",
         "post-install-cmd": [
             "@logos"
         ],
@@ -83,12 +83,12 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "OpenSim\\Helpers\\": "src/"
+            "W4OS\\Helpers\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "OpenSim\\Helpers\\Tests\\": "tests/"
+            "W4OS\\Helpers\\Tests\\": "tests/"
         }
     }
 }

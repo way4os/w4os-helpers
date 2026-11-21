@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use OpenSim\Helpers\App;
+use W4OS\Helpers\App;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -14,4 +14,4 @@ if (function_exists('fastcgi_finish_request')) {
 } elseif (function_exists('litespeed_finish_request')) {
     litespeed_finish_request();
 }
-OpenSim\Helpers\Http\Action\Engine::finish();
+W4OS\Helpers\Http\Action\Engine::finish();

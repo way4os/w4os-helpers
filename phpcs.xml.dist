@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="opensim-helpers PHP compatibility">
+<ruleset name="w4os-helpers PHP compatibility">
     <description>The PHP versions the code supports. The range comes from composer.json, given by tests/Environment/PhpCompatibilityTest.php.</description>
 
     <rule ref="PHPCompatibility"/>

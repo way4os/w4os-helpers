@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers;
+namespace W4OS\Helpers;
 
 /**
  * The language of the texts of the helpers (gettext, locales/<locale>/LC_MESSAGES/messages.mo): the one a request asks (`lang`, else

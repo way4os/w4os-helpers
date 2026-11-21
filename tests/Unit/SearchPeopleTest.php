@@ -1,10 +1,10 @@
 <?php
 
-use OpenSim\Data\Connections;
-use OpenSim\Data\OSPDO;
-use OpenSim\Helpers\Block\Blocks;
-use OpenSim\Models\Grid;
-use OpenSim\Testing\Machine;
+use W4OS\Engine\Data\Connections;
+use W4OS\Engine\Data\OSPDO;
+use W4OS\Helpers\Block\Blocks;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Testing\Machine;
 
 /** A grid whose accounts are in one database: Ada published her profile ("show in search"), Mona did not. */
 function people_grid(): Grid
@@ -68,7 +68,7 @@ describe('The links of a search a site shows', function () {
 
 describe('A place found', function () {
     test('is reached by the link of its grid, its region and its landing point, for where it is shown', function () {
-        $search = new OpenSim\Helpers\Block\SearchData(people_grid());
+        $search = new W4OS\Helpers\Block\SearchData(people_grid());
 
         // The landing point as the search keeps it (x/y/z), or as a script writes it (<x, y, z>); a height of zero lands at 21 m
         expect($search->teleport('http://grid.example.org:8002', 'My Region', '<10.4, 20, 30.6>'))

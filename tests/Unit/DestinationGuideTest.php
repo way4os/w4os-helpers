@@ -1,9 +1,9 @@
 <?php
 
-use OpenSim\Config\Layout;
-use OpenSim\Helpers\Block\Blocks;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
+use W4OS\Engine\Config\Layout;
+use W4OS\Helpers\Block\Blocks;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\Environment;
 
 /**
  * The guide of the helpers 2.x, on the same list (tests/fixtures/guide): what it showed is in the *.old.json files beside each
@@ -110,9 +110,9 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
  * A search that knows the parcels of a grid: two in Welcome (one with a picture), one in Plaza and one in Sandbox (with a
  * picture each), one of another grid.
  */
-function guide_search(): OpenSim\Data\OSPDO
+function guide_search(): W4OS\Engine\Data\OSPDO
 {
-    $pdo = new OpenSim\Data\OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
+    $pdo = new W4OS\Engine\Data\OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
     $pdo->exec('CREATE TABLE regionsregister (regionUUID CHAR(36), regionname VARCHAR(255))');
     $pdo->exec('CREATE TABLE parcels (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), landingpoint VARCHAR(255), imageUUID CHAR(36), gatekeeperURL VARCHAR(255), dwell FLOAT DEFAULT 0)');
     $pdo->exec('CREATE TABLE popularplaces (parcelUUID CHAR(36), name VARCHAR(255), dwell FLOAT, has_picture INT, gatekeeperURL VARCHAR(255))');
@@ -148,30 +148,30 @@ describe('the hypergrid destinations the pictures are tried with', function () {
 });
 
 describe('the pictures of the guide and of the popular places: the parcel, never the region', function () {
-    afterEach(fn () => OpenSim\Data\Connections::using(null));
+    afterEach(fn () => W4OS\Engine\Data\Connections::using(null));
 
     test('each card shows the picture the engine finds (Grid::guide()): a destination its parcel, a section its first place with one, else the placeholder', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $categories = array_column(Blocks::data('destination_guide', $grid)['items'], 'picture', 'name');
         $places = array_column(Blocks::data('destination_guide', $grid, ['category' => 'Destinations Guide'])['items'], 'picture', 'name');
-        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', $grid, ['assets' => '/pictures']);
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', $grid, ['assets' => '/pictures']);
 
         expect($places)->toBe(['Local places' => 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Welcome landing' => 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'])
             ->and($categories['Destinations Guide'])->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
             ->and($categories['Hypergrid'])->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
             ->and($categories['Apart'])->toBeNull()
             ->and($html)->toContain('src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
-            ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
+            ->and($html)->toContain('src="/pictures/' . W4OS\Engine\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
     test('the popular places are cards with the picture of their parcel, the placeholder without one', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
-        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
         expect($html)->toContain('class="places"')
             ->and($html)->toMatch('#<a class="place" href="hop://grid.example.org:8002/Welcome/128/128/25">\s*<img class="place-picture" src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
-            ->and($html)->toContain('src="/pictures/' . OpenSim\Assets\WebAssets::PLACEHOLDER . '.jpg"');
+            ->and($html)->toContain('src="/pictures/' . W4OS\Engine\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
     test('the popular places take the options of w4os-wp 2.x and its defaults: the other grids and the land for sale, both left out unless asked', function () {
@@ -179,7 +179,7 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $search->exec("INSERT INTO popularplaces VALUES ('p4', 'Elsewhere', 50, 1, 'http://other.example.org:8002')");
         $search->exec('CREATE TABLE parcelsales (parcelUUID CHAR(36), regionUUID CHAR(36))');
         $search->exec("INSERT INTO parcelsales VALUES ('p2', 'r1')");
-        OpenSim\Data\Connections::using(fn () => $search);
+        W4OS\Engine\Data\Connections::using(fn () => $search);
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $labels = fn (array $args): array => array_column(Blocks::data('popular_places', $grid, $args)['rows'], 'label');
 
@@ -191,15 +191,15 @@ describe('the pictures of the guide and of the popular places: the parcel, never
     });
 
     test('an open category is headed by its name, whatever title the page gives the guide', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
-        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['category' => 'Hypergrid', 'title' => 'The guide', 'client' => 'viewer']);
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['category' => 'Hypergrid', 'title' => 'The guide', 'client' => 'viewer']);
 
         expect($html)->toContain('<h2>Hypergrid</h2>')->and($html)->toContain('class="back"');
     });
 
     test('in a browser, the guide is a block of the page as the popular places are: its title as theirs, the class of its client for its style', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
-        $view = new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
 
         $browser = $view->block('destination_guide', $grid, ['client' => 'browser', 'level' => 'h2']);
@@ -218,14 +218,14 @@ describe('the pictures of the guide and of the popular places: the parcel, never
     });
 
     test('the picture of nothing is lighter than a picture: half seen, in the guide and the popular places, set in one place', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
-        $view = new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         // The categories: one of them has no picture (Apart)
         $guide = $view->block('destination_guide', $grid, ['assets' => '/pictures']);
         $places = $view->block('popular_places', $grid, ['assets' => '/pictures']);
         $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/blocks.css');
-        $placeholder = OpenSim\Assets\WebAssets::PLACEHOLDER;
+        $placeholder = W4OS\Engine\Assets\WebAssets::PLACEHOLDER;
 
         expect($guide)
             ->toMatch('#<img class="thumbnail no-picture" src="/pictures/' . $placeholder . '\.jpg"#')
@@ -250,9 +250,9 @@ describe('the pictures of the guide and of the popular places: the parcel, never
     });
 
     test('a site that shows the blocks in its pages knows the files they need', function () {
-        expect(OpenSim\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']])
-            ->and(OpenSim\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/blocks.css', 'css/places.css'], 'js' => []])
-            ->and(OpenSim\Helpers\View\View::blockFiles('motd'))->toBe(['css' => [], 'js' => []]);
+        expect(W4OS\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']])
+            ->and(W4OS\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/blocks.css', 'css/places.css'], 'js' => []])
+            ->and(W4OS\Helpers\View\View::blockFiles('motd'))->toBe(['css' => [], 'js' => []]);
     });
 });
 
@@ -301,7 +301,7 @@ describe('the list, as the Gudz Teleport Board reads it', function () {
             fn (array $cell) => ['name' => $cell['name'], 'url' => $cell['uri'] . ($cell['landing'] === '' ? '' : '/' . str_replace(',', '/', $cell['landing']))],
             array_values(array_filter(board_cells($text), fn (array $cell) => $cell['kind'] === 'destination')),
         );
-        $parsed = array_merge(...array_values(OpenSim\Text\DestinationList::parse($text)));
+        $parsed = array_merge(...array_values(W4OS\Engine\Text\DestinationList::parse($text)));
 
         // The board leaves out the http:// of an address, the engine reads it (Destination)
         $parsed = array_map(fn (array $d) => ['name' => $d['name'], 'url' => str_replace('http://', '', $d['url'])], $parsed);
@@ -314,52 +314,52 @@ describe('the list, as the Gudz Teleport Board reads it', function () {
         // A title inside a column of the board (Hypergrid Safari Tour, under Hang out) is a category of its own in the guide, as in 2.x
         $titles = array_column(array_filter(board_cells($text), fn (array $cell) => $cell['kind'] === 'title'), 'name');
 
-        expect(array_keys(OpenSim\Text\DestinationList::parse($text)))->toBe($titles);
+        expect(array_keys(W4OS\Engine\Text\DestinationList::parse($text)))->toBe($titles);
     });
 
     test('the old format: the region name is the name, the 4th column the address, the 5th the landing point', function () {
         $line = "Speculoos|Grand Place|1000,1000|speculoos.world:8002:Grand Place|128,128,25\n";
 
-        expect(OpenSim\Text\DestinationList::parse($line))->toBe(['Destinations Guide' => [['name' => 'Grand Place', 'url' => 'speculoos.world:8002:Grand Place/128/128/25']]]);
+        expect(W4OS\Engine\Text\DestinationList::parse($line))->toBe(['Destinations Guide' => [['name' => 'Grand Place', 'url' => 'speculoos.world:8002:Grand Place/128/128/25']]]);
     });
 
     test('an address listed already is left out, as the board does', function () {
         $text = "Places\nOne|grid.example.org:8002:Sandbox\nTwo|grid.example.org:8002:Sandbox\n";
 
-        expect(OpenSim\Text\DestinationList::parse($text))->toBe(['Places' => [['name' => 'One', 'url' => 'grid.example.org:8002:Sandbox']]]);
+        expect(W4OS\Engine\Text\DestinationList::parse($text))->toBe(['Places' => [['name' => 'One', 'url' => 'grid.example.org:8002:Sandbox']]]);
     });
 
     test('the list for the boards (format=list) gives them their columns back: the landing point in its own column, the markers kept', function () {
         $text = "Places\nResidences|speculoos.world:8002:Residences|128,128,30\n|\n-\nOther\nLab|speculoos.world:8002:Lab\n";
 
-        expect(OpenSim\Text\DestinationList::format(OpenSim\Text\DestinationList::parse($text, layout: true)))->toBe($text);
+        expect(W4OS\Engine\Text\DestinationList::format(W4OS\Engine\Text\DestinationList::parse($text, layout: true)))->toBe($text);
     });
 });
 
 describe('the number of destinations of a category', function () {
-    afterEach(fn () => OpenSim\Helpers\I18n::use('en'));
+    afterEach(fn () => W4OS\Helpers\I18n::use('en'));
 
     test('one destination, several destinations, in the language of the page', function () {
         $categories = fn () => array_column(Blocks::data('destination_guide', guide_grid('edge-cases', 'http://grid.example.org:8002'))['items'], 'data', 'name');
 
-        OpenSim\Helpers\I18n::use('en');
+        W4OS\Helpers\I18n::use('en');
         expect($categories()['Hypergrid'])->toBe('5 destinations')
             ->and($categories()['Apart'])->toBe('2 destinations')
             ->and($categories()['A long title, written on two lines because it did not fit on one'])->toBe('1 destination');
-        OpenSim\Helpers\I18n::use('fr');
+        W4OS\Helpers\I18n::use('fr');
         expect($categories()['A long title, written on two lines because it did not fit on one'])->toBe('1 destination')
             ->and($categories()['Hypergrid'])->toBe('5 destinations');
-        OpenSim\Helpers\I18n::use('de');
+        W4OS\Helpers\I18n::use('de');
         expect($categories()['A long title, written on two lines because it did not fit on one'])->toBe('1 Ziel')
             ->and($categories()['Hypergrid'])->toBe('5 Ziele');
     })->skip(fn () => setlocale(LC_MESSAGES, ['fr_FR.UTF-8', 'fr_FR.utf8']) === false || setlocale(LC_MESSAGES, ['de_DE.UTF-8', 'de_DE.utf8']) === false, 'the system has no French or German locale');
 });
 
 describe('the teleport links of the blocks, for where they are shown (Destination::AUTO)', function () {
-    afterEach(fn () => OpenSim\Data\Connections::using(null));
+    afterEach(fn () => W4OS\Engine\Data\Connections::using(null));
 
     test('the popular places: hop:// on a page, secondlife://host:port/secondlife/Region in a viewer', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
 
         expect(Blocks::data('popular_places', $grid)['rows'][0]['url'])->toBe('hop://grid.example.org:8002/Welcome/128/128/25')
@@ -376,7 +376,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
 
     test('the picks and the classifieds of a profile: the hop:// of the engine, as the link for where they are shown', function () {
         $row = ['name' => 'Beach', 'teleport' => 'hop://grid.example.org:8002/My%20Region/10/20/30'];
-        $item = fn (string $login, array $args) => OpenSim\Helpers\Block\ProfileBlock::item($row, guide_grid('edge-cases', $login), $args)['url'];
+        $item = fn (string $login, array $args) => W4OS\Helpers\Block\ProfileBlock::item($row, guide_grid('edge-cases', $login), $args)['url'];
 
         expect($item('http://grid.example.org:8002', []))->toBe('hop://grid.example.org:8002/My%20Region/10/20/30')
             ->and($item('http://grid.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30')
@@ -384,18 +384,18 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
     });
 
     test('a page knows where it is shown from the user agent, and its blocks link for it: the login screen of a viewer', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
-        $view = fn () => new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+        $view = fn () => new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
 
         expect($view()->page('splash', $grid, 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
             ->and($view()->page('splash', $grid, 'Mozilla/5.0 Chrome/131'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"');
     });
 
     test('a block asked by a site gives the user agent of its visitor (agent), else the one of the request is read', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
-        $app = OpenSim\Helpers\App::create(static fn (string $nick) => $grid);
+        $app = W4OS\Helpers\App::create(static fn (string $nick) => $grid);
         $get = fn (string $path, string $agent) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', $agent))->getBody();
 
         expect($get('/blocks/popular_places?agent=' . rawurlencode('Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'), 'Grav'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
@@ -404,10 +404,10 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
     });
 
     test('a site may give the class of its visitor (client: viewer or browser) instead of its user agent; the class wins', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $link = fn (array $args) => Blocks::data('popular_places', $grid, $args)['rows'][0]['url'];
-        $app = OpenSim\Helpers\App::create(static fn (string $nick) => $grid);
+        $app = W4OS\Helpers\App::create(static fn (string $nick) => $grid);
         $get = fn (string $path) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', 'Grav'))->getBody();
 
         expect($link(['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25')
@@ -417,7 +417,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
     });
 
     test('a place of the grid with a landing point in decimals keeps its region in a viewer', function () {
-        $search = new OpenSim\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
+        $search = new W4OS\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
 
         expect($search->teleport('http://grid.example.org:8002', 'Welcome', '116/136/21.75', ['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/116/136/21.75');
     });
@@ -431,8 +431,8 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
     });
 
     test('a popular place shows the label of its destination under its name, not the bare name of its region', function () {
-        OpenSim\Data\Connections::using(fn () => guide_search());
-        $html = (new OpenSim\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
         expect($html)->toMatch('#<span class="place-name">Local places</span>\s*<span class="place-region">Welcome/128/128/25</span>#');
     });

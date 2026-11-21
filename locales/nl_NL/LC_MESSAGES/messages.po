@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: opensim-helpers\n"
+"Project-Id-Version: w4os-helpers\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-19 11:16-0400\n"
 "Language: nl_NL\n"

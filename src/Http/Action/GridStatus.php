@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Http\Action;
+namespace W4OS\Helpers\Http\Action;
 
-use OpenSim\Helpers\Block\GridStatusBlock;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\GridMonitor;
+use W4OS\Helpers\Block\GridStatusBlock;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\GridMonitor;
 use Psr\Http\Message\ResponseInterface;
 
 /** The status of the grid for the viewers: a line of plain text with the keyword, or the RSS feed they read. */

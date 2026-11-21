@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Helpers\I18n;
-use OpenSim\Models\Avatar;
-use OpenSim\Models\Grid;
+use W4OS\Helpers\I18n;
+use W4OS\Engine\Models\Avatar;
+use W4OS\Engine\Models\Grid;
 
 /** The web search: places, land, events, classifieds and people. */
 final class SearchBlock implements Block
@@ -34,7 +34,7 @@ final class SearchBlock implements Block
             }
             try {
                 $items = $this->find($search, $kind, $q, $args);
-            } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+            } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                 // The places, the land, the events and the classifieds share the search: told once
                 $this->unavailable || Blocks::unreachable($e);
                 $this->unavailable = true;
@@ -149,7 +149,7 @@ final class SearchBlock implements Block
                 try {
                     // Only who published their profile ("show in search" in the viewer), as the search of the viewers does
                     $people = Avatar::all($search->config, ['search' => $q, 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => $limit])->array();
-                } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+                } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                     Blocks::unreachable($e);
                     $this->unavailable = true;
                     $people = [];

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Config\GridConfig;
-use OpenSim\Data\Connections;
-use OpenSim\Data\Database;
-use OpenSim\Data\OSPDO;
-use OpenSim\Exceptions\ChannelUnavailable;
-use OpenSim\Hypergrid\Destination;
-use OpenSim\Models\Grid;
-use OpenSim\Models\Region;
+use W4OS\Engine\Config\GridConfig;
+use W4OS\Engine\Data\Connections;
+use W4OS\Engine\Data\Database;
+use W4OS\Engine\Data\OSPDO;
+use W4OS\Engine\Exceptions\ChannelUnavailable;
+use W4OS\Engine\Hypergrid\Destination;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Models\Region;
 
 /**
  * What the blocks read of the search database of the grid (the parcels, the events, the classifieds the simulators registered). A

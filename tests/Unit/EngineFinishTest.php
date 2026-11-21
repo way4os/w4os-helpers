@@ -1,10 +1,10 @@
 <?php
 
-use OpenSim\Data\Connections;
-use OpenSim\Data\OSPDO;
-use OpenSim\Helpers\Http\Action\Engine;
-use OpenSim\Models\Grid;
-use OpenSim\Testing\Machine;
+use W4OS\Engine\Data\Connections;
+use W4OS\Engine\Data\OSPDO;
+use W4OS\Helpers\Http\Action\Engine;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Testing\Machine;
 
 /** A grid of a test machine whose databases, the search's among them, are one: what its search tasks need to be added. */
 function search_tasks_grid(): Grid

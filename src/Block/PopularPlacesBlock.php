@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Assets\WebAssets;
-use OpenSim\Models\Grid;
+use W4OS\Engine\Assets\WebAssets;
+use W4OS\Engine\Models\Grid;
 
 /**
  * The parcels with the most visitors, as a grid of cards: the picture of the parcel (its snapshot), what you go to (its name here,
@@ -22,7 +22,7 @@ final class PopularPlacesBlock implements Block
         $count = max(1, min(50, (int) ($args['count'] ?? self::COUNT)));
         try {
             $places = $grid->popularPlaces($count, hypergrid: self::option($args, 'include_hypergrid'), landSales: self::option($args, 'include_landsales'));
-        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+        } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
             Blocks::unreachable($e);
             $places = [];
             $unavailable = true;

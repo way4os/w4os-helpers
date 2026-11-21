@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use OpenSim\Config\GridConfig;
-use OpenSim\Flux\Posts;
-use OpenSim\Helpers\View\View;
+use W4OS\Engine\Config\GridConfig;
+use W4OS\Engine\Flux\Posts;
+use W4OS\Helpers\View\View;
 
 /**
  * The stream of a profile (w4os-flux): its posts in a tab of the page, the Feed tab of the viewers (which opens the page of the
@@ -12,7 +12,7 @@ use OpenSim\Helpers\View\View;
  */
 
 /** The grid of the profiles, Ada with two posts. */
-function feed_grid(): OpenSim\Models\Grid
+function feed_grid(): W4OS\Engine\Models\Grid
 {
     $grid = profile_grid();
     $posts = Posts::for(GridConfig::fromFolder($grid->directory()));
@@ -61,7 +61,7 @@ describe('The stream of a profile', function () {
     });
 
     test('comes with About and the interests in a viewer, told by the engine (Destination::client), whoever shows the block: a site that gives its class or its agent', function () {
-        $sections = fn (array $args) => OpenSim\Helpers\Block\Blocks::data('profile', feed_grid(), ['name' => 'Ada.Love'] + $args)['sections'];
+        $sections = fn (array $args) => W4OS\Helpers\Block\Blocks::data('profile', feed_grid(), ['name' => 'Ada.Love'] + $args)['sections'];
 
         expect($sections(['client' => 'viewer']))->toBe(['feed', 'about', 'interests'])
             ->and($sections(['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm-Releasex64)']))->toBe(['feed', 'about', 'interests'])
@@ -71,10 +71,10 @@ describe('The stream of a profile', function () {
 
     test('reads as a timeline: each post its date first, relative and small, its full date and time as its tip, then its message', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', feed_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
-        $post = OpenSim\Helpers\Block\ProfileBlock::post(['id' => 'p1', 'content' => 'Hi', 'created' => time() - 7200]);
+        $post = W4OS\Helpers\Block\ProfileBlock::post(['id' => 'p1', 'content' => 'Hi', 'created' => time() - 7200]);
 
         expect($post['ago'])->toBe('2 hours ago')
-            ->and($post['full'])->toBe(OpenSim\Helpers\I18n::date(time() - 7200, 'long'))
+            ->and($post['full'])->toBe(W4OS\Helpers\I18n::date(time() - 7200, 'long'))
             ->and($html)->toMatch('#<article id="profile-post-[^"]+" class="profile-post"><time class="profile-post-date" datetime="[^"]+" title="[^"]+">[^<]+ ago</time><p class="profile-post-text">See #')
             // Its files, for whoever shows the block: the styles of a profile
             ->and(View::blockFiles('profile')['css'])->toBe(['css/profile.css']);

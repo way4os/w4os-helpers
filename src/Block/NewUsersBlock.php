@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Helpers\I18n;
-use OpenSim\Models\Avatar;
-use OpenSim\Models\Grid;
+use W4OS\Helpers\I18n;
+use W4OS\Engine\Models\Avatar;
+use W4OS\Engine\Models\Grid;
 
 /**
  * The people who joined the grid last, as w4os lists its recent users: the newest active avatars, never an avatar model, the
@@ -29,7 +29,7 @@ final class NewUsersBlock implements Block
                     'sort' => 'created desc',
                     'perPage' => $count,
                 ])->items();
-        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+        } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
             Blocks::unreachable($e);
             $avatars = [];
             $unavailable = true;

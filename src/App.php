@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers;
+namespace W4OS\Helpers;
 
 use DI\Bridge\Slim\Bridge;
-use OpenSim\Helpers\Http\Action\Engine;
-use OpenSim\Helpers\Http\Action\Site;
-use OpenSim\Helpers\Http\Middleware\GridMiddleware;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
-use OpenSim\Helpers\View\View;
+use W4OS\Helpers\Http\Action\Engine;
+use W4OS\Helpers\Http\Action\Site;
+use W4OS\Helpers\Http\Middleware\GridMiddleware;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\Environment;
+use W4OS\Helpers\View\View;
 use Slim\App as SlimApp;
 
 /** The helpers as a Slim application: the grid is found by the middleware, every endpoint is an action. */

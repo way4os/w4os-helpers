@@ -1,6 +1,6 @@
 <?php
 
-use OpenSim\Helpers\HelpersLayout;
+use W4OS\Helpers\HelpersLayout;
 
 /** A folder the tests make, closed or open to this user. */
 function helpers_layout_folder(bool $writable): string
@@ -17,8 +17,8 @@ describe('The layout of the helpers', function () {
         $own = helpers_layout_folder(true);
         mkdir("$own/tasks");
         mkdir("$own/cache");
-        // The folders of the install, as opensim.conf says them, which the web server cannot write
-        $conf = helpers_layout_folder(true) . '/opensim.conf';
+        // The folders of the install, as w4os.conf says them, which the web server cannot write
+        $conf = helpers_layout_folder(true) . '/w4os.conf';
         file_put_contents($conf, "[Defaults]\nVarRoot = $install/var\nCacheRoot = $install/cache\n");
         $server = ['OPENSIM_CONF' => $conf];
 

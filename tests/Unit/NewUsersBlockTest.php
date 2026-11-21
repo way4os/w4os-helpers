@@ -1,10 +1,10 @@
 <?php
 
-use OpenSim\Data\Connections;
-use OpenSim\Data\OSPDO;
-use OpenSim\Helpers\Block\Blocks;
-use OpenSim\Models\Grid;
-use OpenSim\Testing\Machine;
+use W4OS\Engine\Data\Connections;
+use W4OS\Engine\Data\OSPDO;
+use W4OS\Helpers\Block\Blocks;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Testing\Machine;
 
 /**
  * A grid whose accounts are in one database: people, a model, the account of the services, one without an email, one disabled,
@@ -33,7 +33,7 @@ function new_users_grid(): Grid
         ('66666666-6666-4666-8666-666666666666', 'Cy', 'Gone', 'cy@example.org', 1800000003, -1, 0),
         ('77777777-7777-4777-8777-777777777777', 'Dee', 'Late', 'dee@example.org', 1750000000, 0, 1)");
     // Waiting for the confirmation of their email: as the engine makes them, and with only the flag
-    $pending = \OpenSim\Models\Avatar::PENDING_FLAG;
+    $pending = \W4OS\Engine\Models\Avatar::PENDING_FLAG;
     $pdo->exec("INSERT INTO UserAccounts (PrincipalID, FirstName, LastName, Email, Created, UserLevel, UserFlags, active) VALUES
         ('88888888-8888-4888-8888-888888888888', 'Pia', 'Pending', 'pia@example.org', 1800000004, -1, $pending, 0),
         ('99999999-9999-4999-8999-999999999999', 'Pat', 'Flagged', 'pat@example.org', 1800000005, 0, $pending, 1)");
@@ -53,7 +53,7 @@ describe('The block of the recent users', function () {
             ->and(array_column($data['rows'], 'label'))
             ->toBe(['Dee Late', 'Ada Love', 'Bob Root'])
             ->and($data['rows'][0])
-            ->toMatchArray(['url' => 'https://demo.example.org/helpers/profile/Dee.Late', 'value' => OpenSim\Helpers\I18n::date(1750000000, 'list')])
+            ->toMatchArray(['url' => 'https://demo.example.org/helpers/profile/Dee.Late', 'value' => W4OS\Helpers\I18n::date(1750000000, 'list')])
             ->and($data['rows'][0])
             ->not->toHaveKey('email');
     });

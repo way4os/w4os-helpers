@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Http\Action;
+namespace W4OS\Helpers\Http\Action;
 
-use OpenSim\Helpers\Block\Blocks;
-use OpenSim\Helpers\I18n;
-use OpenSim\Helpers\View\View;
-use OpenSim\Models\Grid;
-use OpenSim\Security\ApiKeys;
+use W4OS\Helpers\Block\Blocks;
+use W4OS\Helpers\I18n;
+use W4OS\Helpers\View\View;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Security\ApiKeys;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -83,14 +83,14 @@ final class Site
             // Its stream for a reader: a JSON Feed, an RSS feed
             $format = (string) ($query['format'] ?? '');
             if (in_array($format, ['feed', 'rss'], true)) {
-                $profile = \OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['feed_only' => 'true'] + $query);
+                $profile = \W4OS\Helpers\Block\Blocks::data('profile', $grid, ['feed_only' => 'true'] + $query);
                 $url = (string) $request->getUri()->withQuery('')->withFragment('');
                 if (!($profile['found'] ?? false)) {
                     return $response->withStatus(404);
                 }
                 $response->getBody()->write($format === 'rss'
-                    ? \OpenSim\Helpers\Block\ProfileFeed::rss($profile, $url)
-                    : (string) json_encode(\OpenSim\Helpers\Block\ProfileFeed::json($profile, $url), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                    ? \W4OS\Helpers\Block\ProfileFeed::rss($profile, $url)
+                    : (string) json_encode(\W4OS\Helpers\Block\ProfileFeed::json($profile, $url), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
                 return $response->withHeader('Content-Type', $format === 'rss' ? 'application/rss+xml; charset=utf-8' : 'application/feed+json; charset=utf-8');
             }
@@ -119,7 +119,7 @@ final class Site
     {
         $reason = sprintf(_('%s is not provided here: the grid gives it another address, or none.'), $path);
         if (in_array(basename($path), self::XMLRPC, true)) {
-            $response->getBody()->write(\OpenSim\Services\XmlRpc::encode(\OpenSim\Services\XmlRpc::envelope(false, $reason)));
+            $response->getBody()->write(\W4OS\Engine\Services\XmlRpc::encode(\W4OS\Engine\Services\XmlRpc::envelope(false, $reason)));
 
             return $response->withHeader('Content-Type', 'text/xml; charset=utf-8');
         }

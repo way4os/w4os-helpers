@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Models\Grid;
+use W4OS\Engine\Models\Grid;
 
 /** A piece of content a page is made of: it gives its data, the template components/<name>-block.twig shows it. */
 interface Block

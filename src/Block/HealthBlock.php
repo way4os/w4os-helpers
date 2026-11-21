@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Assets\WebAssets;
-use OpenSim\Helpers\Http\Action\Engine;
-use OpenSim\Helpers\I18n;
-use OpenSim\Health\Health;
-use OpenSim\Models\Grid;
+use W4OS\Engine\Assets\WebAssets;
+use W4OS\Helpers\Http\Action\Engine;
+use W4OS\Helpers\I18n;
+use W4OS\Engine\Health\Health;
+use W4OS\Engine\Models\Grid;
 
 /** The diagnosis of the grid, address by address (the checks are the engine's). */
 final class HealthBlock implements Block

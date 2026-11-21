@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: opensim-helpers
-Source: https://github.com/GuduleLapointe/opensim-helpers
+Upstream-Name: w4os-helpers
+Source: https://github.com/way4os/w4os-helpers
 
 Files: *
 Copyright: 2015-2026 Olivier van Helden <olivier@van-helden.net>

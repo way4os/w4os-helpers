@@ -1,10 +1,10 @@
 <?php
 
-use OpenSim\Data\Connections;
-use OpenSim\Data\OSPDO;
-use OpenSim\Helpers\View\View;
-use OpenSim\Models\Grid;
-use OpenSim\Testing\Machine;
+use W4OS\Engine\Data\Connections;
+use W4OS\Engine\Data\OSPDO;
+use W4OS\Helpers\View\View;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Testing\Machine;
 
 /** A grid with two published profiles: one with several sections of the viewer's profile, one with its about text alone. */
 function profile_grid(): Grid
@@ -51,7 +51,7 @@ describe('The block of a profile', function () {
         file_put_contents($grid->directory() . '/OpenSim.ini', "[UserProfiles]\n AllowUserProfileWebURLs = false\n");
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', $grid, ['name' => 'Ada.Love', 'lang' => 'en']);
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
-        $sections = fn (array $args) => OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['name' => 'Ada.Love'] + $args)['sections'];
+        $sections = fn (array $args) => W4OS\Helpers\Block\Blocks::data('profile', $grid, ['name' => 'Ada.Love'] + $args)['sections'];
 
         expect($tabs[1])->toBe(['feed', 'about', 'interests', 'picks', 'classifieds', 'real-life'])
             ->and($html)->not->toContain('id="profile-web"')
@@ -65,7 +65,7 @@ describe('The block of a profile', function () {
         expect($banner)->toContain(
             '<img class="profile-photo" src="/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg?default=person" alt="">',
             '<h1 class="block-title">Ada Love</h1>',
-            '<dt>Born</dt><dd>' . OpenSim\Helpers\I18n::date(1700000000) . ' (',
+            '<dt>Born</dt><dd>' . W4OS\Helpers\I18n::date(1700000000) . ' (',
             ' days)</dd>',
             '<p class="profile-banner-bare">Resident</p>',
         )->not->toContain('<dt>Role</dt>')->and(strpos($html, '<header class="profile-banner">'))->toBeLessThan(strpos($html, 'profile-tabs'));
@@ -103,7 +103,7 @@ describe('The block of a profile', function () {
     test('names its tabs as the catalog of the engine does, in the language of the page', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'fr']);
         preg_match_all('/<a class="tab__link" href="#profile-([a-z-]+)"><span>([^<]+)</', $html, $tabs);
-        OpenSim\Helpers\I18n::use('en');
+        W4OS\Helpers\I18n::use('en');
 
         expect($tabs[2])->toBe(['Flux', 'À propos', 'Web', 'Centres d’intérêt', 'Favoris', 'Petites annonces', 'Vie réelle'])
             ->and($html)->toContain('aria-label="Sections du profil"');
@@ -119,20 +119,20 @@ describe('The block of a profile', function () {
         $view = new View(dirname(__DIR__, 2) . '/templates');
         $html = $view->items('classifieds', [['name' => 'Shop', 'description' => '', 'picture' => null, 'parcel' => 'Mall', 'region' => 'Town', 'position' => [10, 20, 30], 'teleport' => 'hop://g:8002/Town/10/20/30', 'expires' => 1893456000]], '/assets/', 'en');
 
-        expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', OpenSim\Helpers\I18n::date(1893456000), 'href="hop://g:8002/Town/10/20/30"')
+        expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', W4OS\Helpers\I18n::date(1893456000), 'href="hop://g:8002/Town/10/20/30"')
             ->and($view->items('picks', [], '/assets'))->toContain('<p class="profile-none">None.</p>');
     });
 });
 
 describe('The tab a profile opens on', function () {
     test('is the first that has something: About for a stream with nothing, the stream once it has posts, the first when all are empty', function () {
-        $open = fn (Grid $grid, string $name, array $args = []) => OpenSim\Helpers\Block\Blocks::data('profile', $grid, ['name' => $name] + $args)['open'];
+        $open = fn (Grid $grid, string $name, array $args = []) => W4OS\Helpers\Block\Blocks::data('profile', $grid, ['name' => $name] + $args)['open'];
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
 
         expect($open(profile_grid(), 'Ada.Love'))->toBe('about')
             ->and($open(profile_grid(), 'Ada.Love', ['client' => 'viewer']))->toBe('about')
             ->and($open(feed_grid(), 'Ada.Love'))->toBe('feed')
-            ->and(OpenSim\Helpers\Block\ProfileBlock::open(['feed', 'about'], ['feed' => [], 'about' => '', 'partner' => null, 'groups' => []]))->toBe('feed')
+            ->and(W4OS\Helpers\Block\ProfileBlock::open(['feed', 'about'], ['feed' => [], 'about' => '', 'partner' => null, 'groups' => []]))->toBe('feed')
             ->and($html)->toContain('data-open="profile-about"');
     });
 });

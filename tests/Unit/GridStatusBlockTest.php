@@ -1,7 +1,7 @@
 <?php
 
-use OpenSim\Helpers\Block\GridStatusBlock;
-use OpenSim\Runtime\GridMonitor;
+use W4OS\Helpers\Block\GridStatusBlock;
+use W4OS\Engine\Runtime\GridMonitor;
 
 describe('grid status', function () {
     test('the area has its unit, and two decimals under 100 km²', function () {

@@ -1,11 +1,11 @@
 <?php
 
-use OpenSim\Config\GridConfig;
-use OpenSim\Config\Layout;
-use OpenSim\Helpers\App;
-use OpenSim\Models\Grid;
-use OpenSim\Runtime\Environment;
-use OpenSim\Security\ApiKeys;
+use W4OS\Engine\Config\GridConfig;
+use W4OS\Engine\Config\Layout;
+use W4OS\Helpers\App;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Runtime\Environment;
+use W4OS\Engine\Security\ApiKeys;
 
 /**
  * The helpers in the folder of a site: the grid is the one the site gives (its settings, its databases over the network), the

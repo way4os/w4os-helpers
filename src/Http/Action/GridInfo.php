@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Http\Action;
+namespace W4OS\Helpers\Http\Action;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
 /** The blocks, by the name they have everywhere (a variable of a template has dashes as underscores). */
 final class Blocks
@@ -25,9 +25,9 @@ final class Blocks
      * shows it in its zone of messages), and the block says it is unavailable for now (its data `unavailable`), never empty or
      * missing; the helpers answer it with an error (503).
      */
-    public static function unreachable(\OpenSim\Exceptions\ChannelUnavailable $e): void
+    public static function unreachable(\W4OS\Engine\Exceptions\ChannelUnavailable $e): void
     {
-        \OpenSim\Helpers\View\View::notify('error', sprintf(_('The database of the grid cannot be reached: %s'), $e->getMessage()));
+        \W4OS\Helpers\View\View::notify('error', sprintf(_('The database of the grid cannot be reached: %s'), $e->getMessage()));
     }
 
     public const LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];
@@ -61,7 +61,7 @@ final class Blocks
      * @param array<string,mixed> $args
      * @return ?array<string,mixed> null for a block that does not exist
      */
-    public static function data(string $name, \OpenSim\Models\Grid $grid, array $args = []): ?array
+    public static function data(string $name, \W4OS\Engine\Models\Grid $grid, array $args = []): ?array
     {
         $class = self::BLOCKS[$name] ?? null;
         if ($class === null) {
@@ -75,9 +75,9 @@ final class Blocks
         $data['name'] = $name;
         // The class of the visitor, for the style of a block: the one a site gives (client), else its user agent (Destination::client())
         $client = $args['client'] ?? null;
-        $data['client'] = in_array($client, \OpenSim\Hypergrid\Destination::CLIENTS, true)
+        $data['client'] = in_array($client, \W4OS\Engine\Hypergrid\Destination::CLIENTS, true)
             ? $client
-            : \OpenSim\Hypergrid\Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
+            : \W4OS\Engine\Hypergrid\Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
 
         return $data;
     }

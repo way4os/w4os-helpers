@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OpenSim\Helpers\Block;
+namespace W4OS\Helpers\Block;
 
-use OpenSim\Models\Grid;
+use W4OS\Engine\Models\Grid;
 
 /** The grids whose simulators registered in the search of this one, with their regions and parcels. */
 final class DirectoryInfoBlock implements Block
@@ -17,7 +17,7 @@ final class DirectoryInfoBlock implements Block
             $counts = $search->rows(
                 "SELECT r.gatekeeperURL AS gatekeeper, COUNT(DISTINCT p.regionUUID) AS regions, COUNT(*) AS parcels FROM parcels AS p INNER JOIN $regions AS r ON p.regionUUID = r.regionUUID GROUP BY r.gatekeeperURL",
             );
-        } catch (\OpenSim\Exceptions\ChannelUnavailable $e) {
+        } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
             Blocks::unreachable($e);
 
             return ['title' => _('Directory Info'), 'grids' => [], 'rows' => [], 'unavailable' => true];

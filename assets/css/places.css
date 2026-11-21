@@ -2,7 +2,7 @@
  * css/places.css: the popular places, a grid of cards that takes as many rows as it needs: the picture of the parcel, its name over
  * it, its region under it.
  *
- * @package    magicoli/opensim-helpers
+ * @package    w4os/w4os-helpers
  * @license    AGPLv3
  */
 .block-popular_places .places {
