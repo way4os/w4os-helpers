@@ -10,6 +10,6 @@ describe('grid info', function () {
         $login = $rows['Login URI'];
 
         expect($login['value'])->toBe($grid->tpLink(Destination::TXT))
-            ->and($login['url'])->toBe($grid->tpLink(Destination::AUTO, ['client' => 'browser']));
+            ->and($login['url'] ?? null)->toBe($grid->tpLink(Destination::AUTO, ['client' => 'browser']) ?: null);
     });
 });

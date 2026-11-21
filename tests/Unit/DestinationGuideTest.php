@@ -21,6 +21,14 @@ function guide_grid(string $list, string $login): Grid
 }
 
 /** @return array{categories: list<array{name: string, data: string}>, destinations: array<string, list<array{name: string, url: string}>>} */
+/** The link a web page gives an address by default (GRID; LinkFormatBrowser of the grid otherwise), as the engine makes it; null for none. */
+function guide_link(string $address): ?string
+{
+    $link = (new W4OS\Engine\Hypergrid\Place($address))->tpLink(W4OS\Engine\Hypergrid\Destination::GRID);
+
+    return $link === null || $link === '' ? null : $link;
+}
+
 function guide_shown(string $list, string $login, array $args = []): array
 {
     $grid = guide_grid($list, $login);
@@ -61,12 +69,12 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
 
     test('the lines as the board reads them: comments left out, the old format, trailing pipes, an address once', function () {
         expect(guide_shown('edge-cases', 'http://grid.example.org:8002')['destinations']['Hypergrid'])->toBe([
-            ['name' => 'Old format', 'url' => 'hop://grid.example.org:8002/Sandbox/10/20/30'],
-            ['name' => 'Trailing pipes', 'url' => 'hop://grid.example.org:8002/Trailing'],
-            ['name' => 'Hop address', 'url' => 'hop://grid.example.org:8002/Hop/10/20/30'],
-            ['name' => 'Http address', 'url' => 'hop://grid.example.org:8002/Http'],
+            ['name' => 'Old format', 'url' => guide_link('grid.example.org:8002/Sandbox/10/20/30')],
+            ['name' => 'Trailing pipes', 'url' => guide_link('grid.example.org:8002/Trailing')],
+            ['name' => 'Hop address', 'url' => guide_link('grid.example.org:8002/Hop/10/20/30')],
+            ['name' => 'Http address', 'url' => guide_link('grid.example.org:8002/Http')],
             // After a column jump without a title of its own: the section goes on
-            ['name' => 'After the dash', 'url' => 'hop://grid.example.org:8002/After'],
+            ['name' => 'After the dash', 'url' => guide_link('grid.example.org:8002/After')],
         ]);
     });
 
@@ -81,19 +89,19 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
 
     test('a region of the grid, by its name alone, is linked on the grid', function () {
         expect(guide_shown('edge-cases', 'http://grid.example.org:8002')['destinations']['Destinations Guide'])->toBe([
-            ['name' => 'Local places', 'url' => 'hop://grid.example.org:8002/Welcome'],
-            ['name' => 'Welcome landing', 'url' => 'hop://grid.example.org:8002/Plaza/128/128/25'],
+            ['name' => 'Local places', 'url' => guide_link('grid.example.org:8002/Welcome')],
+            ['name' => 'Welcome landing', 'url' => guide_link('grid.example.org:8002/Plaza/128/128/25')],
         ]);
     });
 
-    test('out of a viewer, a destination is a hop:// link: its grid, its region after a slash, its spaces %20', function () {
+    test('out of a viewer, a destination is linked as the engine links it, GRID by default: a grid alone has no link', function () {
         $shown = guide_shown('big-display', 'http://speculoos.world:8002')['destinations'];
 
-        expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => 'hop://speculoos.world:8002/Grand%20Place'])
-            ->and($shown['Hang out'][0])->toBe(['name' => 'Exupery', 'url' => 'hop://hg.osgrid.org:80/Exupery'])
+        expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => guide_link('speculoos.world:8002/Grand Place')])
+            ->and($shown['Hang out'][0])->toBe(['name' => 'Exupery', 'url' => guide_link('hg.osgrid.org:80/Exupery')])
             // A grid without its region, an address without its port
-            ->and($shown['Hang out'][2])->toBe(['name' => 'Wyldwood Bayou', 'url' => 'hop://wyldwoodbayou.com:8002'])
-            ->and($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => 'hop://login.osgrid.org:8002/RuthAndRoth']);
+            ->and($shown['Hang out'][2])->toBe(['name' => 'Wyldwood Bayou', 'url' => guide_link('wyldwoodbayou.com:8002')])
+            ->and($shown['Find out'][0])->toBe(['name' => 'RuthAndRoth', 'url' => guide_link('login.osgrid.org:8002/RuthAndRoth')]);
     });
 
     test('in a viewer, a region of this grid or of another is a secondlife://host:port/secondlife/Region link (the form of the viewer)', function () {
@@ -129,20 +137,20 @@ function guide_search(): W4OS\Engine\Data\OSPDO
 }
 
 describe('the hypergrid destinations the pictures are tried with', function () {
-    test('are the guide itself, one category: each titled by its region, linked by hop:// on a page', function () {
+    test('are the guide itself, one category: each titled by its region, linked as the engine links it on a page', function () {
         $items = Blocks::data('destination_guide', guide_grid('hypergrid-examples', 'http://grid.example.org:8002'), ['client' => 'browser'])['items'];
 
         expect(array_column($items, 'name'))
             ->toBe(['Welcome', 'Grand Place', 'Ivory City', 'Paramour Shopping', 'Alternate Metaverse', 'Lbsa Plaza', 'AI Dreams in Art'])
             ->and(array_column($items, 'url'))
             ->toBe([
-                'hop://watta.world:8002/Welcome',
-                'hop://speculoos.world:8002/Grand%20Place/128/128/25',
-                'hop://craft-world.org:8002/Ivory%20City',
-                'hop://lfgrid.com:8002/Paramour%20Shopping',
-                'hop://alternatemetaverse.com:8002/Alternate%20Metaverse/298/322/63',
-                'hop://hg.osgrid.org:80/Lbsa%20Plaza',
-                'hop://grid.kitely.com:8002/AI%20Dreams%20in%20Art',
+                guide_link('watta.world:8002/Welcome'),
+                guide_link('speculoos.world:8002/Grand Place/128/128/25'),
+                guide_link('craft-world.org:8002/Ivory City'),
+                guide_link('lfgrid.com:8002/Paramour Shopping'),
+                guide_link('alternatemetaverse.com:8002/Alternate Metaverse/298/322/63'),
+                guide_link('hg.osgrid.org:80/Lbsa Plaza'),
+                guide_link('grid.kitely.com:8002/AI Dreams in Art'),
             ]);
     });
 });
@@ -170,7 +178,7 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
         expect($html)->toContain('class="places"')
-            ->and($html)->toMatch('#<a class="place" href="hop://grid.example.org:8002/Welcome/128/128/25">\s*<img class="place-picture" src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
+            ->and($html)->toMatch('#<a class="place" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '">\s*<img class="place-picture" src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
             ->and($html)->toContain('src="/pictures/' . W4OS\Engine\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
@@ -376,27 +384,27 @@ describe('the number of destinations of a category', function () {
 describe('the teleport links of the blocks, for where they are shown (Destination::AUTO)', function () {
     afterEach(fn () => W4OS\Engine\Data\Connections::using(null));
 
-    test('the popular places: hop:// on a page, secondlife://host:port/secondlife/Region in a viewer', function () {
+    test('the popular places: the link the settings of the grid choose on a page, GRID by default, in a viewer too', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
 
-        expect(Blocks::data('popular_places', $grid)['rows'][0]['url'])->toBe('hop://grid.example.org:8002/Welcome/128/128/25')
+        expect(Blocks::data('popular_places', $grid)['rows'][0]['url'])->toBe(guide_link('grid.example.org:8002/Welcome/128/128/25'))
             ->and(Blocks::data('popular_places', $grid, ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'])['rows'][0]['url'])->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25');
     });
 
-    test('the grid info: its login address linked by hop:// on a page; in a viewer, already on the grid, no link', function () {
+    test('the grid info: its login address, without a link (GRID needs a region); in a viewer, already on the grid, no link', function () {
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $login = fn (array $args) => array_column(Blocks::data('grid-info', $grid, $args)['rows'], 'url', 'label')['Login URI'];
 
-        expect($login([]))->toBe('hop://grid.example.org:8002')
+        expect($login([]))->toBe(guide_link('grid.example.org:8002'))->toBeNull()
             ->and($login(['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBeNull();
     });
 
-    test('the picks and the classifieds of a profile: the hop:// of the engine, as the link for where they are shown', function () {
+    test('the picks and the classifieds of a profile: the link of the engine for where they are shown', function () {
         $row = ['name' => 'Beach', 'teleport' => 'hop://grid.example.org:8002/My%20Region/10/20/30'];
         $item = fn (string $login, array $args) => W4OS\Helpers\Block\ProfileBlock::item($row, guide_grid('edge-cases', $login), $args)['url'];
 
-        expect($item('http://grid.example.org:8002', []))->toBe('hop://grid.example.org:8002/My%20Region/10/20/30')
+        expect($item('http://grid.example.org:8002', []))->toBe(guide_link('grid.example.org:8002/My Region/10/20/30'))
             ->and($item('http://grid.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30')
             ->and($item('http://other.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30');
     });
@@ -407,7 +415,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $view = fn () => new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
 
         expect($view()->page('splash', $grid, 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
-            ->and($view()->page('splash', $grid, 'Mozilla/5.0 Chrome/131'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"');
+            ->and($view()->page('splash', $grid, 'Mozilla/5.0 Chrome/131'))->toContain('href="' . guide_link('grid.example.org:8002/Welcome/128/128/25') . '"');
     });
 
     test('a block asked by a site gives the user agent of its visitor (agent), else the one of the request is read', function () {
@@ -417,7 +425,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $get = fn (string $path, string $agent) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', $agent))->getBody();
 
         expect($get('/blocks/popular_places?agent=' . rawurlencode('Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'), 'Grav'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
-            ->and($get('/blocks/popular_places', 'Grav'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"')
+            ->and($get('/blocks/popular_places', 'Grav'))->toContain('href="' . guide_link('grid.example.org:8002/Welcome/128/128/25') . '"')
             ->and($get('/blocks/popular_places', 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"');
     });
 
@@ -429,9 +437,9 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $get = fn (string $path) => (string) $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', 'Grav'))->getBody();
 
         expect($link(['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25')
-            ->and($link(['client' => 'browser', 'agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('hop://grid.example.org:8002/Welcome/128/128/25')
+            ->and($link(['client' => 'browser', 'agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe(guide_link('grid.example.org:8002/Welcome/128/128/25'))
             ->and($get('/blocks/popular_places?client=viewer'))->toContain('href="secondlife://grid.example.org:8002/secondlife/Welcome/128/128/25"')
-            ->and($get('/blocks/popular_places?client=browser'))->toContain('href="hop://grid.example.org:8002/Welcome/128/128/25"');
+            ->and($get('/blocks/popular_places?client=browser'))->toContain('href="' . guide_link('grid.example.org:8002/Welcome/128/128/25') . '"');
     });
 
     test('a place of the grid with a landing point in decimals keeps its region in a viewer', function () {
