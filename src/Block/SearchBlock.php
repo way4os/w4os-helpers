@@ -43,8 +43,9 @@ final class SearchBlock implements Block
         $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
         $topic = in_array($args['topic'] ?? '', self::TOPICS, true) ? (string) $args['topic'] : 'places';
         $asked = self::criteria($topic, $args);
-        // On a page of its own it shows results; embedded in another page it is the form alone, until it is used
-        $embedded = !isset($args['level']) && !$asked['sent'];
+        // On a page of its own (a level, or a kind in its address) it shows results; embedded in another page it is the form alone,
+        // until it is used
+        $embedded = !isset($args['level']) && !isset($args['topic']) && !$asked['sent'];
         $search = new SearchData($grid);
         [$ready, $note] = self::ready($topic, $asked, $texts);
         $items = [];

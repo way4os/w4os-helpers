@@ -9,7 +9,7 @@
 .search-label { font-weight: 600; }
 .search-input { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem 1rem; min-width: 0; }
 .search-input input[type=search], .search-input select { flex: 1 1 14rem; min-width: 0; padding: .375rem .5rem; font: inherit; }
-.search-input input[type=number] { width: 9rem; padding: .375rem .5rem; font: inherit; }
+.block-search .search-input input[type=number] { flex: none; width: 9rem; max-width: 9rem; padding: .375rem .5rem; font: inherit; }
 .search-help { flex-basis: 100%; opacity: .7; }
 .search-checks label, .search-when label { display: inline-flex; gap: .3rem; align-items: center; white-space: nowrap; }
 .search-day { display: inline-flex; gap: .5rem; align-items: center; }
