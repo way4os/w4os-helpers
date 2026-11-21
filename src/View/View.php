@@ -92,6 +92,7 @@ final class View
         $this->assets = $assets !== '' ? $assets : dirname($templates) . '/assets';
         $this->loader = new FilesystemLoader($templates);
         $this->twig = new Twig($this->loader, ['autoescape' => 'html']);
+        $this->twig->addFunction(new \Twig\TwigFunction('picture', Picture::tag(...), ['is_safe' => ['html']]));
     }
 
     /** A block as an HTML fragment. @param array<string,mixed> $args */

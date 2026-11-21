@@ -178,7 +178,7 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
         expect($html)->toContain('class="places"')
-            ->and($html)->toMatch('#<a class="place" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '">\s*<img class="place-picture" src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
+            ->and($html)->toMatch('#<a class="place" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '">\s*<span class="picture place-picture" data-initials="LP"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
             ->and($html)->toContain('src="/pictures/' . W4OS\Engine\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
@@ -254,10 +254,10 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $placeholder = W4OS\Engine\Assets\WebAssets::PLACEHOLDER;
 
         expect($guide)
-            ->toMatch('#<img class="thumbnail no-picture" src="/pictures/' . $placeholder . '\.jpg"#')
-            ->toMatch('#<img class="thumbnail" src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\.jpg"#')
+            ->toMatch('#<span class="picture thumbnail no-picture" data-initials="[^"]*"><img src="/pictures/' . $placeholder . '\.jpg"#')
+            ->toMatch('#<span class="picture thumbnail" data-initials="[^"]*"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\.jpg"#')
             ->and($places)
-            ->toMatch('#<img class="place-picture no-picture" src="/pictures/' . $placeholder . '\.jpg"#')
+            ->toMatch('#<span class="picture place-picture no-picture" data-initials="[^"]*"><img src="/pictures/' . $placeholder . '\.jpg"#')
             ->and($css)
             ->toContain('--helpers-placeholder-opacity: 0.5')
             ->toContain('opacity: var(--helpers-placeholder-opacity)');

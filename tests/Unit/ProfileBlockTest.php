@@ -63,7 +63,7 @@ describe('The block of a profile', function () {
         $banner = substr($html, (int) strpos($html, '<header class="profile-banner">'), (int) strpos($html, '</header>') - (int) strpos($html, '<header class="profile-banner">'));
 
         expect($banner)->toContain(
-            '<img class="profile-photo" src="/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg?default=person" alt="">',
+            '<span class="picture profile-photo" data-initials="AL"><img src="/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg" alt="" loading="lazy" onerror="this.hidden=true"></span>',
             '<h1 class="block-title">Ada Love</h1>',
             '<dt>Born</dt><dd>' . W4OS\Helpers\I18n::date(1700000000) . ' (',
             ' days)</dd>',

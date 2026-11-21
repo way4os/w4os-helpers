@@ -1,7 +1,7 @@
 <section class="block block-profile" data-helpers-block="{{ helpers_block }}">
     {# The banner, over every tab: the picture, the name and what the engine marks for it (its birth, its role) #}
     <header class="profile-banner">
-        {% if banner.picture is defined and banner.picture %}<img class="profile-photo" src="{{ assets }}/{{ banner.picture }}.jpg?default=person" alt="">{% endif %}
+        {% if banner.picture is defined and banner.picture %}{{ picture(assets ~ '/' ~ banner.picture ~ '.jpg', title, 'profile-photo') }}{% endif %}
         <div class="profile-banner-text">
             {% if title %}<h1 class="block-title">{{ title }}</h1>{% endif %}
             {% if account_title is defined and account_title %}<p class="profile-meta"><span class="profile-title">{{ account_title }}</span></p>{% endif %}
@@ -88,7 +88,7 @@
                 <section id="profile-real-life" class="profile-section">
                     <h2>{{ labels.real_life }}</h2>
                     <div class="profile-identity">
-                        <img class="profile-photo" src="{{ assets }}/{{ first_picture }}.jpg?default=person" alt="">
+                        {{ picture(assets ~ '/' ~ first_picture ~ '.jpg', title, 'profile-photo') }}
                         {% if real_life %}<div class="profile-real-life">{{ real_life|nl2br }}</div>{% else %}<p class="profile-none">{{ labels.none }}</p>{% endif %}
                     </div>
                 </section>

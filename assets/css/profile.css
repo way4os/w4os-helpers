@@ -2,7 +2,8 @@
    colors of the page */
 
 /* The pictures of a profile in their own proportions, never cut nor stretched */
-.profile-photo { display: block; flex: none; width: auto; height: auto; max-width: min(100%, 20rem); max-height: 16rem; object-fit: contain; border-radius: .4rem; }
+.profile-photo { display: grid; flex: none; min-width: 4rem; min-height: 4rem; max-width: min(100%, 20rem); max-height: 16rem; border-radius: .4rem; }
+.profile-photo img, .profile-item-picture img { width: auto; height: auto; max-width: inherit; max-height: inherit; object-fit: contain; }
 .profile-identity { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
 
 /* The banner, over every tab: its picture beside what the engine marks for it (the birth, the role alone) */

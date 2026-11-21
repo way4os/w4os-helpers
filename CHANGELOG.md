@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (blocks): a picture that cannot be loaded leaves the initials of its name, never a broken image (picture())
 - change (search): a place's link from Grid::placeAt(), no address assembled in the helpers
 - change (blocks): every teleport link asked of its object (tpLink(): the grid, Grid::place()); Links::to() takes one
 - fix (tests): the unreachable guide is one whose list cannot be read; the notices tests start with none

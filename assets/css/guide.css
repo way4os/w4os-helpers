@@ -59,8 +59,8 @@
 	flex-direction: column;
 	width: 140px;
 }
-#guide img.thumbnail {
-	display: block;
+#guide .thumbnail {
+	display: grid;
 	width: 140px;
 	height: 84px;
 	object-fit: cover;
@@ -86,8 +86,8 @@
 	line-clamp: 2;
 	overflow: hidden;
 }
-#guide .item:hover img.thumbnail,
-#guide .item:focus img.thumbnail {
+#guide .item:hover .thumbnail,
+#guide .item:focus .thumbnail {
 	opacity: 0.85;
 }
 
@@ -165,12 +165,12 @@ body.viewer #guide .item:hover .name,
 body.viewer #guide .item:focus .name {
 	color: var(--guide-highlight);
 }
-#guide.client-viewer .item:hover img.thumbnail,
-body.viewer #guide .item:hover img.thumbnail {
+#guide.client-viewer .item:hover .thumbnail,
+body.viewer #guide .item:hover .thumbnail {
 	opacity: 1;
 }
-#guide.client-viewer img.thumbnail,
-body.viewer #guide img.thumbnail {
+#guide.client-viewer .thumbnail,
+body.viewer #guide .thumbnail {
 	border-radius: 0;
 }
 #guide.client-viewer .list,
