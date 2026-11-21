@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (blocks): the cards and the results are teleport links that fit where they are seen, with w4os-views (TeleportLink)
 - new (blocks): the popular places, the guide and the search give the links of both clients, labelled (Links::all())
 - fix (blocks): a picture that cannot be loaded leaves the initials of its name, never a broken image (picture())
 - change (search): a place's link from Grid::placeAt(), no address assembled in the helpers

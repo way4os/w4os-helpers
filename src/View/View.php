@@ -12,6 +12,7 @@ use W4OS\Engine\Models\Grid;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
 use Twig\Markup;
+use W4OS\Views\TeleportLink;
 
 /** Renders a page inside the layout; a viewer (the one that shows the splash page) gets the content alone. */
 final class View
@@ -25,6 +26,12 @@ final class View
 
     /** @var array{css:list<string>,js:list<string>} the files the blocks shown need, for the head of the layout */
     private array $files = ['css' => [], 'js' => []];
+
+    /** The prefix of the files of w4os-views among the assets the helpers serve (`views/js/tp-link.js`). */
+    public const VIEWS = 'views/';
+
+    /** The class of the visitor the block being made is for (Destination::client()), for its teleport links. */
+    private string $client = 'browser';
 
     /** The files each block needs, under the assets of the helpers. */
     private const BLOCK_FILES = [
@@ -93,6 +100,7 @@ final class View
         $this->loader = new FilesystemLoader($templates);
         $this->twig = new Twig($this->loader, ['autoescape' => 'html']);
         $this->twig->addFunction(new \Twig\TwigFunction('picture', Picture::tag(...), ['is_safe' => ['html']]));
+        $this->twig->addFunction(new \Twig\TwigFunction('tp_link', $this->tpLink(...), ['is_safe' => ['html']]));
     }
 
     /** A block as an HTML fragment. @param array<string,mixed> $args */
@@ -102,6 +110,9 @@ final class View
         isset($args['lang']) && I18n::use((string) $args['lang']);
         // The blocks of a page are shown where the page is (a viewer, its login screen)
         $args += $this->where;
+        $this->client = in_array($args['client'] ?? null, Destination::CLIENTS, true)
+            ? (string) $args['client']
+            : Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
         $data = Blocks::data($name, $grid, $args);
         foreach (self::BLOCK_FILES[$name] ?? [] as $kind => $files) {
             $this->files[$kind] = array_values(array_unique(array_merge($this->files[$kind], $files)));
@@ -117,7 +128,30 @@ final class View
 
         // Its name on its root (data-helpers-block), for a site, and the health, to find it in a page
         // A block with nothing to show shows nothing, its title neither
-        return $data === null || $data === [] ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets, 'helpers_block' => $name]);
+        $html = $data === null || $data === [] ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets, 'helpers_block' => $name]);
+        // Its teleport links need the style and the script of w4os-views on the pages of the helpers (a site loads its own)
+        if (str_contains($html, 'data-w4os-tp')) {
+            foreach (TeleportLink::ASSETS as $kind => $files) {
+                $this->files[$kind] = array_values(array_unique([...$this->files[$kind], ...array_map(static fn(string $file): string => self::VIEWS . $file, $files)]));
+            }
+        }
+
+        return $html;
+    }
+
+    /**
+     * A teleport link that fits where it is seen (W4OS\Views\TeleportLink, as the sites show them): the main link of the client of
+     * the block, a menu of its other links and the address to copy; the templates call it as `tp_link(links, label, html)`.
+     *
+     * @param array{browser?:list<array{format:int,link:string,label:string}>,viewer?:list<array{format:int,link:string,label:string}>} $links Links::all()
+     * @param string|\Stringable|null $html what the main link holds, markup already escaped (a card); its label as text without it
+     */
+    public function tpLink(array $links, string $label, string|\Stringable|null $html = null): string
+    {
+        $texts = \W4OS\Engine\I18n\Catalog::messages(I18n::current()) + \W4OS\Engine\I18n\Catalog::MESSAGES;
+        $pattern = trim((string) preg_replace('#^/(.*)/[a-z]*$#s', '$1', Destination::VIEWER_PATTERN));
+
+        return TeleportLink::html($links, $label, $this->client, ['more' => (string) ($texts['tp_more'] ?? ''), 'copied' => (string) ($texts['copied'] ?? '')], $pattern, $html === null ? null : (string) $html);
     }
 
     /** @param array<string,mixed> $args the arguments of the request, for the block the page is */
@@ -192,6 +226,12 @@ final class View
     {
         if (str_contains($file, '..')) {
             return null;
+        }
+        // The files of w4os-views (its teleport links), from its package
+        if (str_starts_with($file, self::VIEWS)) {
+            $path = dirname((string) (new \ReflectionClass(TeleportLink::class))->getFileName(), 2) . '/assets/' . substr($file, strlen(self::VIEWS));
+
+            return is_file($path) ? $path : null;
         }
         foreach ([self::theme($grid) === null ? null : self::theme($grid) . '/assets', $this->assets] as $dir) {
             if ($dir !== null && is_file("$dir/$file")) {

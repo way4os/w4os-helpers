@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bcf7248c4a80f09ae69965b4785fb643",
+    "content-hash": "dfdaff72e5b2b1e1012ddd6f08b0e9cd",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -3075,6 +3075,55 @@
                 }
             ],
             "description": "OpenSimulator Engine - Framework-agnostic core functionality for OpenSim grids",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "w4os/w4os-views",
+            "version": "dev-dev",
+            "dist": {
+                "type": "path",
+                "url": "../w4os-views",
+                "reference": "68c7cd9d03cce1f24eb767ba0792342620603ea5"
+            },
+            "require": {
+                "ext-intl": "*",
+                "nesbot/carbon": "3.15.1",
+                "php": ">=8.2",
+                "symfony/clock": "^7.4",
+                "symfony/translation": "^7.4"
+            },
+            "require-dev": {
+                "magicoli/build-tools": "^0.1.2",
+                "pestphp/pest": "^4.0",
+                "w4os/w4os-engine": "@dev"
+            },
+            "suggest": {
+                "w4os/w4os-engine": "the engine's own rules (Access, Catalog) when the bridge bundles it; without it, the same rules read from its contract"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "W4OS\\Views\\": "src/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "pest"
+                ]
+            },
+            "license": [
+                "AGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Gudule Lapointe",
+                    "email": "gudule@speculoos.world"
+                }
+            ],
+            "description": "The view models of the w4os bridges: what a list, an item, a form or a card of the engine shows, read from its contract and its answers, for each bridge to render its own way",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -7182,7 +7231,8 @@
     "stability-flags": {
         "magicoli/opensim-rest-php": 20,
         "phpcompatibility/php-compatibility": 20,
-        "w4os/w4os-engine": 20
+        "w4os/w4os-engine": 20,
+        "w4os/w4os-views": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

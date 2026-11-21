@@ -59,6 +59,40 @@
 	flex-direction: column;
 	width: 140px;
 }
+/* A destination is a teleport link (W4OS\Views\TeleportLink) over its card, the button of its other links in the top right corner
+   of its picture */
+#guide .item .w4os-tp {
+	position: relative;
+	display: block;
+}
+#guide .item .w4os-tp-main {
+	display: flex;
+	flex-direction: column;
+}
+#guide .item .w4os-tp-more {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+	z-index: 1;
+}
+#guide .item .w4os-tp-toggle {
+	margin: 0;
+	padding: 0.35rem;
+	border-radius: 50%;
+	background: Canvas;
+	color: CanvasText;
+	box-shadow: 0 0.1rem 0.4rem color-mix(in srgb, CanvasText 25%, transparent);
+}
+#guide .item .w4os-tp-toggle:hover,
+#guide .item .w4os-tp-toggle:focus-visible,
+#guide .item .w4os-tp-toggle[aria-expanded="true"] {
+	background: color-mix(in srgb, CanvasText 10%, Canvas);
+}
+/* The menu opens leftwards from the corner */
+#guide .item .w4os-tp-menu {
+	left: auto;
+	right: 0;
+}
 #guide .thumbnail {
 	display: grid;
 	width: 140px;

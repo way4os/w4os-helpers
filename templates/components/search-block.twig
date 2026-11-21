@@ -21,7 +21,7 @@
         <ul class="search-results">
             {% for item in group.items %}
                 <li>
-                    {% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}<strong>{{ item.title }}</strong>{% endif %}
+                    {% if item.links is defined and item.links %}{{ tp_link(item.links, item.title) }}{% elseif item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}<strong>{{ item.title }}</strong>{% endif %}
                     {% if item.detail %} <small>{{ item.detail }}</small>{% endif %}
                     {% if item.text %}<br>{{ item.text|nl2br }}{% endif %}
                 </li>

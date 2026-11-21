@@ -1,6 +1,7 @@
 /**
  * css/places.css: the popular places, a grid of cards that takes as many rows as it needs: the picture of the parcel, its name over
- * it, its region under it.
+ * it, its region under it. Each card is a teleport link (W4OS\Views\TeleportLink) over all of it, the button of its other links
+ * in its top right corner.
  *
  * @package    w4os/w4os-helpers
  * @license    AGPLv3
@@ -13,12 +14,45 @@
 }
 .block-popular_places .place {
 	position: relative;
-	display: block;
-	overflow: hidden;
 	border-radius: 0.4rem;
 	color: #fff;
-	text-decoration: none;
 	background: #2a2a2a;
+}
+.block-popular_places .place .w4os-tp {
+	display: block;
+}
+.block-popular_places .place .w4os-tp-main {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	border-radius: inherit;
+	color: inherit;
+	text-decoration: none;
+}
+/* The button of its other links, in the top right corner, over the picture (the style of the cards of the sites) */
+.block-popular_places .place .w4os-tp-more {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+	z-index: 1;
+}
+.block-popular_places .place .w4os-tp-toggle {
+	margin: 0;
+	padding: 0.35rem;
+	border-radius: 50%;
+	background: Canvas;
+	color: CanvasText;
+	box-shadow: 0 0.1rem 0.4rem color-mix(in srgb, CanvasText 25%, transparent);
+}
+.block-popular_places .place .w4os-tp-toggle:hover,
+.block-popular_places .place .w4os-tp-toggle:focus-visible,
+.block-popular_places .place .w4os-tp-toggle[aria-expanded="true"] {
+	background: color-mix(in srgb, CanvasText 10%, Canvas);
+}
+/* The menu opens leftwards from the corner */
+.block-popular_places .place .w4os-tp-menu {
+	left: auto;
+	right: 0;
 }
 .block-popular_places .place-picture {
 	display: grid;
@@ -38,6 +72,7 @@
 }
 .block-popular_places .place-name {
 	top: 0;
+	padding-right: 2.25rem;
 	font-weight: bold;
 	background: linear-gradient(rgba(0, 0, 0, 0.55), transparent);
 }

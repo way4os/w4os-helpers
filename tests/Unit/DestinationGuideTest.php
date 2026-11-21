@@ -1,6 +1,7 @@
 <?php
 
 use W4OS\Helpers\Block\Blocks;
+use W4OS\Engine\Hypergrid\Destination;
 use W4OS\Engine\Models\Grid;
 
 /**
@@ -177,7 +178,7 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
         expect($html)->toContain('class="places"')
-            ->and($html)->toMatch('#<a class="place" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '">\s*<span class="picture place-picture" data-initials="LP"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
+            ->and($html)->toMatch('#<div class="place"><span class="w4os-tp"[^>]*><a class="w4os-tp-main" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '"[^>]*><span class="picture place-picture" data-initials="LP"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
             ->and($html)->toContain('src="/pictures/' . W4OS\Engine\Assets\WebAssets::PLACEHOLDER . '.jpg"');
     });
 
@@ -461,6 +462,24 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         expect(array_column($links['browser'], 'label', 'format')[W4OS\Engine\Hypergrid\Destination::LSL])->toBe('Copy the address')
             ->and($french[W4OS\Engine\Hypergrid\Destination::LSL])->toBe("Copier l'adresse")
             ->and(array_keys($guide))->toBe(['viewer', 'browser']);
+    });
+
+    test('the cards and the results are teleport links that fit where they are seen (W4OS\\Views\\TeleportLink): both clients, a menu, the address to copy', function () {
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+        $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+        $place = $grid->place('grid.example.org:8002/Welcome/128/128/25');
+        $places = $view->block('popular_places', $grid);
+        $guide = $view->block('destination_guide', $grid, ['category' => 'Destinations Guide']);
+        $page = $view->page('popular_places', $grid, 'Mozilla/5.0 Chrome/131');
+
+        expect($places)->toContain('data-w4os-tp', 'data-browser="' . $place->tpLink(Destination::GRID) . '"', 'data-viewer="' . $place->tpLink(Destination::GRID) . '"')
+            ->toContain('href="' . $place->tpLinks('browser')[Destination::HOP]['link'] . '"', 'data-w4os-tp-copy="' . $place->tpLinks('browser')[Destination::LSL]['link'] . '"', 'Copy the address')
+            ->and($guide)->toContain('<div class="item"><span class="w4os-tp"')
+            // On the pages of the helpers, the style and the script of w4os-views, served from its package
+            ->and($page)->toContain('/assets/views/css/tp-link.css', '/assets/views/js/tp-link.js')
+            ->and($view->asset($grid, 'views/js/tp-link.js'))->toEndWith('/assets/js/tp-link.js')
+            ->and($view->asset($grid, 'views/../composer.json'))->toBeNull();
     });
 
     test('a place of the grid with a landing point in decimals keeps its region in a viewer', function () {

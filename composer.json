@@ -29,7 +29,8 @@
         "php-di/slim-bridge": "^3",
         "nesbot/carbon": "3.15.1",
         "gettext/gettext": "^5.7",
-        "gettext/translator": "^1.2"
+        "gettext/translator": "^1.2",
+        "w4os/w4os-views": "@dev"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
@@ -52,6 +53,14 @@
         {
             "name": "magicoli/opensim-rest-php",
             "url": "../opensim-rest-php/",
+            "type": "path",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "name": "w4os/w4os-views",
+            "url": "../w4os-views/",
             "type": "path",
             "options": {
                 "symlink": true

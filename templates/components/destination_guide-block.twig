@@ -14,11 +14,9 @@
     {% else %}
         <div class="list">
             {% for item in items %}
-                <a class="item" href="{{ item.url }}">
-                    {{ picture(assets ~ '/' ~ (item.picture ?: placeholder) ~ '.jpg', item.name, 'thumbnail' ~ (item.picture ? '' : ' no-picture')) }}
-                    <span class="name">{{ item.name }}</span>
-                    {% if item.data %}<span class="data" title="{{ item.data }}">{% for part in item.data|split('/') %}{% for piece in part|split(':') %}{{ piece }}{% if not loop.last %}:<wbr>{% endif %}{% endfor %}{% if not loop.last %}/<wbr>{% endif %}{% endfor %}</span>{% endif %}
-                </a>
+                {% set card %}{{ picture(assets ~ '/' ~ (item.picture ?: placeholder) ~ '.jpg', item.name, 'thumbnail' ~ (item.picture ? '' : ' no-picture')) }}<span class="name">{{ item.name }}</span>{% if item.data %}<span class="data" title="{{ item.data }}">{% for part in item.data|split('/') %}{% for piece in part|split(':') %}{{ piece }}{% if not loop.last %}:<wbr>{% endif %}{% endfor %}{% if not loop.last %}/<wbr>{% endif %}{% endfor %}</span>{% endif %}{% endset %}
+                {# A destination: its teleport link over the card, the button of its other links in a corner (guide.css); a category: its page #}
+                {% if item.links is defined %}<div class="item">{{ tp_link(item.links, item.name, card) }}</div>{% else %}<a class="item" href="{{ item.url }}">{{ card }}</a>{% endif %}
             {% endfor %}
         </div>
     {% endif %}
