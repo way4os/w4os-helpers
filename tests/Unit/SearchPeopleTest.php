@@ -82,3 +82,18 @@ describe('A place found', function () {
             ->toBeNull();
     });
 });
+
+describe('The events found', function () {
+    test('are shown from a table of an older version, without a landing point, as from one of now', function () {
+        $grid = people_grid();
+        $pdo = Connections::pdo($grid->config(), W4OS\Engine\Data\Database::Search);
+        $pdo->exec('CREATE TABLE events (owneruuid CHAR(36), name VARCHAR(255), eventid INTEGER PRIMARY KEY, creatoruuid CHAR(36), category INT, description TEXT, dateUTC INT, duration INT, covercharge INT, coveramount INT, simname VARCHAR(255), parcelUUID CHAR(36), globalPos VARCHAR(255), eventflags INT, gatekeeperURL VARCHAR(255))');
+        $pdo->exec("INSERT INTO events (name, description, dateUTC, duration, simname, globalPos, gatekeeperURL) VALUES ('Jazz night', 'Live jazz', " . (time() + 3600) . ", 60, 'Welcome', '128,128,25', 'http://grid.example.org:8002')");
+
+        $data = Blocks::data('search', $grid, ['q' => 'jazz', 'topic' => 'events', 'level' => 'h1']);
+        $item = $data['groups'][0]['items'][0] ?? [];
+
+        expect($item['title'] ?? null)->toBe('Jazz night')
+            ->and($item['links']['browser'] ?? [])->not->toBe([]);
+    });
+});

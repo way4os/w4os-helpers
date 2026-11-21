@@ -116,14 +116,19 @@ final class SearchBlock implements Block
                 );
             case 'events':
                 // The events that are not over
-                $where = 'WHERE e.dateUTC + e.duration * 60 > :now' . ($q === '' ? '' : ' AND (e.name LIKE :q OR e.description LIKE :q OR e.simname LIKE :q)');
-                $rows = $search->rows(
-                    "SELECT e.name, e.description, e.dateUTC, e.duration, e.simname AS region, e.landingpoint, e.gatekeeperURL AS gatekeeper FROM events AS e $where ORDER BY e.dateUTC LIMIT $limit",
-                    ['now' => time()] + $params,
-                );
+                // The time written as a number, as the engine does (a database compares a bound one as text)
+                $where = 'WHERE e.dateUTC + e.duration * 60 > ' . time() . ($q === '' ? '' : ' AND (e.name LIKE :q OR e.description LIKE :q OR e.simname LIKE :q)');
+                // Every column the table has: one of an older version has no landing point until the engine adds it
+                $rows = $search->rows("SELECT e.* FROM events AS e $where ORDER BY e.dateUTC LIMIT $limit", $params);
 
                 return array_map(
-                    fn($row) => $this->place($search, $row, I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(I18n::text('%d min'), (int) $row['duration']), $row['description'], $args),
+                    fn($row) => $this->place(
+                        $search,
+                        ['region' => $row['simname'] ?? '', 'gatekeeper' => $row['gatekeeperURL'] ?? '', 'landingpoint' => $row['landingpoint'] ?? ''] + $row,
+                        I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(I18n::text('%d min'), (int) $row['duration']),
+                        $row['description'],
+                        $args,
+                    ),
                     $rows,
                 );
             case 'classifieds':

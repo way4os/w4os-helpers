@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (search): the events are found in a table of an older version too, without a landing point
 - new (blocks): the links of both clients say what they do (action), as the engine gives it
 - change (grid info): the login address shown is the grid's tpUri(), its link the grid's, landing on its region
 - new (blocks): the cards and the results are teleport links that fit where they are seen, with w4os-views (TeleportLink)
