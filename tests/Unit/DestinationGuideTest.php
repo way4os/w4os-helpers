@@ -21,10 +21,10 @@ function guide_grid(string $list, string $login): Grid
 }
 
 /** @return array{categories: list<array{name: string, data: string}>, destinations: array<string, list<array{name: string, url: string}>>} */
-/** The link a web page gives an address by default (GRID; LinkFormatBrowser of the grid otherwise), as the engine makes it; null for none. */
+/** The link a web page gives an address by default (HOP; LinkFormatBrowser of the grid otherwise), as the engine makes it; null for none. */
 function guide_link(string $address): ?string
 {
-    $link = (new W4OS\Engine\Hypergrid\Place($address))->tpLink(W4OS\Engine\Hypergrid\Destination::GRID);
+    $link = (new W4OS\Engine\Hypergrid\Place($address))->tpLink(W4OS\Engine\Hypergrid\Destination::HOP);
 
     return $link === null || $link === '' ? null : $link;
 }
@@ -94,7 +94,7 @@ describe('the destination guide, as the helpers 2.x showed it', function () {
         ]);
     });
 
-    test('out of a viewer, a destination is linked as the engine links it, GRID by default: a grid alone has no link', function () {
+    test('out of a viewer, a destination is linked as the engine links it, hop:// by default: a grid alone has no link', function () {
         $shown = guide_shown('big-display', 'http://speculoos.world:8002')['destinations'];
 
         expect($shown['Speculoos'][0])->toBe(['name' => 'Grand Place', 'url' => guide_link('speculoos.world:8002/Grand Place')])
@@ -384,7 +384,7 @@ describe('the number of destinations of a category', function () {
 describe('the teleport links of the blocks, for where they are shown (Destination::AUTO)', function () {
     afterEach(fn () => W4OS\Engine\Data\Connections::using(null));
 
-    test('the popular places: the link the settings of the grid choose on a page, GRID by default, in a viewer too', function () {
+    test('the popular places: the link the settings of the grid choose on a page, hop:// by default, GRID in a viewer', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
 
@@ -474,7 +474,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $guide = $view->block('destination_guide', $grid, ['category' => 'Destinations Guide']);
         $page = $view->page('popular_places', $grid, 'Mozilla/5.0 Chrome/131');
 
-        expect($places)->toContain('data-w4os-tp', 'data-browser="' . $place->tpLink(Destination::GRID) . '"', 'data-viewer="' . $place->tpLink(Destination::GRID) . '"')
+        expect($places)->toContain('data-w4os-tp', 'data-browser="' . $place->tpLink(Destination::HOP) . '"', 'data-viewer="' . $place->tpLink(Destination::GRID) . '"')
             ->toContain('href="' . $place->tpLinks('browser')[Destination::HOP]['link'] . '"', 'data-w4os-tp-copy="' . $place->tpLinks('browser')[Destination::LSL]['link'] . '"', 'Copy the address')
             ->and($guide)->toContain('<div class="item"><span class="w4os-tp"')
             // On the pages of the helpers, the style and the script of w4os-views, served from its package

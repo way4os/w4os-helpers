@@ -96,7 +96,7 @@ describe('The block of a profile', function () {
             '201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg',
             'No description given.',
             'Welcome (128, 128, 26)',
-            'class="profile-item-teleport" href="secondlife://',
+            'class="profile-item-teleport" href="hop://',
         );
     });
 

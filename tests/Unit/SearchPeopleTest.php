@@ -72,9 +72,9 @@ describe('A place found', function () {
 
         // The landing point as the search keeps it (x/y/z), or as a script writes it (<x, y, z>); a height of zero lands at 21 m
         expect($search->teleport('http://grid.example.org:8002', 'My Region', '<10.4, 20, 30.6>'))
-            ->toBe((new W4OS\Engine\Hypergrid\Place('grid.example.org:8002/My Region/10.4/20/30.6'))->tpLink(W4OS\Engine\Hypergrid\Destination::GRID))
+            ->toBe((new W4OS\Engine\Hypergrid\Place('grid.example.org:8002/My Region/10.4/20/30.6'))->tpLink(W4OS\Engine\Hypergrid\Destination::HOP))
             ->and($search->teleport('http://grid.example.org:8002', 'My Region', '128/128/0'))
-            ->toBe((new W4OS\Engine\Hypergrid\Place('grid.example.org:8002/My Region/128/128/21'))->tpLink(W4OS\Engine\Hypergrid\Destination::GRID))
+            ->toBe((new W4OS\Engine\Hypergrid\Place('grid.example.org:8002/My Region/128/128/21'))->tpLink(W4OS\Engine\Hypergrid\Destination::HOP))
             // In a viewer, the form of the viewer: secondlife://host:port/secondlife/Region
             ->and($search->teleport('http://grid.example.org:8002', 'My Region', '128/128/25', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))
             ->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/128/128/25')
