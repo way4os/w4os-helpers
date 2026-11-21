@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (search): each result shows the columns and the details the viewers show, sorted as they sort; a test of parity with query.php
 - change (search): the web search as the viewers have it, each kind its tab, its form and its results; no All
 - fix (search): an event of another grid is linked to its region, the grid its name is kept with set apart
 - fix (search): the events are found in a table of an older version too, without a landing point

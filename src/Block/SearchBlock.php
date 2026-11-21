@@ -26,7 +26,7 @@ final class SearchBlock implements Block
     public const TOPICS = ['places', 'land', 'events', 'classifieds', 'people'];
 
     /** What a search asks, in the address of its page: a site gives each of them to the block (rating is a list). */
-    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go'];
+    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go', 'sort', 'dir'];
 
     /** The ratings, and the ones asked when a form has not been sent yet (as the viewers: general and moderate). */
     public const RATINGS = ['general', 'moderate', 'adult'];
@@ -76,9 +76,10 @@ final class SearchBlock implements Block
             'note' => $note,
             'nothing' => $texts['web_search_nothing'],
             'results' => $items,
+            'sorts' => self::sorts($topic, $asked, $args, $texts),
             // Each kind lists its own results: what a column says
             'columns' => [
-                'name' => $texts['web_search_name'], 'region' => $texts['web_search_region'], 'traffic' => $texts['web_search_traffic'], 'price' => $texts['web_search_price'],
+                'sort' => $texts['web_search_sort'], 'name' => $texts['web_search_name'], 'region' => $texts['web_search_region'], 'traffic' => $texts['web_search_traffic'], 'price' => $texts['web_search_price'],
                 'area' => $texts['web_search_area'], 'date' => $texts['web_search_date'], 'duration' => $texts['web_search_duration'],
                 'category' => $texts['web_search_category'],
             ],
@@ -195,6 +196,44 @@ final class SearchBlock implements Block
         return array_values(array_filter($fields));
     }
 
+    /**
+     * The columns a kind of search sorts on, each a link to its results sorted by it (the other way when it is the sort already),
+     * what else it asks kept.
+     *
+     * @return list<array{key:string,label:string,url:string,current:bool,dir:string}>
+     */
+    private static function sorts(string $topic, array $asked, array $args, array $texts): array
+    {
+        [$sort, $dir] = self::sort($topic, $args);
+        $labels = [
+            'name' => 'web_search_name', 'traffic' => 'web_search_traffic', 'price' => 'web_search_price', 'area' => 'web_search_area',
+            'price_m2' => 'web_search_price_m2', 'type' => 'web_search_land_type', 'time' => 'web_search_time',
+        ];
+        $sorts = [];
+        foreach (array_keys(self::SORTS[$topic]) as $key) {
+            $next = $key === $sort ? ($dir === 'asc' ? 'desc' : 'asc') : self::sort($topic, ['sort' => $key])[1];
+            $sorts[] = ['key' => $key, 'label' => $texts[$labels[$key]], 'url' => '?' . http_build_query(self::query($asked) + ['sort' => $key, 'dir' => $next]), 'current' => $key === $sort, 'dir' => $key === $sort ? $dir : ''];
+        }
+
+        return $sorts;
+    }
+
+    /** What a search asks, as the query of its address (PARAMETERS): to keep it on another link. */
+    private static function query(array $asked): array
+    {
+        return array_filter([
+            'q' => $asked['q'],
+            'category' => $asked['category'] ?: null,
+            'rating' => $asked['ratings'],
+            'type' => $asked['type'] === 'any' ? null : $asked['type'],
+            'price' => $asked['price'],
+            'area' => $asked['area'],
+            'when' => $asked['when'] === 'u' ? null : $asked['when'],
+            'day' => $asked['day'] ?: null,
+            'go' => 1,
+        ], static fn($value): bool => $value !== null && $value !== '' && $value !== []);
+    }
+
     /** The query of the search of events on another day, what else it asks kept. */
     private static function dayUrl(array $asked, int $day): string
     {
@@ -216,46 +255,115 @@ final class SearchBlock implements Block
         return $site !== null ? rtrim($site, '/') : (rtrim((string) parse_url((string) $grid->searchUrl(), PHP_URL_PATH), '/') ?: '/search');
     }
 
+    /** The columns a kind of search sorts on, as the viewers do (its list): its column in the query; the first is the default. */
+    public const SORTS = [
+        'places' => ['traffic' => 'p.dwell', 'name' => 'p.parcelname'],
+        'land' => ['price_m2' => 's.saleprice * 1.0 / s.area', 'name' => 's.parcelname', 'type' => 's.parentestate', 'price' => 's.saleprice', 'area' => 's.area'],
+        'events' => ['time' => 'e.dateUTC', 'name' => 'e.name'],
+        'classifieds' => ['price' => 'priceforlisting', 'name' => 'name'],
+        'people' => [],
+    ];
+
+    /** The way each sort goes first: the most visited places, the most expensive classifieds first, the others up. */
+    private const FIRST_DIRECTION = ['traffic' => 'desc', 'price' => 'asc'];
+
+    /**
+     * The sort asked of a kind of search, and its direction: one of its columns (SORTS), else its first.
+     *
+     * @return array{0:string,1:string}
+     */
+    private static function sort(string $topic, array $args): array
+    {
+        $columns = self::SORTS[$topic];
+        $sort = isset($columns[$args['sort'] ?? '']) ? (string) $args['sort'] : (string) array_key_first($columns);
+        $first = $topic === 'classifieds' && $sort === 'price' ? 'desc' : (self::FIRST_DIRECTION[$sort] ?? 'asc');
+        $dir = in_array($args['dir'] ?? '', ['asc', 'desc'], true) ? (string) $args['dir'] : $first;
+
+        return [$sort, $dir];
+    }
+
     /** @return list<array<string,mixed>> */
     private function find(SearchData $search, string $kind, array $asked, array $args = []): array
     {
         $limit = self::LIMIT;
+        $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
         // The table of the regions, for the kinds that join it
         $regions = in_array($kind, ['places', 'land'], true) ? $search->regions() : '';
         $where = static fn(array $terms): string => $terms === [] ? '' : 'WHERE ' . implode(' AND ', $terms);
+        [$sort, $dir] = self::sort($kind, $args);
+        $order = $sort === '' ? '' : self::SORTS[$kind][$sort] . ' ' . strtoupper($dir);
+        $rating = static fn(?string $mature): string => match (strtolower((string) $mature)) {
+            'pg' => $texts['web_search_rating_general'], 'mature' => $texts['web_search_rating_moderate'], 'adult' => $texts['web_search_rating_adult'], default => '',
+        };
+        $column = static fn(string $label, mixed $value, bool $number = false): array => ['label' => $label, 'value' => (string) $value, 'number' => $number];
         switch ($kind) {
             case 'places':
                 [$terms, $values] = SearchFilters::places($asked['q'], $asked['category'], $asked['ratings'], 'p');
                 $rows = $search->rows(
-                    "SELECT p.*, r.regionname AS region FROM parcels AS p LEFT JOIN $regions AS r ON r.regionUUID = p.regionUUID {$where($terms)} ORDER BY p.dwell DESC, p.parcelname LIMIT $limit",
+                    "SELECT p.*, r.regionname AS region, a.parcelarea AS area FROM parcels AS p LEFT JOIN $regions AS r ON r.regionUUID = p.regionUUID " .
+                        "LEFT JOIN allparcels AS a ON a.parcelUUID = p.parcelUUID {$where($terms)} ORDER BY $order, p.parcelname LIMIT $limit",
                     $values,
                 );
 
                 return array_map(fn(array $row): array => $this->place($search, [
                     'name' => $row['parcelname'], 'region' => (string) ($row['region'] ?? ''), 'landingpoint' => $row['landingpoint'] ?? '',
                     'gatekeeper' => $row['gatekeeperURL'] ?? '',
-                ], '', $row['description'] ?? '', $args) + ['picture' => self::picture($row['imageUUID'] ?? null), 'traffic' => (int) ($row['dwell'] ?? 0)], $rows);
+                ], '', $row['description'] ?? '', $args) + [
+                    'picture' => self::picture($row['imageUUID'] ?? null),
+                    'traffic' => (int) ($row['dwell'] ?? 0),
+                    'columns' => [$column($texts['web_search_traffic'], number_format((int) ($row['dwell'] ?? 0)), true)],
+                    'details' => array_values(array_filter([
+                        $column($texts['web_search_region'], $row['region'] ?? ''),
+                        ($row['area'] ?? null) === null ? null : $column($texts['web_search_area'], number_format((int) $row['area']) . ' m²'),
+                        $column($texts['web_search_traffic'], number_format((int) ($row['dwell'] ?? 0))),
+                        $column($texts['web_search_rating'], $rating($row['mature'] ?? null)),
+                    ], static fn(?array $d): bool => $d !== null && $d['value'] !== '')),
+                ], $rows);
             case 'land':
                 [$terms, $values] = SearchFilters::land($asked['type'], $asked['price'], $asked['area'], $asked['ratings'], 's');
                 $rows = $search->rows(
-                    "SELECT s.*, r.regionname AS region FROM parcelsales AS s LEFT JOIN $regions AS r ON r.regionUUID = s.regionUUID {$where($terms)} ORDER BY s.saleprice, s.parcelname LIMIT $limit",
+                    "SELECT s.*, r.regionname AS region, p.imageUUID AS picture, p.description AS about FROM parcelsales AS s LEFT JOIN $regions AS r ON r.regionUUID = s.regionUUID " .
+                        "LEFT JOIN parcels AS p ON p.parcelUUID = s.parcelUUID {$where($terms)} ORDER BY $order, s.parcelname LIMIT $limit",
                     $values,
                 );
 
-                return array_map(fn(array $row): array => $this->place($search, [
-                    'name' => $row['parcelname'], 'region' => (string) ($row['region'] ?? ''), 'landingpoint' => $row['landingpoint'] ?? '',
-                    'gatekeeper' => $row['gatekeeperURL'] ?? '',
-                ], sprintf('%s m², %s', number_format((int) $row['area']), number_format((int) $row['saleprice'])), '', $args)
-                    + ['area' => (int) $row['area'], 'price' => (int) $row['saleprice']], $rows);
+                return array_map(function (array $row) use ($search, $args, $texts, $column, $rating): array {
+                    $area = (int) $row['area'];
+                    $price = (int) $row['saleprice'];
+                    $type = (int) ($row['parentestate'] ?? 0) === 1 ? $texts['web_search_land_mainland'] : $texts['web_search_land_estate'];
+
+                    return $this->place($search, [
+                        'name' => $row['parcelname'], 'region' => (string) ($row['region'] ?? ''), 'landingpoint' => $row['landingpoint'] ?? '',
+                        'gatekeeper' => $row['gatekeeperURL'] ?? '',
+                    ], sprintf('%s m², %s', number_format($area), number_format($price)), $row['about'] ?? '', $args) + [
+                        'area' => $area,
+                        'price' => $price,
+                        'picture' => self::picture($row['picture'] ?? null),
+                        'columns' => [
+                            $column($texts['web_search_land_type'], $type),
+                            $column($texts['web_search_price'], number_format($price), true),
+                            $column($texts['web_search_area'], number_format($area) . ' m²', true),
+                            $column($texts['web_search_price_m2'], $area > 0 ? number_format($price / $area, 2) : '', true),
+                        ],
+                        'details' => array_values(array_filter([
+                            $column($texts['web_search_region'], $row['region'] ?? ''),
+                            $column($texts['web_search_area'], number_format($area) . ' m²'),
+                            $column($texts['web_search_traffic'], number_format((int) ($row['dwell'] ?? 0))),
+                            $column($texts['web_search_rating'], $rating($row['mature'] ?? null)),
+                        ], static fn(array $d): bool => $d['value'] !== '')),
+                    ];
+                }, $rows);
             case 'events':
                 [$terms, $values] = SearchFilters::events($asked['when'] === 'day' ? $asked['day'] : 'u', $asked['category'], $asked['ratings'], $asked['q'], time(), 'e');
                 // Every column the table has: one of an older version has no landing point until the engine adds it
-                $rows = $search->rows("SELECT e.* FROM events AS e {$where($terms)} ORDER BY e.dateUTC LIMIT $limit", $values);
+                $rows = $search->rows("SELECT e.* FROM events AS e {$where($terms)} ORDER BY $order LIMIT $limit", $values);
                 $categories = self::categories('events');
-                $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
 
-                return array_map(
-                    fn(array $row): array => $this->place(
+                return array_map(function (array $row) use ($search, $args, $texts, $column, $categories): array {
+                    $minutes = (int) $row['duration'];
+                    $fee = (int) ($row['covercharge'] ?? 0) !== 0 ? number_format((int) ($row['coveramount'] ?? 0)) : $texts['web_search_none'];
+
+                    return $this->place(
                         $search,
                         // The region of another grid's event is kept with its grid (host:port Region): its name, for its links;
                         // shown as kept
@@ -266,34 +374,60 @@ final class SearchBlock implements Block
                             'gatekeeper' => $row['gatekeeperURL'] ?? '',
                             'landingpoint' => $row['landingpoint'] ?? '',
                         ],
-                        I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(I18n::text('%d min'), (int) $row['duration']),
+                        I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(I18n::text('%d min'), $minutes),
                         $row['description'],
                         $args,
                     ) + [
                         'date' => I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC',
-                        'duration' => sprintf(I18n::text('%d min'), (int) $row['duration']),
+                        'duration' => sprintf(I18n::text('%d min'), $minutes),
                         'category' => isset($categories[(int) ($row['category'] ?? 0)]) ? $texts[$categories[(int) $row['category']]] : '',
-                    ],
-                    $rows,
-                );
+                        'columns' => [$column($texts['web_search_time'], I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC')],
+                        'details' => [
+                            $column($texts['web_search_land_type'], isset($categories[(int) ($row['category'] ?? 0)]) ? $texts[$categories[(int) $row['category']]] : ''),
+                            $column($texts['web_search_adult_content'], (int) ($row['eventflags'] ?? 0) === 2 ? $texts['web_search_yes'] : $texts['web_search_no']),
+                            $column($texts['web_search_date'], I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC'),
+                            $column($texts['web_search_duration'], sprintf('%d:%02d', intdiv($minutes, 60), $minutes % 60)),
+                            $column($texts['web_search_organizer'], $this->organizer($search, (string) ($row['owneruuid'] ?? '')) ?: $texts['web_search_none']),
+                            $column($texts['web_search_location'], (string) ($row['simname'] ?? '')),
+                            $column($texts['web_search_entry_fee'], $fee),
+                        ],
+                    ];
+                }, $rows);
             case 'classifieds':
-                [$terms, $values] = SearchFilters::classifieds($asked['q'], $asked['category'], $asked['ratings']);
-                $terms[] = 'expirationdate > ' . time();
-                $rows = $search->rows("SELECT * FROM classifieds {$where($terms)} ORDER BY priceforlisting DESC, creationdate DESC LIMIT $limit", $values);
+                [$terms, $values] = SearchFilters::classifieds($asked['q'], $asked['category'], $asked['ratings'], now: time());
+                $rows = $search->rows("SELECT * FROM classifieds {$where($terms)} ORDER BY $order, creationdate DESC LIMIT $limit", $values);
                 $categories = self::categories('classifieds');
-                $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
 
-                return array_map(
-                    fn(array $row): array => [
+                return array_map(function (array $row) use ($search, $args, $texts, $column, $categories): array {
+                    $flags = (int) ($row['classifiedflags'] ?? 0);
+                    $rated = match (true) {
+                        ($flags & 64) !== 0 => $texts['web_search_rating_adult'], ($flags & 8) !== 0 => $texts['web_search_rating_moderate'], default => $texts['web_search_rating_general'],
+                    };
+                    // Its place: the region, the point in it as the viewers show it (the global position within its region)
+                    $point = array_map('floatval', explode(',', trim((string) ($row['posglobal'] ?? ''), '<> ')) + [0, 0, 0]);
+                    $landing = sprintf('%d/%d/%d', fmod($point[0], 256), fmod($point[1], 256), $point[2] ?? 0);
+                    $location = trim(($row['parcelname'] ?? '') . (($row['simname'] ?? '') === '' ? '' : ', ' . $row['simname']), ', ')
+                        . (($row['posglobal'] ?? '') === '' ? '' : ' (' . str_replace('/', ', ', $landing) . ')');
+                    $price = number_format((int) ($row['priceforlisting'] ?? 0));
+
+                    return [
                         'title' => (string) $row['name'],
-                        'detail' => trim(($row['parcelname'] ?? '') . (($row['simname'] ?? '') === '' ? '' : ', ' . $row['simname']), ', '),
+                        'detail' => $location,
                         'text' => trim((string) $row['description']),
                         'url' => null,
+                        'links' => ($row['simname'] ?? '') === '' ? [] : $search->links('', (string) $row['simname'], $landing),
                         'picture' => self::picture($row['snapshotuuid'] ?? null),
                         'category' => isset($categories[(int) ($row['category'] ?? 0)]) ? $texts[$categories[(int) $row['category']]] : '',
-                    ],
-                    $rows,
-                );
+                        'columns' => [$column($texts['web_search_price'], $price, true)],
+                        'details' => [
+                            $column($texts['web_search_location'], $location),
+                            $column($texts['web_search_content_type'], $rated),
+                            $column($texts['web_search_category'], isset($categories[(int) ($row['category'] ?? 0)]) ? $texts[$categories[(int) $row['category']]] : ''),
+                            $column($texts['web_search_creation_date'], I18n::date((int) ($row['creationdate'] ?? 0), 'date')),
+                            $column($texts['web_search_listing_cost'], $price),
+                        ],
+                    ];
+                }, $rows);
             case 'people':
                 if ($search->config === null) {
                     return [];
@@ -314,12 +448,30 @@ final class SearchBlock implements Block
                         'detail' => '',
                         'text' => '',
                         'url' => Avatar::profileAt($profile, $p['firstName'] . ' ' . $p['lastName']),
+                        'columns' => [],
+                        'details' => [],
                     ],
                     $people,
                 );
         }
 
         return [];
+    }
+
+    /** @var array<string,string> the names of the organizers asked during this request */
+    private array $organizers = [];
+
+    /** The name of the organizer of an event, '' for nobody (the events of a calendar) or one the grid does not know. */
+    private function organizer(SearchData $search, string $uuid): string
+    {
+        if (trim($uuid, '0-1') === '' || $search->config === null) {
+            return '';
+        }
+        try {
+            return $this->organizers[$uuid] ??= (string) (Avatar::find($search->config, $uuid)?->name() ?? '');
+        } catch (\Throwable) {
+            return $this->organizers[$uuid] = '';
+        }
     }
 
     /** A picture of a row, null when it has none (the null UUID). */

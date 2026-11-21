@@ -124,6 +124,8 @@ describe('The kinds of search', function () {
         $pdo->exec("INSERT INTO regionsregister VALUES ('r1', 'Welcome')");
         $pdo->exec('CREATE TABLE parcels (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), description TEXT, landingpoint VARCHAR(255), searchcategory INT, mature VARCHAR(10), dwell FLOAT, imageUUID CHAR(36), gatekeeperURL VARCHAR(255))');
         $pdo->exec("INSERT INTO parcels VALUES ('p1', 'r1', 'Beach house', 'Sand', '10/20/30', 7, 'PG', 12, NULL, 'http://grid.example.org:8002'), ('p2', 'r1', 'Beach club', 'Night', '1/2/3', 7, 'Adult', 50, NULL, 'http://grid.example.org:8002')");
+        $pdo->exec('CREATE TABLE allparcels (regionUUID CHAR(36), parcelname VARCHAR(255), ownerUUID CHAR(36), groupUUID CHAR(36), landingpoint VARCHAR(255), parcelUUID CHAR(36), infoUUID CHAR(36), parcelarea INT, gatekeeperURL VARCHAR(255))');
+        $pdo->exec("INSERT INTO allparcels (regionUUID, parcelname, parcelUUID, parcelarea) VALUES ('r1', 'Beach house', 'p1', 1024)");
         $pdo->exec('CREATE TABLE parcelsales (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), area INT, saleprice INT, landingpoint VARCHAR(255), parentestate INT, mature VARCHAR(10), gatekeeperURL VARCHAR(255))');
         $pdo->exec("INSERT INTO parcelsales VALUES ('s1', 'r1', 'Lot 1', 512, 1000, '5/5/25', 2, 'PG', 'http://grid.example.org:8002')");
         $pdo->exec('CREATE TABLE events (owneruuid CHAR(36), name VARCHAR(255), eventid INTEGER PRIMARY KEY, creatoruuid CHAR(36), category INT, description TEXT, dateUTC INT, duration INT, covercharge INT, coveramount INT, simname VARCHAR(255), parcelUUID CHAR(36), globalPos VARCHAR(255), eventflags INT, gatekeeperURL VARCHAR(255), landingpoint VARCHAR(35))');

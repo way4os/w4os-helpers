@@ -50,28 +50,29 @@
             <p class="search-none">{{ note }}</p>
         {% elseif not results %}
             <p class="search-none">{{ nothing }}</p>
-        {% elseif topic == 'land' %}
-            <table class="search-results search-table">
-                <thead><tr><th>{{ columns.name }}</th><th>{{ columns.region }}</th><th class="number">{{ columns.area }}</th><th class="number">{{ columns.price }}</th></tr></thead>
-                <tbody>
-                    {% for item in results %}
-                        <tr><td>{% if item.links %}{{ tp_link(item.links, item.title) }}{% else %}{{ item.title }}{% endif %}</td><td>{{ item.region }}</td><td class="number">{{ item.area|number_format }} m²</td><td class="number">{{ item.price|number_format }}</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         {% else %}
+            {% if sorts %}
+                <p class="search-sorts">{{ columns.sort }}
+                    {% for sort in sorts %}<a href="{{ sort.url }}"{% if sort.current %} aria-current="true"{% endif %}>{{ sort.label }}{% if sort.current %} {{ sort.dir == 'asc' ? '↑' : '↓' }}{% endif %}</a>{% endfor %}
+                </p>
+            {% endif %}
+            {# Each result as the viewers list it (its name and its columns), its detail under it, its actions those of its place #}
             <ul class="search-results search-list">
                 {% for item in results %}
                     <li class="search-item">
-                        {% if item.picture is defined %}{{ picture(assets ~ '/' ~ (item.picture ?: '00000000-0000-0000-0000-000000000000') ~ '.jpg', item.title, 'search-picture') }}{% endif %}
-                        <div class="search-text">
-                            {% if topic == 'events' %}<p class="search-meta">{{ item.date }} · {{ item.duration }}{% if item.category %} · {{ item.category }}{% endif %}</p>{% endif %}
-                            <h3 class="search-title">{% if item.links is defined and item.links %}{{ tp_link(item.links, item.title) }}{% elseif item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
-                            {% if topic == 'places' %}<p class="search-meta">{{ item.region }}{% if item.traffic %} · {{ columns.traffic }} {{ item.traffic|number_format }}{% endif %}</p>
-                            {% elseif topic == 'events' %}<p class="search-meta">{{ item.region }}</p>
-                            {% elseif topic == 'classifieds' %}<p class="search-meta">{% if item.category %}{{ item.category }}{% endif %}{% if item.detail %}{% if item.category %} · {% endif %}{{ item.detail }}{% endif %}</p>{% endif %}
-                            {% if item.text %}<p class="search-description">{{ item.text|nl2br }}</p>{% endif %}
-                        </div>
+                        <details>
+                            <summary>
+                                <span class="search-title">{% if item.links is defined and item.links %}{{ tp_link(item.links, item.title) }}{% elseif item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</span>
+                                {% for column in item.columns ?? [] %}<span class="search-column{% if column.number %} number{% endif %}" title="{{ column.label }}">{{ column.value }}</span>{% endfor %}
+                            </summary>
+                            <div class="search-detail">
+                                {% if item.picture is defined %}{{ picture(assets ~ '/' ~ (item.picture ?: '00000000-0000-0000-0000-000000000000') ~ '.jpg', item.title, 'search-picture') }}{% endif %}
+                                <div class="search-text">
+                                    {% if item.details ?? [] %}<dl class="search-fields">{% for d in item.details %}<dt>{{ d.label }}</dt><dd>{{ d.value }}</dd>{% endfor %}</dl>{% endif %}
+                                    {% if item.text %}<p class="search-description">{{ item.text|nl2br }}</p>{% endif %}
+                                </div>
+                            </div>
+                        </details>
                     </li>
                 {% endfor %}
             </ul>
