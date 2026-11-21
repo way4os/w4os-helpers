@@ -96,4 +96,22 @@ describe('The events found', function () {
         expect($item['title'] ?? null)->toBe('Jazz night')
             ->and($item['links']['browser'] ?? [])->not->toBe([]);
     });
+
+    test('of another grid are linked to their region, the name of its grid kept apart, exactly as the place gives its links', function () {
+        $grid = people_grid();
+        $pdo = Connections::pdo($grid->config(), W4OS\Engine\Data\Database::Search);
+        $pdo->exec('CREATE TABLE events (owneruuid CHAR(36), name VARCHAR(255), eventid INTEGER PRIMARY KEY, creatoruuid CHAR(36), category INT, description TEXT, dateUTC INT, duration INT, covercharge INT, coveramount INT, simname VARCHAR(255), parcelUUID CHAR(36), globalPos VARCHAR(255), eventflags INT, gatekeeperURL VARCHAR(255), landingpoint VARCHAR(35))');
+        $pdo->exec("INSERT INTO events (name, description, dateUTC, duration, simname, globalPos, gatekeeperURL, landingpoint) VALUES ('Far night', 'Far away', " . (time() + 3600) . ", 60, 'far.example.org:8002 Far Away', '2583726,2579592,24', 'http://far.example.org:8002', '46/232/24')");
+
+        $item = Blocks::data('search', $grid, ['q' => 'far', 'topic' => 'events', 'level' => 'h1'])['groups'][0]['items'][0] ?? [];
+        $place = W4OS\Helpers\Block\Links::all($grid->placeAt('Far Away', '46/232/24', 'http://far.example.org:8002'));
+
+        expect($item['links'] ?? null)->toBe($place)
+            ->and(array_column($item['links']['browser'], 'format'))->toBe(array_keys($grid->placeAt('Far Away', '46/232/24', 'http://far.example.org:8002')->tpLinks('browser')))
+            // Shown as kept: its grid, then its region
+            ->and($item['detail'])->toStartWith('far.example.org:8002 Far Away · ')
+            ->and(W4OS\Helpers\Block\SearchData::regionName('far.example.org:8002:Far Away', 'far.example.org:8002'))->toBe('Far Away')
+            ->and(W4OS\Helpers\Block\SearchData::regionName('Welcome', 'http://grid.example.org:8002'))->toBe('Welcome')
+            ->and(W4OS\Helpers\Block\SearchData::regionName('far.example.org:80020 X', 'http://far.example.org:8002'))->toBe('far.example.org:80020 X');
+    });
 });

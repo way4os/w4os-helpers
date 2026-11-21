@@ -89,6 +89,21 @@ final class SearchData
     }
 
     /**
+     * The name of a region as a row of the search keeps it, without the grid it may be kept with (`host:port Region`,
+     * `host:port:Region`, the events of a calendar), when that grid is the row's gatekeeper.
+     */
+    public static function regionName(string $kept, string $gatekeeper): string
+    {
+        $parts = parse_url(preg_match('#://#', $gatekeeper) === 1 ? $gatekeeper : "http://$gatekeeper") ?: [];
+        $grid = isset($parts['host']) ? $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '') : '';
+        $kept = trim($kept);
+
+        return $grid !== '' && stripos($kept, $grid) === 0 && in_array(substr($kept, strlen($grid), 1), [' ', ':'], true)
+            ? trim(substr($kept, strlen($grid) + 1))
+            : $kept;
+    }
+
+    /**
      * The links to a place the search knows, for both clients (Links::all()); none without a region.
      *
      * @return array{browser?:list<array{format:int,link:string,label:string}>,viewer?:list<array{format:int,link:string,label:string}>}

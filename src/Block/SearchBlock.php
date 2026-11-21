@@ -124,7 +124,14 @@ final class SearchBlock implements Block
                 return array_map(
                     fn($row) => $this->place(
                         $search,
-                        ['region' => $row['simname'] ?? '', 'gatekeeper' => $row['gatekeeperURL'] ?? '', 'landingpoint' => $row['landingpoint'] ?? ''] + $row,
+                        // The region of another grid's event is kept with its grid (host:port Region): its name, for its links;
+                        // shown as kept
+                        [
+                            'region' => SearchData::regionName((string) ($row['simname'] ?? ''), (string) ($row['gatekeeperURL'] ?? '')),
+                            'shown' => (string) ($row['simname'] ?? ''),
+                            'gatekeeper' => $row['gatekeeperURL'] ?? '',
+                            'landingpoint' => $row['landingpoint'] ?? '',
+                        ] + $row,
                         I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(I18n::text('%d min'), (int) $row['duration']),
                         $row['description'],
                         $args,
@@ -179,10 +186,11 @@ final class SearchBlock implements Block
     private function place(SearchData $search, array $row, string $detail, mixed $text = '', array $args = []): array
     {
         $region = (string) ($row['region'] ?? '');
+        $shown = (string) ($row['shown'] ?? $region);
 
         return [
             'title' => (string) $row['name'],
-            'detail' => trim($region !== '' && $detail !== '' ? "$region · $detail" : $region . $detail),
+            'detail' => trim($shown !== '' && $detail !== '' ? "$shown · $detail" : $shown . $detail),
             'text' => trim((string) $text),
             'url' => $search->teleport((string) ($row['gatekeeper'] ?? ''), $region, (string) ($row['landingpoint'] ?? ''), $args),
             'links' => $search->links((string) ($row['gatekeeper'] ?? ''), $region, (string) ($row['landingpoint'] ?? '')),
