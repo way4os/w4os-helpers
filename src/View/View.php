@@ -38,7 +38,7 @@ final class View
         'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']],
         'popular_places' => ['css' => ['css/blocks.css', 'css/places.css'], 'js' => []],
         'profile' => ['css' => ['css/profile.css'], 'js' => []],
-        'search' => ['css' => ['css/search.css'], 'js' => []],
+        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'js' => []],
     ];
 
     /**

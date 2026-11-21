@@ -33,7 +33,7 @@ afterEach(fn() => Connections::using(null));
 describe('The search of people', function () {
     test('finds only the avatars who published their profile ("show in search")', function () {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1']);
-        $people = array_column($data['groups'][0]['items'] ?? [], 'title');
+        $people = array_column($data['results'] ?? [], 'title');
 
         expect($people)->toBe(['Ada Lovelace']);
     });
@@ -41,7 +41,7 @@ describe('The search of people', function () {
     test('links each one to their profile, at the address the grid gives', function () {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1']);
 
-        expect($data['groups'][0]['items'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
+        expect($data['results'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
     });
 });
 
@@ -51,18 +51,16 @@ describe('The links of a search a site shows', function () {
     test('are at the addresses the site gives (its language), the form, the topics and the profiles', function () use ($site) {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1'] + $site);
 
-        expect($data['action'])->toBe('https://site.example.org/fr/search')
-            ->and($data['all_url'])->toBe('https://site.example.org/fr/search?q=la')
-            ->and(array_column($data['topics'], 'url'))->toContain('https://site.example.org/fr/search/people/?q=la')
-            ->and($data['groups'][0]['url'])->toBe('https://site.example.org/fr/search/people/?q=la')
-            ->and($data['groups'][0]['items'][0]['url'])->toBe('https://site.example.org/fr/profile/Ada.Lovelace');
+        expect($data['action'])->toBe('https://site.example.org/fr/search/people/')
+            ->and(array_column($data['topics'], 'url'))->toContain('https://site.example.org/fr/search/people/?q=la', 'https://site.example.org/fr/search/places/?q=la')
+            ->and($data['results'][0]['url'])->toBe('https://site.example.org/fr/profile/Ada.Lovelace');
     });
 
     test('are the grid\'s without an address of the site, or with one that is not a page', function () {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1', 'search_url' => 'javascript:alert(1)', 'web_profile_url' => 'javascript:[AGENT_NAME]']);
 
-        expect($data['action'])->toBe('/search')
-            ->and($data['groups'][0]['items'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
+        expect($data['action'])->toBe('/search/people/')
+            ->and($data['results'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
     });
 });
 
@@ -88,10 +86,10 @@ describe('The events found', function () {
         $grid = people_grid();
         $pdo = Connections::pdo($grid->config(), W4OS\Engine\Data\Database::Search);
         $pdo->exec('CREATE TABLE events (owneruuid CHAR(36), name VARCHAR(255), eventid INTEGER PRIMARY KEY, creatoruuid CHAR(36), category INT, description TEXT, dateUTC INT, duration INT, covercharge INT, coveramount INT, simname VARCHAR(255), parcelUUID CHAR(36), globalPos VARCHAR(255), eventflags INT, gatekeeperURL VARCHAR(255))');
-        $pdo->exec("INSERT INTO events (name, description, dateUTC, duration, simname, globalPos, gatekeeperURL) VALUES ('Jazz night', 'Live jazz', " . (time() + 3600) . ", 60, 'Welcome', '128,128,25', 'http://grid.example.org:8002')");
+        $pdo->exec("INSERT INTO events (name, description, dateUTC, duration, simname, globalPos, eventflags, gatekeeperURL) VALUES ('Jazz night', 'Live jazz', " . (time() + 3600) . ", 60, 'Welcome', '128,128,25', 0, 'http://grid.example.org:8002')");
 
         $data = Blocks::data('search', $grid, ['q' => 'jazz', 'topic' => 'events', 'level' => 'h1']);
-        $item = $data['groups'][0]['items'][0] ?? [];
+        $item = $data['results'][0] ?? [];
 
         expect($item['title'] ?? null)->toBe('Jazz night')
             ->and($item['links']['browser'] ?? [])->not->toBe([]);
@@ -101,9 +99,9 @@ describe('The events found', function () {
         $grid = people_grid();
         $pdo = Connections::pdo($grid->config(), W4OS\Engine\Data\Database::Search);
         $pdo->exec('CREATE TABLE events (owneruuid CHAR(36), name VARCHAR(255), eventid INTEGER PRIMARY KEY, creatoruuid CHAR(36), category INT, description TEXT, dateUTC INT, duration INT, covercharge INT, coveramount INT, simname VARCHAR(255), parcelUUID CHAR(36), globalPos VARCHAR(255), eventflags INT, gatekeeperURL VARCHAR(255), landingpoint VARCHAR(35))');
-        $pdo->exec("INSERT INTO events (name, description, dateUTC, duration, simname, globalPos, gatekeeperURL, landingpoint) VALUES ('Far night', 'Far away', " . (time() + 3600) . ", 60, 'far.example.org:8002 Far Away', '2583726,2579592,24', 'http://far.example.org:8002', '46/232/24')");
+        $pdo->exec("INSERT INTO events (name, description, dateUTC, duration, simname, globalPos, eventflags, gatekeeperURL, landingpoint) VALUES ('Far night', 'Far away', " . (time() + 3600) . ", 60, 'far.example.org:8002 Far Away', '2583726,2579592,24', 0, 'http://far.example.org:8002', '46/232/24')");
 
-        $item = Blocks::data('search', $grid, ['q' => 'far', 'topic' => 'events', 'level' => 'h1'])['groups'][0]['items'][0] ?? [];
+        $item = Blocks::data('search', $grid, ['q' => 'far', 'topic' => 'events', 'level' => 'h1'])['results'][0] ?? [];
         $place = W4OS\Helpers\Block\Links::all($grid->placeAt('Far Away', '46/232/24', 'http://far.example.org:8002'));
 
         expect($item['links'] ?? null)->toBe($place)
@@ -113,5 +111,63 @@ describe('The events found', function () {
             ->and(W4OS\Helpers\Block\SearchData::regionName('far.example.org:8002:Far Away', 'far.example.org:8002'))->toBe('Far Away')
             ->and(W4OS\Helpers\Block\SearchData::regionName('Welcome', 'http://grid.example.org:8002'))->toBe('Welcome')
             ->and(W4OS\Helpers\Block\SearchData::regionName('far.example.org:80020 X', 'http://far.example.org:8002'))->toBe('far.example.org:80020 X');
+    });
+});
+
+describe('The kinds of search', function () {
+    /** The search of a grid with two places (one rated adult), a land for sale, an event to come and a classified. */
+    function kinds_grid(): Grid
+    {
+        $grid = people_grid();
+        $pdo = Connections::pdo($grid->config(), W4OS\Engine\Data\Database::Search);
+        $pdo->exec('CREATE TABLE regionsregister (regionUUID CHAR(36), regionname VARCHAR(255))');
+        $pdo->exec("INSERT INTO regionsregister VALUES ('r1', 'Welcome')");
+        $pdo->exec('CREATE TABLE parcels (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), description TEXT, landingpoint VARCHAR(255), searchcategory INT, mature VARCHAR(10), dwell FLOAT, imageUUID CHAR(36), gatekeeperURL VARCHAR(255))');
+        $pdo->exec("INSERT INTO parcels VALUES ('p1', 'r1', 'Beach house', 'Sand', '10/20/30', 7, 'PG', 12, NULL, 'http://grid.example.org:8002'), ('p2', 'r1', 'Beach club', 'Night', '1/2/3', 7, 'Adult', 50, NULL, 'http://grid.example.org:8002')");
+        $pdo->exec('CREATE TABLE parcelsales (parcelUUID CHAR(36), regionUUID CHAR(36), parcelname VARCHAR(255), area INT, saleprice INT, landingpoint VARCHAR(255), parentestate INT, mature VARCHAR(10), gatekeeperURL VARCHAR(255))');
+        $pdo->exec("INSERT INTO parcelsales VALUES ('s1', 'r1', 'Lot 1', 512, 1000, '5/5/25', 2, 'PG', 'http://grid.example.org:8002')");
+        $pdo->exec('CREATE TABLE events (owneruuid CHAR(36), name VARCHAR(255), eventid INTEGER PRIMARY KEY, creatoruuid CHAR(36), category INT, description TEXT, dateUTC INT, duration INT, covercharge INT, coveramount INT, simname VARCHAR(255), parcelUUID CHAR(36), globalPos VARCHAR(255), eventflags INT, gatekeeperURL VARCHAR(255), landingpoint VARCHAR(35))');
+        $pdo->exec("INSERT INTO events (name, description, dateUTC, duration, category, simname, globalPos, eventflags, gatekeeperURL) VALUES ('Jazz night', 'Live', " . (time() + 3600) . ", 60, 20, 'Welcome', '128,128,25', 0, 'http://grid.example.org:8002')");
+        $pdo->exec('CREATE TABLE classifieds (classifieduuid CHAR(36), name VARCHAR(255), description TEXT, category INT, classifiedflags INT, expirationdate INT, creationdate INT, priceforlisting INT, parcelname VARCHAR(255), simname VARCHAR(255), snapshotuuid CHAR(36))');
+        $pdo->exec("INSERT INTO classifieds VALUES ('c1', 'Shoes', 'New', 1, 4, " . (time() + 86400) . ", 1, 10, 'Shop', 'Welcome', NULL)");
+
+        return $grid;
+    }
+
+    test('are always offered as tabs, each with its own form: words required for places, none for land', function () {
+        $grid = kinds_grid();
+        $places = Blocks::data('search', $grid, ['topic' => 'places', 'level' => 'h1']);
+        $land = Blocks::data('search', $grid, ['topic' => 'land', 'level' => 'h1']);
+        $short = Blocks::data('search', $grid, ['topic' => 'places', 'q' => 'be', 'level' => 'h1']);
+
+        expect(array_column($places['topics'], 'topic'))->toBe(['places', 'land', 'events', 'classifieds', 'people'])
+            ->and(array_column($places['fields'], 'name'))->toBe(['q', 'category', 'rating'])
+            ->and($places['asked'])->toBeFalse()
+            ->and($short['asked'])->toBeFalse()
+            ->and($short['note'])->toBe('At least 3 letters.')
+            ->and(array_column($land['fields'], 'name'))->toBe(['type', 'price', 'area', 'rating'])
+            ->and(array_column($land['results'], 'title'))->toBe(['Lot 1']);
+    });
+
+    test('take the ratings asked, general and moderate before the form is sent, as the viewers', function () {
+        $grid = kinds_grid();
+        $usual = Blocks::data('search', $grid, ['topic' => 'places', 'q' => 'beach', 'level' => 'h1']);
+        $adult = Blocks::data('search', $grid, ['topic' => 'places', 'q' => 'beach', 'rating' => ['adult'], 'go' => 1, 'level' => 'h1']);
+
+        expect(array_column($usual['results'], 'title'))->toBe(['Beach house'])
+            ->and(array_column($adult['results'], 'title'))->toBe(['Beach club'])
+            ->and(array_column(array_filter(end($usual['fields'])['options'], static fn($o) => $o['selected']), 'value'))->toBe(['general', 'moderate']);
+    });
+
+    test('list the events to come without words, by category, and the classifieds without words', function () {
+        $grid = kinds_grid();
+        $events = Blocks::data('search', $grid, ['topic' => 'events', 'level' => 'h1']);
+        $sports = Blocks::data('search', $grid, ['topic' => 'events', 'category' => 19, 'go' => 1, 'rating' => ['general'], 'level' => 'h1']);
+        $classifieds = Blocks::data('search', $grid, ['topic' => 'classifieds', 'level' => 'h1']);
+
+        expect(array_column($events['results'], 'title'))->toBe(['Jazz night'])
+            ->and($events['results'][0]['category'])->toBe('Live Music')
+            ->and($sports['results'])->toBe([])
+            ->and(array_column($classifieds['results'], 'category'))->toBe(['Shopping']);
     });
 });

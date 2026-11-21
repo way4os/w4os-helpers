@@ -1,10 +1,35 @@
-/* The search wherever its block is shown (the pages of the helpers, a site in any theme), in the colors of the page */
-.search-form { display: flex; gap: .5rem; margin: 0 0 .75rem; }
-.search-form input[type=search] { flex: 1; padding: .375rem .5rem; font: inherit; }
-.search-form button { padding: .375rem .875rem; font: inherit; }
-.search-topics { display: flex; flex-wrap: wrap; gap: .25rem 1rem; margin-bottom: 1rem; }
-.search-topics a[aria-current=page] { font-weight: 700; text-decoration: none; color: inherit; }
-.search-group { font-size: 1.0625rem; margin: 1.25rem 0 .25rem; }
-.search-results { padding-left: 1.25rem; }
-.search-results li { margin: .5rem 0; }
+/* The search wherever its block is shown (the pages of the helpers, a site in any theme), in the colors of the page: its kinds as
+   tabs, a form for each (the labels beside the fields where there is room), each its own list of results */
+.search-topics { display: flex; flex-wrap: wrap; gap: .25rem; margin: 0 0 1rem; border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent); }
+.search-topics a { padding: .4rem .8rem; border: 1px solid transparent; border-bottom: 0; border-radius: .4rem .4rem 0 0; text-decoration: none; color: inherit; opacity: .75; }
+.search-topics a:hover { opacity: 1; }
+.search-topics a[aria-current=page] { opacity: 1; font-weight: 700; border-color: color-mix(in srgb, currentColor 20%, transparent); background: color-mix(in srgb, currentColor 5%, transparent); }
+.search-form { display: grid; gap: .6rem; margin: 0 0 1.25rem; max-width: 46rem; }
+.search-field { display: grid; grid-template-columns: minmax(7rem, 11rem) 1fr; gap: .25rem 1rem; align-items: baseline; }
+.search-label { font-weight: 600; }
+.search-input { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem 1rem; min-width: 0; }
+.search-input input[type=search], .search-input select { flex: 1 1 14rem; min-width: 0; padding: .375rem .5rem; font: inherit; }
+.search-input input[type=number] { width: 9rem; padding: .375rem .5rem; font: inherit; }
+.search-help { flex-basis: 100%; opacity: .7; }
+.search-checks label, .search-when label { display: inline-flex; gap: .3rem; align-items: center; white-space: nowrap; }
+.search-day { display: inline-flex; gap: .5rem; align-items: center; }
+.search-day a { text-decoration: none; padding: 0 .35rem; }
+.search-date { font-variant-numeric: tabular-nums; }
+.search-submit button { padding: .375rem 1.25rem; font: inherit; }
+.search-none { opacity: .8; }
+.search-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+.search-item { display: flex; gap: 1rem; align-items: flex-start; }
+.search-item .search-picture { flex: none; width: 8rem; aspect-ratio: 4 / 3; border-radius: .3rem; }
+.search-text { min-width: 0; }
+.search-title { font-size: 1.05rem; margin: 0 0 .15rem; }
+.search-meta { margin: 0 0 .25rem; font-size: .9em; opacity: .75; }
+.search-description { margin: 0; overflow-wrap: anywhere; }
+.search-table { width: 100%; border-collapse: collapse; }
+.search-table th, .search-table td { padding: .4rem .5rem; text-align: start; border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+.search-table .number { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .block-search .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* On a narrow screen the labels above the fields */
+@media (max-width: 36rem) {
+    .search-field { grid-template-columns: 1fr; }
+    .search-item .search-picture { width: 5rem; }
+}

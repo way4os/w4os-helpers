@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (search): the web search as the viewers have it, each kind its tab, its form and its results; no All
 - fix (search): an event of another grid is linked to its region, the grid its name is kept with set apart
 - fix (search): the events are found in a table of an older version too, without a landing point
 - new (blocks): the links of both clients say what they do (action), as the engine gives it

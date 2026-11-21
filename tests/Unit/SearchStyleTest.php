@@ -7,9 +7,10 @@ use W4OS\Helpers\View\View;
 describe('The style of the search', function () {
     test('comes with the block, wherever it is shown: its topics spaced, its label hidden', function () {
         $files = View::blockFiles('search');
-        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/' . ($files['css'][0] ?? 'none'));
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/search.css');
 
-        expect($files['css'])->toBe(['css/search.css'])
+        // The style of its pictures too (blocks.css), the ones of the places and of the classifieds
+        expect($files['css'])->toBe(['css/blocks.css', 'css/search.css'])
             ->and($css)->toContain('.search-topics')
             ->and($css)->toContain('.visually-hidden');
     });
