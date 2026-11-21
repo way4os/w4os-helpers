@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-use W4OS\Engine\Config\Layout;
 use W4OS\Helpers\App;
 use W4OS\Helpers\View\View;
 use W4OS\Engine\Models\Grid;
-use W4OS\Engine\Runtime\Environment;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /**
@@ -25,7 +23,7 @@ function base_app(string $base, array $info, string $guide = ''): Slim\App
     }
     $guide === '' || array_push($lines, '[LoginService]', "DestinationGuide = \"$guide\"");
     file_put_contents("$dir/Robust.ini", implode("\n", $lines) . "\n");
-    $grid = Grid::at(Environment::system(Layout::load()), $dir);
+    $grid = Grid::at(helpers_environment(), $dir);
 
     return App::create(static fn(string $nick) => $grid);
 }
@@ -93,7 +91,7 @@ describe('a service the grid does not provide here', function () {
         file_put_contents("$dir/Robust.ini", "[Const]\nWebURL = \"https://example.com\"\n[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\neconomy = \"https://shop.example.org/money/\"\n");
         file_put_contents("$dir/OpenSim.ini", "[Search]\nSearchURL = \"https://search.example.org/query.php\"\n");
         file_put_contents("$dir/Helpers.ini", "[Helpers]\nHelpersURL = \"https://example.com/helpers\"\n");
-        $grid = Grid::at(Environment::system(Layout::load()), $dir);
+        $grid = Grid::at(helpers_environment(), $dir);
 
         return App::create(static fn(string $nick) => $grid);
     }
@@ -135,7 +133,7 @@ describe('a block of the helpers', function () {
         $dir = sys_get_temp_dir() . '/helpers-blocks-' . bin2hex(random_bytes(4));
         mkdir($dir, 0o755, true);
         file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"http://grid.example.org:8002/\"\n");
-        $grid = Grid::at(Environment::system(Layout::load()), $dir);
+        $grid = Grid::at(helpers_environment(), $dir);
         $view = new View(dirname(__DIR__, 2) . '/templates');
 
         foreach (['grid-info', 'grid-status', 'search', 'profile', 'motd', 'new_users', 'directory_info'] as $block) {

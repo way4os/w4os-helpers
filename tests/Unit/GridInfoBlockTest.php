@@ -9,7 +9,7 @@ describe('grid info', function () {
         $rows = array_column(Blocks::data('grid-info', $grid, ['client' => 'browser'])['rows'], null, 'label');
         $login = $rows['Login URI'];
 
-        expect($login['value'])->toBe($grid->tpLink(Destination::TXT))
+        expect($login['value'])->toBe($grid->tpUri())
             ->and($login['url'] ?? null)->toBe($grid->tpLink(Destination::AUTO, ['client' => 'browser']) ?: null);
     });
 });

@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-use W4OS\Engine\Config\Layout;
 use W4OS\Helpers\App;
 use W4OS\Helpers\Http\Action\Engine;
 use W4OS\Engine\Models\Grid;
-use W4OS\Engine\Runtime\Environment;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 function helpers_get(Slim\App $app, string $path): Psr\Http\Message\ResponseInterface
@@ -16,7 +14,7 @@ function helpers_get(Slim\App $app, string $path): Psr\Http\Message\ResponseInte
 
 function helpers_app(): Slim\App
 {
-    $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
+    $grid = Grid::at(helpers_environment(), sys_get_temp_dir() . '/demo');
 
     return App::create(static fn(string $nick) => $grid);
 }
@@ -80,7 +78,7 @@ test('the engine answers the helpers only what it says is public, whatever key a
 });
 
 test('a profile that does not exist says so', function () {
-    $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
+    $grid = Grid::at(helpers_environment(), sys_get_temp_dir() . '/demo');
     $data = W4OS\Helpers\Block\Blocks::data('profile', $grid, ['name' => 'Nobody.Here']);
 
     expect($data['found'])->toBeFalse();

@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-use W4OS\Engine\Config\Layout;
 use W4OS\Helpers\App;
 use W4OS\Helpers\View\View;
 use W4OS\Engine\Models\Grid;
-use W4OS\Engine\Runtime\Environment;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /** The answer of the helpers of a demo grid to a GET. */
 function notices_get(string $path): Psr\Http\Message\ResponseInterface
 {
-    $grid = Grid::at(Environment::system(Layout::load()), sys_get_temp_dir() . '/demo');
+    $grid = Grid::at(helpers_environment(), sys_get_temp_dir() . '/demo');
 
     return App::create(static fn(string $nick) => $grid)->handle((new ServerRequestFactory())->createServerRequest('GET', $path));
 }
