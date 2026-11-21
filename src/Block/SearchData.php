@@ -83,14 +83,8 @@ final class SearchData
      */
     public function teleport(string $gatekeeper, string $region, string $landing = '', array $args = []): ?string
     {
-        $login = (string) $this->grid->loginUrl();
-        $grid = $gatekeeper !== '' ? $gatekeeper : $login;
-        if ($region === '' || $grid === '') {
-            return null;
-        }
-        $point = Destination::position($landing);
-        $uri = Destination::uri(rtrim($grid, '/') . '/' . $region . ($point === '' ? '' : '/' . str_replace(',', '/', $point)), $login !== '' ? $login : null);
+        $place = $this->grid->placeAt($region, $landing, $gatekeeper);
 
-        return Links::to($this->grid->place($uri), $args);
+        return $place === null ? null : Links::to($place, $args);
     }
 }
