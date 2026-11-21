@@ -2,7 +2,7 @@
 
 ### Unreleased
 
-- fix (tests): tests/Packaging/check takes where its container runs on its command line (--connection NAME, or --local), never from the environment, and refuses to run on macOS without it; the upgrade installs the empty package first, as apt does
+- fix (tests): tests/Packaging/check takes where its container runs on its command line (--connection NAME, or --local), never from the environment, and refuses to run on macOS without it; a named connection must exist, and the machine used is the one podman itself reports; the upgrade installs the empty package first, as apt does
 - update (rename): the helpers are w4os-helpers: the namespace W4OS\Helpers on the engine's W4OS\Engine, the package w4os-helpers in /usr/share/w4os-helpers (opensim-helpers an empty package that brings it), their folder /var/cache/w4os-helpers (the one of before moved there), the repository way4os/w4os-helpers, the composer name w4os/w4os-helpers
 - new (packaging): the copyright file of the package
 - change (guide): a grid that sets no GuideSource shows the guide of 2do.directory (the engine's default)

@@ -38,7 +38,13 @@ source vendor/bin/bash-helpers
 
 # The environment of the project (.env) and the one of the tests (tests/.env): MEMORY...
 ENV_SLUG=tests read_env || true
-[[ -z $CONNECTION ]] || log "Podman connection: $CONNECTION"
+# The machine the container runs on, as podman itself says it: a named connection must exist and answer
+if [[ -n $CONNECTION ]] && ! podman system connection list --format '{{.Name}}' 2>/dev/null | grep -qxF -- "$CONNECTION"; then
+    echo "check: $CONNECTION is not a podman connection (podman system connection list)" >&2
+    exit 2
+fi
+podman_host=$("${podman[@]}" info --format '{{.Host.Hostname}}' 2>/dev/null) || { echo "check: podman does not answer${CONNECTION:+ on $CONNECTION}" >&2; exit 2; }
+log "Podman on $podman_host${CONNECTION:+ (connection $CONNECTION)}"
 DEPS_ENGINE=${DEPS_ENGINE:-$PWD/../opensim-engine/dist}
 DEPS_REST=${DEPS_REST:-$PWD/../opensim-rest-php/dist}
 DEPS_CONTAINER=${DEPS_CONTAINER:-$PWD/../container-tools/dist}
