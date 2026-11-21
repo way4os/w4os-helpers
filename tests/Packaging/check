@@ -4,40 +4,47 @@
 # with the snippet of the kit, as the user of the web server. A visit runs the tasks of the search, a picture of the grid is cached,
 # in the folders the package made for the web server; the zip answers too. Exits non-zero when a check fails.
 #
-#   tests/Packaging/check [--local] [base image]       default: Debian 12; docker.io/library/ubuntu:24.04 for another
+#   tests/Packaging/check --connection NAME|--local [base image]     default: Debian 12; docker.io/library/ubuntu:24.04 for another
 #   DEPS_ENGINE=folder DEPS_REST=folder DEPS_CONTAINER=folder
 #                                            where the Debian packages of the other projects are, the newest of each is taken
 #                                            (default: ../opensim-engine/dist, ../opensim-rest-php/dist, ../container-tools/dist)
-#   CONTAINER_CONNECTION=name                run it on the podman of another machine
 #   MEMORY=1g                                memory of the container (the database server is in it)
 #   APT_HTTPS=1                              apt over https, for a machine whose port 80 is closed (the packages are still
 #                                            checked by their signatures)
 #   All can be set in tests/.env (see tests/.env.example), after the .env of the project.
 
 set -eo pipefail
-LOCAL=0
-[[ "${1:-}" != --local ]] || { LOCAL=1; shift; }
+# Where the container runs, said on the command line: --connection NAME (a podman system connection, --container NAME is the
+# same), or --local for the podman of this machine. Never an environment variable: it may not be exported, sudo drops it. On
+# macOS one of them is required (its podman machine is too small for this); elsewhere the podman of the machine is the default.
+CONNECTION= LOCAL=0
+while [[ "${1:-}" == --* ]]; do
+    case $1 in
+    --connection | --container) CONNECTION=${2:-}; [[ -n $CONNECTION ]] || { echo "check: $1 needs the name of a podman connection" >&2; exit 2; }; shift 2 ;;
+    --connection=* | --container=*) CONNECTION=${1#*=}; shift ;;
+    --local) LOCAL=1; shift ;;
+    *) echo "check: unknown option $1" >&2; exit 2 ;;
+    esac
+done
+if [[ -z $CONNECTION && $LOCAL != 1 && $(uname -s) == Darwin ]]; then
+    echo "check: say where the container runs: --connection NAME (podman system connection list), or --local for this Mac" >&2
+    exit 2
+fi
+podman=(podman ${CONNECTION:+--connection "$CONNECTION"})
 BASE=${1:-docker.io/library/debian:bookworm}
 cd "$(dirname "$0")/../.."
 [[ -f vendor/bin/bash-helpers ]] || { echo "bash-tools is not installed: composer install" >&2; exit 1; }
 source vendor/bin/bash-helpers
 
-# The environment of the project (.env) and the one of the tests (tests/.env): CONTAINER_CONNECTION, MEMORY...
+# The environment of the project (.env) and the one of the tests (tests/.env): MEMORY...
 ENV_SLUG=tests read_env || true
-[[ -z "${CONTAINER_CONNECTION:-}" ]] || log "Podman connection: $CONTAINER_CONNECTION"
-# The container runs on the podman of another machine (CONTAINER_CONNECTION, from tests/.env): never on macOS, whose podman
-# machine is too small for it, unless --local says so
-if [[ -z "${CONTAINER_CONNECTION:-}" && $(uname -s) == Darwin && $LOCAL != 1 ]]; then
-    echo "check: no CONTAINER_CONNECTION (tests/.env): the container would run on this Mac; name a machine, or --local" >&2
-    exit 2
-fi
-podman=(podman ${CONTAINER_CONNECTION:+--connection "$CONTAINER_CONNECTION"})
+[[ -z $CONNECTION ]] || log "Podman connection: $CONNECTION"
 DEPS_ENGINE=${DEPS_ENGINE:-$PWD/../opensim-engine/dist}
 DEPS_REST=${DEPS_REST:-$PWD/../opensim-rest-php/dist}
 DEPS_CONTAINER=${DEPS_CONTAINER:-$PWD/../container-tools/dist}
 
 # What the container needs is sent to it as a tar stream, so it can run on any machine:
-# CONTAINER_CONNECTION=name (see podman system connection) uses the podman of another one
+# --connection NAME (see podman system connection) uses the podman of another one
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 mkdir "$stage/deps"
