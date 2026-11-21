@@ -109,7 +109,10 @@ final class View
         $this->unavailable = !empty($data['unavailable']);
 
         // The pictures of the grid: the address the site gives (`assets`), else the API of the helpers
-        $assets = (string) ($args['assets'] ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/pictures');
+        // Where the pictures are: the address of the web assets of the grid when the helpers serve them, else their /pictures
+        $web = $grid->assetsUrl() ?? ($grid->helperUrl('assets') ?: null);
+        $served = $web !== null && $grid->servedByHelpers($web) ? (string) parse_url($web, PHP_URL_PATH) : null;
+        $assets = (string) ($args['assets'] ?? rtrim($served ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/pictures', '/'));
 
         // Its name on its root (data-helpers-block), for a site, and the health, to find it in a page
         return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets, 'helpers_block' => $name]);

@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (assets): the grid's pictures are served at the address of its web assets too (helpers/assets), not only /pictures
 - fix (guide): the guide block keeps its own title in a browser, its category under it; no work-in-progress line
 - update (git): .gitignore is the projects' template (macOS, editors, AI files, config, generated content, data) with this project's own rules after it; phpunit.xml is phpunit.xml.dist (a local phpunit.xml overrides it), .phpactor.json no longer tracked
 - fix (packaging): the engine and rest-php are links in the package whatever the machine that builds it has; the web configs that name /usr/share/opensim-helpers moved to /usr/share/w4os-helpers at the upgrade; the packaging check reads the links and upgrades such a config

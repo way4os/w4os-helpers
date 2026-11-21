@@ -130,6 +130,8 @@ final class Engine
             'motd' => $grid->motdUrl(),
             'currency' => $economy === null ? null : "$economy/currency.php",
             'landtool' => $economy === null ? null : "$economy/landtool.php",
+            // The web assets of the grid, when the helpers serve them (the pictures under it): the address it sets, else theirs
+            'assets' => $grid->assetsUrl() ?? ($grid->helperUrl('assets') ?: null),
         ];
         $prefix = (string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH);
         $paths = [];
@@ -153,11 +155,18 @@ final class Engine
     public static function target(array $paths, string $path): ?string
     {
         $path = '/' . trim($path, '/');
-        // The pictures of the grid (a texture, a profile picture, a map tile), at a path of their own: the asset of the engine
-        if (preg_match('#^/pictures/([0-9a-fA-F-]{36}\.(?:' . implode('|', array_keys(\W4OS\Engine\Models\Image::FORMATS)) . '))$#', $path, $m) === 1) {
-            return "/assets/{$m[1]}";
+        // The pictures of the grid (a texture, a profile picture, a map tile), at /pictures and at the address of its web assets:
+        // the asset of the engine (a picture only, by its id: the files of the helpers' own /assets are theirs)
+        $formats = implode('|', array_keys(\W4OS\Engine\Models\Image::FORMATS));
+        foreach (array_unique(['pictures', trim($paths['assets'] ?? '', '/')]) as $base) {
+            if ($base !== '' && preg_match('#^/' . preg_quote($base, '#') . '/([0-9a-fA-F-]{36}\.(?:' . $formats . '))$#', $path, $m) === 1) {
+                return "/assets/{$m[1]}";
+            }
         }
         foreach ($paths as $service => $known) {
+            if ($service === 'assets') {
+                continue;
+            }
             $known = '/' . trim($known, '/');
             if ($path === $known) {
                 return self::TARGETS[$service];

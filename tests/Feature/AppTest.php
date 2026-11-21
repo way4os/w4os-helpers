@@ -50,6 +50,14 @@ test('the pictures of the grid are served at /pictures, by the engine', function
     expect(Engine::target([], '/pictures/nothing.exe'))->toBeNull();
 });
 
+test('the pictures of the grid are served at the address of its web assets too, the helpers\' own files left theirs', function () {
+    $paths = ['assets' => '/assets'];
+
+    expect(Engine::target($paths, '/assets/c14a1985-c549-4485-8779-7103d74ef5e0.jpg'))->toBe('/assets/c14a1985-c549-4485-8779-7103d74ef5e0.jpg');
+    expect(Engine::target($paths, '/assets/css/guide.css'))->toBeNull();
+    expect(Engine::target($paths, '/assets'))->toBeNull();
+});
+
 test('a service is found at the address the grid has for it', function () {
     $paths = ['query' => '/q.php', 'offline' => '/helpers/off', 'currency' => '/eco/currency.php'];
 
@@ -104,6 +112,26 @@ test('the health takes the API keys of the grid it is given, never the ones of t
 
     expect($app->handle($asked)->getStatusCode())->not->toBe(401)
         ->and(helpers_get($app, '/health')->getStatusCode())->toBe(401);
+});
+
+test('a picture asked at the address of the web assets the helpers serve is the engine\'s, not a missing file of the helpers', function () {
+    $machine = new W4OS\Engine\Testing\Machine();
+    $machine->write($machine->grid . '/Robust.HG.ini', file_get_contents($machine->grid . '/Robust.HG.ini') . "\n[Const]\n    WebURL = \"https://play.example.org\"\n");
+    $machine->write($machine->grid . '/Helpers.ini', "[Helpers]\n    HelpersURL = \"https://play.example.org/helpers\"\n");
+    $grid = Grid::find($machine->environment, 'demo');
+    $app = App::create(static fn(string $nick) => $grid);
+
+    $picture = helpers_get($app, '/helpers/assets/cb2052ae-d161-43e9-b11b-c834217823cd.jpg');
+    $style = helpers_get($app, '/helpers/assets/css/guide.css');
+
+    // The engine's answer, as at /pictures (here the picture of nothing: the asset is not in the grid), never the page of the helpers
+    $pictures = helpers_get($app, '/helpers/pictures/cb2052ae-d161-43e9-b11b-c834217823cd.jpg');
+
+    expect($grid->helperUrl('assets'))->toBe('https://play.example.org/helpers/assets')
+        ->and($picture->getHeaderLine('Content-Type'))->toStartWith('image/')
+        ->and([$picture->getStatusCode(), $picture->getHeaderLine('Content-Type')])->toBe([$pictures->getStatusCode(), $pictures->getHeaderLine('Content-Type')])
+        ->and($style->getStatusCode())->toBe(200)
+        ->and($style->getHeaderLine('Content-Type'))->toStartWith('text/css');
 });
 
 test('a picture the grid sends to its external web assets service is sent there, not a missing picture', function () {
