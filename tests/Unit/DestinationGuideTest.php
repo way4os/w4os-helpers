@@ -1,9 +1,7 @@
 <?php
 
-use W4OS\Engine\Config\Layout;
 use W4OS\Helpers\Block\Blocks;
 use W4OS\Engine\Models\Grid;
-use W4OS\Engine\Runtime\Environment;
 
 /**
  * The guide of the helpers 2.x, on the same list (tests/fixtures/guide): what it showed is in the *.old.json files beside each
@@ -17,7 +15,8 @@ function guide_grid(string $list, string $login): Grid
     file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"$login/\"\n");
     file_put_contents("$dir/Helpers.ini", "[Helpers]\nGuideSource = \"" . __DIR__ . "/../fixtures/guide/$list.txt\"\n");
 
-    return Grid::at(Environment::system(Layout::load()), $dir);
+    // A test machine: what the grid keeps (its cache) stays in a temporary folder
+    return Grid::at((new W4OS\Engine\Testing\Machine())->environment, $dir);
 }
 
 /** @return array{categories: list<array{name: string, data: string}>, destinations: array<string, list<array{name: string, url: string}>>} */
@@ -493,7 +492,7 @@ describe('a block with nothing to show', function () {
         file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"http://example.org:8002/\"\n");
         file_put_contents("$dir/empty.txt", '');
         file_put_contents("$dir/Helpers.ini", "[Helpers]\nGuideSource = \"$dir/empty.txt\"\n");
-        $grid = Grid::at(Environment::system(Layout::load()), $dir);
+        $grid = Grid::at((new W4OS\Engine\Testing\Machine())->environment, $dir);
         // A search with no place
         $search = guide_search();
         $search->exec('DELETE FROM popularplaces');
