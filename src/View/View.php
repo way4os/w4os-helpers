@@ -205,9 +205,9 @@ final class View
     {
         $guide = (string) parse_url((string) $grid->address('guide'), PHP_URL_PATH);
         $items = [
-            ['home', _('Home'), $prefix . '/'],
-            ['destination_guide', _('Guide'), $guide !== '' ? $guide : $prefix . '/guide'],
-            ['directory_info', _('Directory'), $prefix . '/directory_info'],
+            ['home', I18n::text('Home'), $prefix . '/'],
+            ['destination_guide', I18n::text('Guide'), $guide !== '' ? $guide : $prefix . '/guide'],
+            ['directory_info', I18n::text('Directory'), $prefix . '/directory_info'],
         ];
 
         return array_map(static fn(array $i): array => ['slug' => $i[0], 'label' => $i[1], 'url' => $i[2]], $items);
@@ -239,43 +239,43 @@ final class View
         $texts = \W4OS\Engine\I18n\Catalog::messages(\W4OS\Helpers\I18n::current()) + \W4OS\Engine\I18n\Catalog::MESSAGES;
 
         return [
-            'skip' => _('Skip to content'),
+            'skip' => I18n::text('Skip to content'),
             'powered_by' => 'w4os-helpers',
-            'search' => _('Search'),
-            'search_for' => _('Search for'),
-            'search_all' => _('All'),
-            'search_nothing' => _('Nothing found.'),
-            'search_empty' => _('Type something to look for.'),
-            'profile_not_found' => _('This profile does not exist.'),
-            'unavailable' => _('This is temporarily unavailable. Please try again later.'),
-            'member_since' => _('Member since'),
-            'profile_private' => _('This profile is not public.'),
-            'partner' => _('Partner'),
-            'languages' => _('Languages'),
-            'wants' => _('Wants to'),
-            'skills' => _('Skills'),
+            'search' => I18n::text('Search'),
+            'search_for' => I18n::text('Search for'),
+            'search_all' => I18n::text('All'),
+            'search_nothing' => I18n::text('Nothing found.'),
+            'search_empty' => I18n::text('Type something to look for.'),
+            'profile_not_found' => I18n::text('This profile does not exist.'),
+            'unavailable' => I18n::text('This is temporarily unavailable. Please try again later.'),
+            'member_since' => I18n::text('Member since'),
+            'profile_private' => I18n::text('This profile is not public.'),
+            'partner' => I18n::text('Partner'),
+            'languages' => I18n::text('Languages'),
+            'wants' => I18n::text('Wants to'),
+            'skills' => I18n::text('Skills'),
             // The tabs of a profile: the texts of the engine, as every site has them
             'web' => $texts['profile_tab_web'],
             'feed' => $texts['profile_tab_feed'] ?? 'Feed',
             'real_life' => $texts['profile_tab_real_life'],
             'inworld' => $texts['profile_tab_inworld'],
-            'about' => $texts['profile_tab_about'] ?? _('About'),
+            'about' => $texts['profile_tab_about'] ?? I18n::text('About'),
             'interests' => $texts['profile_tab_interests'],
             'profile_sections' => $texts['profile_sections'],
             'picks' => $texts['profile_tab_picks'],
             'classifieds' => $texts['profile_tab_classifieds'],
             // The in-world tab of a profile, as the viewer shows it
-            'name' => $texts['profile_name'] ?? _('Name'),
-            'key' => $texts['profile_key'] ?? _('Key'),
-            'born' => $texts['born'] ?? _('Born'),
-            'account' => $texts['profile_tab_account'] ?? _('Account'),
-            'groups' => $texts['profile_groups'] ?? _('Groups'),
+            'name' => $texts['profile_name'] ?? I18n::text('Name'),
+            'key' => $texts['profile_key'] ?? I18n::text('Key'),
+            'born' => $texts['born'] ?? I18n::text('Born'),
+            'account' => $texts['profile_tab_account'] ?? I18n::text('Account'),
+            'groups' => $texts['profile_groups'] ?? I18n::text('Groups'),
             // A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
-            'none' => $texts['profile_none'] ?? _('None.'),
-            'no_description' => $texts['profile_no_description'] ?? _('No description given.'),
-            'location' => $texts['profile_location'] ?? _('Location'),
-            'teleport' => $texts['profile_teleport'] ?? _('Teleport'),
-            'until' => $texts['profile_until'] ?? _('Until'),
+            'none' => $texts['profile_none'] ?? I18n::text('None.'),
+            'no_description' => $texts['profile_no_description'] ?? I18n::text('No description given.'),
+            'location' => $texts['profile_location'] ?? I18n::text('Location'),
+            'teleport' => $texts['profile_teleport'] ?? I18n::text('Teleport'),
+            'until' => $texts['profile_until'] ?? I18n::text('Until'),
         ];
     }
 }

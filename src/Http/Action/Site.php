@@ -117,7 +117,7 @@ final class Site
      */
     private static function notProvided(ResponseInterface $response, string $path): ResponseInterface
     {
-        $reason = sprintf(_('%s is not provided here: the grid gives it another address, or none.'), $path);
+        $reason = sprintf(I18n::text('%s is not provided here: the grid gives it another address, or none.'), $path);
         if (in_array(basename($path), self::XMLRPC, true)) {
             $response->getBody()->write(\W4OS\Engine\Services\XmlRpc::encode(\W4OS\Engine\Services\XmlRpc::envelope(false, $reason)));
 

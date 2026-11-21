@@ -26,11 +26,11 @@ final class ProfileBlock implements Block
             // Unknown for now, not missing
             Blocks::unreachable($e);
 
-            return ['title' => _('Profile'), 'found' => false, 'unavailable' => true, 'name' => $name];
+            return ['title' => I18n::text('Profile'), 'found' => false, 'unavailable' => true, 'name' => $name];
         }
         // The account of the services of the grid, or one that is not active, has no page
         if ($avatar === null || $avatar->isTechnical() || !$avatar->isEnabled()) {
-            return ['title' => _('Profile not found'), 'found' => false, 'name' => $name];
+            return ['title' => I18n::text('Profile not found'), 'found' => false, 'name' => $name];
         }
         $d = $avatar->detail();
         $published = $avatar->isPublished();

@@ -4,9 +4,17 @@ declare(strict_types=1);
 
 namespace W4OS\Helpers;
 
+use Gettext\Loader\MoLoader;
+use Gettext\Translator;
+
 /**
- * The language of the texts of the helpers (gettext, locales/<locale>/LC_MESSAGES/messages.mo): the one a request asks (`lang`, else
- * `Accept-Language`), English when the helpers have no translation for it or the system has not its locale.
+ * The language of the texts of the helpers (locales/<locale>/LC_MESSAGES/messages.mo): the one a request asks (`lang`, else
+ * `Accept-Language`), English when the helpers have no translation for it. The catalogs are read by gettext/gettext and
+ * gettext/translator, in PHP: neither the gettext extension nor the locales of the system are needed.
+ *
+ *     I18n::use('fr');
+ *     I18n::text('Popular places');                          // Lieux populaires
+ *     I18n::plural('%s destination', '%s destinations', 3);  // %s destinations
  */
 final class I18n
 {
@@ -14,6 +22,12 @@ final class I18n
     public const LOCALES = ['cy_GB', 'de_DE', 'fr_FR', 'it_IT', 'nl_NL', 'pt_BR'];
 
     private static string $current = 'en';
+
+    /** The translator of the language in use, null for English. */
+    private static ?Translator $translator = null;
+
+    /** @var array<string,Translator> the catalogs read, by locale */
+    private static array $read = [];
 
     /**
      * Uses the first language of a list the helpers have, for the texts that follow.
@@ -28,25 +42,41 @@ final class I18n
             if ($locale === 'en') {
                 break;
             }
-            if ($locale !== null && setlocale(LC_MESSAGES, ["$locale.UTF-8", "$locale.utf8", $locale]) !== false) {
-                return self::$current = self::domain($locale);
+            if ($locale !== null && ($translator = self::catalog($locale)) !== null) {
+                self::$translator = $translator;
+
+                return self::$current = $locale;
             }
         }
-        // English: a language gettext has no catalog for (in the C locale, some systems take the language of the environment)
-        setlocale(LC_MESSAGES, ['en_US.UTF-8', 'en_US.utf8', 'C.UTF-8', 'C']);
+        self::$translator = null;
 
-        return self::$current = self::domain('en');
+        return self::$current = 'en';
     }
 
-    /** The texts of the helpers in a language; textdomain() again makes gettext forget the texts of the language before. */
-    private static function domain(string $locale): string
+    /** A text in the language in use, the English one when it has no translation. */
+    public static function text(string $message): string
     {
-        putenv("LANGUAGE=$locale");
-        bindtextdomain('messages', dirname(__DIR__) . '/locales');
-        bind_textdomain_codeset('messages', 'UTF-8');
-        textdomain('messages');
+        return self::$translator?->gettext($message) ?? $message;
+    }
 
-        return $locale;
+    /** A text that depends on a number, in the language in use (its plural forms), the English one when it has no translation. */
+    public static function plural(string $singular, string $plural, int $count): string
+    {
+        return self::$translator?->ngettext($singular, $plural, $count) ?? ($count === 1 ? $singular : $plural);
+    }
+
+    /** The catalog of a language, read once; null when the helpers have none. */
+    private static function catalog(string $locale): ?Translator
+    {
+        if (!isset(self::$read[$locale])) {
+            $file = dirname(__DIR__) . "/locales/$locale/LC_MESSAGES/messages.mo";
+            if (!is_file($file)) {
+                return null;
+            }
+            self::$read[$locale] = Translator::createFromTranslations((new MoLoader())->loadFile($file));
+        }
+
+        return self::$read[$locale];
     }
 
     /** The locale in use (`fr_FR`), `en` for English: for the numbers (NumberFormatter). */

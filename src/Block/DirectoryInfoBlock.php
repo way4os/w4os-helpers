@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace W4OS\Helpers\Block;
 
 use W4OS\Engine\Models\Grid;
+use W4OS\Helpers\I18n;
 
 /** The grids whose simulators registered in the search of this one, with their regions and parcels. */
 final class DirectoryInfoBlock implements Block
@@ -20,7 +21,7 @@ final class DirectoryInfoBlock implements Block
         } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
             Blocks::unreachable($e);
 
-            return ['title' => _('Directory Info'), 'grids' => [], 'rows' => [], 'unavailable' => true];
+            return ['title' => I18n::text('Directory Info'), 'grids' => [], 'rows' => [], 'unavailable' => true];
         }
         $grids = [];
         $total = ['grids' => 0, 'regions' => 0, 'parcels' => 0];
@@ -33,8 +34,8 @@ final class DirectoryInfoBlock implements Block
                 'name' => preg_replace('#^https?://#', '', $gatekeeper),
                 'detail' => sprintf(
                     '(%s, %s)',
-                    sprintf(ngettext('%d region', '%d regions', $r), $r),
-                    sprintf(ngettext('%d parcel', '%d parcels', $p), $p),
+                    sprintf(I18n::plural('%d region', '%d regions', $r), $r),
+                    sprintf(I18n::plural('%d parcel', '%d parcels', $p), $p),
                 ),
             ];
             $total['grids']++;
@@ -43,13 +44,13 @@ final class DirectoryInfoBlock implements Block
         }
 
         return [
-            'title' => _('Directory Info'),
+            'title' => I18n::text('Directory Info'),
             'grids' => $grids,
             'rows' => $grids,
             'summary' => [
-                sprintf(ngettext('%d grid', '%d grids', $total['grids']), $total['grids']),
-                sprintf(ngettext('%d region', '%d regions', $total['regions']), $total['regions']),
-                sprintf(ngettext('%d parcel', '%d parcels', $total['parcels']), $total['parcels']),
+                sprintf(I18n::plural('%d grid', '%d grids', $total['grids']), $total['grids']),
+                sprintf(I18n::plural('%d region', '%d regions', $total['regions']), $total['regions']),
+                sprintf(I18n::plural('%d parcel', '%d parcels', $total['parcels']), $total['parcels']),
             ],
         ];
     }

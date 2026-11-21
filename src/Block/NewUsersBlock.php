@@ -45,6 +45,6 @@ final class NewUsersBlock implements Block
             ];
         }
 
-        return ['title' => _('Recent users'), 'rows' => $rows] + (isset($unavailable) ? ['unavailable' => true] : []);
+        return ['title' => I18n::text('Recent users'), 'rows' => $rows] + (isset($unavailable) ? ['unavailable' => true] : []);
     }
 }

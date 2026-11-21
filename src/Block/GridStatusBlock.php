@@ -51,11 +51,11 @@ final class GridStatusBlock implements Block
     private static function labels(): array
     {
         return [
-            'members' => _('Members'),
-            'active_members' => _('Active members (30 days)'),
-            'members_in_world' => _('Members in world'),
-            'active_users' => _('Active users (30 days)'),
-            'total_users' => _('Total users in world'),
+            'members' => I18n::text('Members'),
+            'active_members' => I18n::text('Active members (30 days)'),
+            'members_in_world' => I18n::text('Members in world'),
+            'active_users' => I18n::text('Active users (30 days)'),
+            'total_users' => I18n::text('Total users in world'),
         ];
     }
 
@@ -69,13 +69,13 @@ final class GridStatusBlock implements Block
     {
         $rows = [];
         $label = self::label($monitor, $locale);
-        $label === null || ($rows[] = ['label' => _('Status'), 'value' => $label]);
+        $label === null || ($rows[] = ['label' => I18n::text('Status'), 'value' => $label]);
         $users = (array) ($monitor['users'] ?? []);
         foreach (self::labels() as $key => $text) {
             isset($users[$key]) && ($rows[] = ['label' => $text, 'value' => self::number((float) $users[$key], $locale)]);
         }
-        $rows[] = ['label' => _('Regions'), 'value' => self::number((float) ($monitor['regions']['online'] ?? 0), $locale)];
-        isset($users['area']) && ($rows[] = ['label' => _('Total area'), 'value' => self::area((float) $users['area'], $locale)]);
+        $rows[] = ['label' => I18n::text('Regions'), 'value' => self::number((float) ($monitor['regions']['online'] ?? 0), $locale)];
+        isset($users['area']) && ($rows[] = ['label' => I18n::text('Total area'), 'value' => self::area((float) $users['area'], $locale)]);
 
         return $rows;
     }
@@ -85,6 +85,6 @@ final class GridStatusBlock implements Block
         $monitor = GridMonitor::of($grid);
         $rows = self::rows($monitor, I18n::current());
 
-        return ['title' => _('Grid Status'), 'rows' => $rows, 'monitor' => $monitor];
+        return ['title' => I18n::text('Grid Status'), 'rows' => $rows, 'monitor' => $monitor];
     }
 }

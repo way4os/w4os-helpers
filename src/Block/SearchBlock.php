@@ -45,7 +45,7 @@ final class SearchBlock implements Block
         }
 
         return [
-            'title' => _('Search'),
+            'title' => I18n::text('Search'),
             'form' => true,
             'embedded' => $embedded,
             'action' => self::page($grid, $args),
@@ -78,11 +78,11 @@ final class SearchBlock implements Block
     private static function title(string $kind): string
     {
         return [
-            'places' => _('Places'),
-            'land' => _('Land for sale'),
-            'events' => _('Events'),
-            'classifieds' => _('Classifieds'),
-            'people' => _('People'),
+            'places' => I18n::text('Places'),
+            'land' => I18n::text('Land for sale'),
+            'events' => I18n::text('Events'),
+            'classifieds' => I18n::text('Classifieds'),
+            'people' => I18n::text('People'),
         ][$kind];
     }
 
@@ -123,7 +123,7 @@ final class SearchBlock implements Block
                 );
 
                 return array_map(
-                    fn($row) => $this->place($search, $row, I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(_('%d min'), (int) $row['duration']), $row['description'], $args),
+                    fn($row) => $this->place($search, $row, I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC, ' . sprintf(I18n::text('%d min'), (int) $row['duration']), $row['description'], $args),
                     $rows,
                 );
             case 'classifieds':

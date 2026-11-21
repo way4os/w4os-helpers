@@ -7,6 +7,7 @@ namespace W4OS\Helpers\Block;
 use W4OS\Engine\Assets\WebAssets;
 use W4OS\Engine\Hypergrid\Destination;
 use W4OS\Engine\Models\Grid;
+use W4OS\Helpers\I18n;
 
 /**
  * The destinations of the grid, by category, as the viewers' guide shows them: a card for each category (the picture of one of its
@@ -20,7 +21,7 @@ final class DestinationGuideBlock implements Block
     {
         // The sections of the guide with their pictures, the engine's to find (Grid::guide())
         $data = [
-            'title' => _('Destinations Guide'),
+            'title' => I18n::text('Destinations Guide'),
             'placeholder' => WebAssets::PLACEHOLDER,
         ];
         try {
@@ -33,7 +34,7 @@ final class DestinationGuideBlock implements Block
         if ($sections === []) {
             return $data + [
                 'reason' => 'no destination: the source of the guide (GuideSource of Helpers.ini, else the guide of 2do.directory) is not readable or empty',
-                'text' => _(
+                'text' => I18n::text(
                     'The realm of destinations you seek has eluded our grasp, spirited away by elusive knomes. Rally the grid managers, let them venture forth to curate a grand tapestry of remarkable places for your exploration!',
                 ),
             ];
@@ -49,7 +50,7 @@ final class DestinationGuideBlock implements Block
                     'name' => $name,
                     'url' => '?' . http_build_query(['category' => $name]),
                     'picture' => $section['picture'],
-                    'data' => sprintf(ngettext('%s destination', '%s destinations', $count), $count),
+                    'data' => sprintf(I18n::plural('%s destination', '%s destinations', $count), $count),
                 ];
             }
 
@@ -69,7 +70,7 @@ final class DestinationGuideBlock implements Block
                 ],
                 $sections[$category]['destinations'],
             ),
-            'back' => count($sections) > 1 ? ['url' => '?', 'label' => _('Back to categories')] : null,
+            'back' => count($sections) > 1 ? ['url' => '?', 'label' => I18n::text('Back to categories')] : null,
         ];
     }
 }

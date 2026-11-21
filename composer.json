@@ -27,7 +27,9 @@
         "slim/psr7": "^1",
         "php-di/php-di": "^7",
         "php-di/slim-bridge": "^3",
-        "nesbot/carbon": "3.15.1"
+        "nesbot/carbon": "3.15.1",
+        "gettext/gettext": "^5.7",
+        "gettext/translator": "^1.2"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.2",

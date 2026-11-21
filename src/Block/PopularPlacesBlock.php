@@ -6,6 +6,7 @@ namespace W4OS\Helpers\Block;
 
 use W4OS\Engine\Assets\WebAssets;
 use W4OS\Engine\Models\Grid;
+use W4OS\Helpers\I18n;
 
 /**
  * The parcels with the most visitors, as a grid of cards: the picture of the parcel (its snapshot), what you go to (its name here,
@@ -38,7 +39,7 @@ final class PopularPlacesBlock implements Block
             $places,
         );
 
-        return ['title' => _('Popular places'), 'rows' => $rows, 'placeholder' => WebAssets::PLACEHOLDER]
+        return ['title' => I18n::text('Popular places'), 'rows' => $rows, 'placeholder' => WebAssets::PLACEHOLDER]
             + (isset($unavailable) ? ['unavailable' => true] : []);
     }
 

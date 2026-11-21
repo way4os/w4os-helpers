@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace W4OS\Helpers\Block;
 
+use W4OS\Helpers\I18n;
+
 /** The blocks, by the name they have everywhere (a variable of a template has dashes as underscores). */
 final class Blocks
 {
@@ -27,7 +29,7 @@ final class Blocks
      */
     public static function unreachable(\W4OS\Engine\Exceptions\ChannelUnavailable $e): void
     {
-        \W4OS\Helpers\View\View::notify('error', sprintf(_('The database of the grid cannot be reached: %s'), $e->getMessage()));
+        \W4OS\Helpers\View\View::notify('error', sprintf(I18n::text('The database of the grid cannot be reached: %s'), $e->getMessage()));
     }
 
     public const LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'];
