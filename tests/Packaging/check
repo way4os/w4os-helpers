@@ -4,7 +4,7 @@
 # with the snippet of the kit, as the user of the web server. A visit runs the tasks of the search, a picture of the grid is cached,
 # in the folders the package made for the web server; the zip answers too. Exits non-zero when a check fails.
 #
-#   tests/Packaging/check [base image]       default: Debian 12; docker.io/library/ubuntu:24.04 for another
+#   tests/Packaging/check [--local] [base image]       default: Debian 12; docker.io/library/ubuntu:24.04 for another
 #   DEPS_ENGINE=folder DEPS_REST=folder DEPS_CONTAINER=folder
 #                                            where the Debian packages of the other projects are, the newest of each is taken
 #                                            (default: ../opensim-engine/dist, ../opensim-rest-php/dist, ../container-tools/dist)
@@ -15,6 +15,8 @@
 #   All can be set in tests/.env (see tests/.env.example), after the .env of the project.
 
 set -eo pipefail
+LOCAL=0
+[[ "${1:-}" != --local ]] || { LOCAL=1; shift; }
 BASE=${1:-docker.io/library/debian:bookworm}
 cd "$(dirname "$0")/../.."
 [[ -f vendor/bin/bash-helpers ]] || { echo "bash-tools is not installed: composer install" >&2; exit 1; }
@@ -23,6 +25,13 @@ source vendor/bin/bash-helpers
 # The environment of the project (.env) and the one of the tests (tests/.env): CONTAINER_CONNECTION, MEMORY...
 ENV_SLUG=tests read_env || true
 [[ -z "${CONTAINER_CONNECTION:-}" ]] || log "Podman connection: $CONTAINER_CONNECTION"
+# The container runs on the podman of another machine (CONTAINER_CONNECTION, from tests/.env): never on macOS, whose podman
+# machine is too small for it, unless --local says so
+if [[ -z "${CONTAINER_CONNECTION:-}" && $(uname -s) == Darwin && $LOCAL != 1 ]]; then
+    echo "check: no CONTAINER_CONNECTION (tests/.env): the container would run on this Mac; name a machine, or --local" >&2
+    exit 2
+fi
+podman=(podman ${CONTAINER_CONNECTION:+--connection "$CONTAINER_CONNECTION"})
 DEPS_ENGINE=${DEPS_ENGINE:-$PWD/../opensim-engine/dist}
 DEPS_REST=${DEPS_REST:-$PWD/../opensim-rest-php/dist}
 DEPS_CONTAINER=${DEPS_CONTAINER:-$PWD/../container-tools/dist}
@@ -36,7 +45,7 @@ ln -s "$PWD/dist" "$stage/dist"
 ln -s "$DEPS_ENGINE" "$stage/deps/engine"
 ln -s "$DEPS_REST" "$stage/deps/rest"
 ln -s "$DEPS_CONTAINER" "$stage/deps/container"
-COPYFILE_DISABLE=1 tar -chf - -C "$stage" dist deps | podman run --rm -i --memory="${MEMORY:-1g}" -e APT_HTTPS="${APT_HTTPS:-}" "$BASE" bash -c '
+COPYFILE_DISABLE=1 tar -chf - -C "$stage" dist deps | "${podman[@]}" run --rm -i --memory="${MEMORY:-1g}" -e APT_HTTPS="${APT_HTTPS:-}" "$BASE" bash -c '
 tar -xf - --no-same-owner --warning=no-unknown-keyword -C /
 status=0
 check() { if eval "$2"; then echo "   ok: $1"; else echo "   FAILED: $1"; status=1; fi; }
@@ -117,8 +126,9 @@ echo "An upgrade from the name of before w4os, the zip"
 dpkg -r opensim-helpers w4os-helpers >/dev/null 2>&1
 previous opensim-helpers opensim-engine opensim-rest-php
 mkdir -p /var/cache/opensim-helpers/tasks
-dpkg -i "$(newest /dist w4os-helpers)" "$(newest /dist opensim-helpers)" >/dev/null 2>&1
-check "an upgrade from opensim-helpers brings w4os-helpers, the old name an empty package" "dpkg -s w4os-helpers >/dev/null && dpkg -s opensim-helpers | grep -q \"^Depends:.*w4os-helpers\" && [ ! -e /usr/share/opensim-helpers ] && [ ! -e /var/cache/opensim-helpers ]"
+# The empty package first, as apt orders them: dpkg alone does not deconfigure what the new one breaks
+dpkg -i "$(newest /dist opensim-helpers)" "$(newest /dist w4os-helpers)" >/dev/null 2>&1
+check "an upgrade from opensim-helpers brings w4os-helpers, the old name an empty package" "dpkg-query -W -f=\"\\\${db:Status-Abbrev}\\n\" w4os-helpers opensim-helpers | grep -c ^ii | grep -qx 2 && dpkg -s opensim-helpers | grep -q \"^Depends:.*w4os-helpers\" && [ ! -e /usr/share/opensim-helpers ] && [ ! -e /var/cache/opensim-helpers ]"
 check "the libraries are links after the upgrade, not empty folders" "[ -L /usr/share/w4os-helpers/vendor/w4os/w4os-engine ] && [ -L /usr/share/w4os-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ]"
 mkdir /tmp/zip && cd /tmp/zip && unzip -q "$(ls -v /dist/*.zip | tail -1)"
 check "the zip has the helpers and a complete vendor folder, no composer.lock, no tests" "[ -f w4os-helpers/public/index.php ] && [ -f w4os-helpers/vendor/twig/twig/src/Environment.php ] && [ -f w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ] && [ ! -L w4os-helpers/vendor/w4os/w4os-engine ] && [ ! -e w4os-helpers/composer.lock ] && [ ! -e w4os-helpers/tests ]"
