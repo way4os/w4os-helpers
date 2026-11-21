@@ -124,11 +124,11 @@ test('a picture asked at the address of the web assets the helpers serve is the 
     $picture = helpers_get($app, '/helpers/assets/cb2052ae-d161-43e9-b11b-c834217823cd.jpg');
     $style = helpers_get($app, '/helpers/assets/css/guide.css');
 
-    // The engine's answer, as at /pictures (here the picture of nothing: the asset is not in the grid), never the page of the helpers
+    // The engine's answer, as at /pictures (here its 404 without a picture: the asset is not in the grid), never the page of the helpers
     $pictures = helpers_get($app, '/helpers/pictures/cb2052ae-d161-43e9-b11b-c834217823cd.jpg');
 
     expect($grid->helperUrl('assets'))->toBe('https://play.example.org/helpers/assets')
-        ->and($picture->getHeaderLine('Content-Type'))->toStartWith('image/')
+        ->and([$picture->getStatusCode(), $picture->getHeaderLine('Content-Type')])->toBe([404, W4OS\Engine\Api\Problem::CONTENT_TYPE])
         ->and([$picture->getStatusCode(), $picture->getHeaderLine('Content-Type')])->toBe([$pictures->getStatusCode(), $pictures->getHeaderLine('Content-Type')])
         ->and($style->getStatusCode())->toBe(200)
         ->and($style->getHeaderLine('Content-Type'))->toStartWith('text/css');
