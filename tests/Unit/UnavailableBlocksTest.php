@@ -10,7 +10,7 @@ use W4OS\Engine\Testing\Machine;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /** A grid whose accounts are in a database (its Robust's): reached through the connections the test gives. */
-function database_grid(): Grid
+function database_grid(string $helpers = ''): Grid
 {
     $machine = new Machine();
     $robust = (string) file_get_contents($machine->grid . '/Robust.HG.ini');
@@ -18,6 +18,7 @@ function database_grid(): Grid
         $machine->grid . '/Robust.HG.ini',
         $robust . "\n[DatabaseService]\n    ConnectionString = \"Data Source=db.example.org;Database=robust;User ID=os;Password=pw;\"\n",
     );
+    $helpers === '' || $machine->write($machine->grid . '/Helpers.ini', $helpers);
 
     return Grid::find($machine->environment, 'demo');
 }
@@ -66,7 +67,8 @@ describe('A block whose database cannot be reached', function () {
     });
 
     test('says the popular places and the guide of the search are unavailable for now, not an error, and tells why', function () {
-        $grid = database_grid();
+        // A guide whose list cannot be read gives the places of the search: its database cannot be reached either
+        $grid = database_grid('[Helpers]' . "\n" . '    GuideSource = "/nowhere/destinations.txt"' . "\n");
         Connections::using(static fn() => null);
         View::notices();
         $view = new View(dirname(__DIR__, 2) . '/templates');

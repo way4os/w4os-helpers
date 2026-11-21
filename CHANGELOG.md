@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (tests): the unreachable guide is one whose list cannot be read; the notices tests start with none
 - fix (blocks): the popular places and the guide show nothing, their title neither, when they have nothing to show
 - fix (texts): translated without the gettext extension or the system's locales (gettext/gettext, gettext/translator)
 - fix (assets): the grid's pictures are served at the address of its web assets too (helpers/assets), not only /pictures

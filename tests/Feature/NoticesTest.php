@@ -17,6 +17,8 @@ function notices_get(string $path): Psr\Http\Message\ResponseInterface
     return App::create(static fn(string $nick) => $grid)->handle((new ServerRequestFactory())->createServerRequest('GET', $path));
 }
 
+// The notices other tests left are not this one's
+beforeEach(fn() => View::notices());
 afterEach(fn() => View::notices());
 
 describe('The notices to the visitor', function () {
