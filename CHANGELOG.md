@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (blocks): the links of both clients say what they do (action), as the engine gives it
 - change (grid info): the login address shown is the grid's tpUri(), its link the grid's, landing on its region
 - new (blocks): the cards and the results are teleport links that fit where they are seen, with w4os-views (TeleportLink)
 - new (blocks): the popular places, the guide and the search give the links of both clients, labelled (Links::all())

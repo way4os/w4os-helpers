@@ -453,6 +453,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         foreach (['browser', 'viewer'] as $client) {
             expect(array_column($links[$client], 'format'))->toBe(array_keys($place->tpLinks($client)))
                 ->and(array_column($links[$client], 'link'))->toBe(array_column($place->tpLinks($client), 'link'))
+                ->and(array_column($links[$client], 'action'))->toBe(array_column($place->tpLinks($client), 'action'))
                 ->and($found[$client])->toBe($links[$client]);
         }
         W4OS\Helpers\I18n::use('fr');

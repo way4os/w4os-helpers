@@ -35,9 +35,9 @@ final class Links
 
     /**
      * The links of a destination for both clients, as a teleport link that fits where it is seen shows them (W4OS\Views\TeleportLink):
-     * its tpLinks() for a browser and for the viewer, each `format`, `link` and `label`, its text in the language in use.
+     * its tpLinks() for a browser and for the viewer, each `format`, `link`, `label` (its text in the language in use) and `action`.
      *
-     * @return array{browser:list<array{format:int,link:string,label:string}>,viewer:list<array{format:int,link:string,label:string}>}
+     * @return array{browser:list<array{format:int,link:string,label:string,action:string}>,viewer:list<array{format:int,link:string,label:string,action:string}>}
      */
     public static function all(Reachable $place): array
     {
@@ -46,7 +46,7 @@ final class Links
         foreach (Destination::CLIENTS as $client) {
             $links[$client] = [];
             foreach ($place->tpLinks($client) as $format => $link) {
-                $links[$client][] = ['format' => $format, 'link' => $link['link'], 'label' => (string) ($texts[$link['label']] ?? $link['label'])];
+                $links[$client][] = ['format' => $format, 'link' => $link['link'], 'label' => (string) ($texts[$link['label']] ?? $link['label']), 'action' => $link['action']];
             }
         }
 
