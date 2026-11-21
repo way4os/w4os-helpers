@@ -6,6 +6,8 @@ namespace W4OS\Helpers\Block;
 
 use W4OS\Engine\Hypergrid\Destination;
 use W4OS\Engine\Hypergrid\Reachable;
+use W4OS\Engine\I18n\Catalog;
+use W4OS\Helpers\I18n;
 
 /**
  * The teleport link of a destination for where a block is shown, asked of it (its tpLink() in Destination::AUTO): it
@@ -29,5 +31,25 @@ final class Links
         $link = $place->tpLink(Destination::AUTO, $context);
 
         return $link === null || $link === '' ? null : $link;
+    }
+
+    /**
+     * The links of a destination for both clients, as a teleport link that fits where it is seen shows them (W4OS\Views\TeleportLink):
+     * its tpLinks() for a browser and for the viewer, each `format`, `link` and `label`, its text in the language in use.
+     *
+     * @return array{browser:list<array{format:int,link:string,label:string}>,viewer:list<array{format:int,link:string,label:string}>}
+     */
+    public static function all(Reachable $place): array
+    {
+        $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
+        $links = [];
+        foreach (Destination::CLIENTS as $client) {
+            $links[$client] = [];
+            foreach ($place->tpLinks($client) as $format => $link) {
+                $links[$client][] = ['format' => $format, 'link' => $link['link'], 'label' => (string) ($texts[$link['label']] ?? $link['label'])];
+            }
+        }
+
+        return $links;
     }
 }

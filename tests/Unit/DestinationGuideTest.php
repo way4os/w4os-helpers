@@ -442,6 +442,28 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
             ->and($get('/blocks/popular_places?client=browser'))->toContain('href="' . guide_link('grid.example.org:8002/Welcome/128/128/25') . '"');
     });
 
+    test('the popular places, the guide and the search give the links of both clients, as the engine gives them, labelled in the language of the page', function () {
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+        $place = $grid->place('grid.example.org:8002/Welcome/128/128/25');
+        $links = Blocks::data('popular_places', $grid)['rows'][0]['links'];
+        $found = (new W4OS\Helpers\Block\SearchData($grid))->links('http://grid.example.org:8002', 'Welcome', '128/128/25');
+        $guide = Blocks::data('destination_guide', $grid, ['category' => 'Destinations Guide'])['items'][0]['links'];
+
+        foreach (['browser', 'viewer'] as $client) {
+            expect(array_column($links[$client], 'format'))->toBe(array_keys($place->tpLinks($client)))
+                ->and(array_column($links[$client], 'link'))->toBe(array_column($place->tpLinks($client), 'link'))
+                ->and($found[$client])->toBe($links[$client]);
+        }
+        W4OS\Helpers\I18n::use('fr');
+        $french = array_column(W4OS\Helpers\Block\Links::all($place)['browser'], 'label', 'format');
+        W4OS\Helpers\I18n::use('en');
+
+        expect(array_column($links['browser'], 'label', 'format')[W4OS\Engine\Hypergrid\Destination::LSL])->toBe('Copy the address')
+            ->and($french[W4OS\Engine\Hypergrid\Destination::LSL])->toBe("Copier l'adresse")
+            ->and(array_keys($guide))->toBe(['viewer', 'browser']);
+    });
+
     test('a place of the grid with a landing point in decimals keeps its region in a viewer', function () {
         $search = new W4OS\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
 

@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (blocks): the popular places, the guide and the search give the links of both clients, labelled (Links::all())
 - fix (blocks): a picture that cannot be loaded leaves the initials of its name, never a broken image (picture())
 - change (search): a place's link from Grid::placeAt(), no address assembled in the helpers
 - change (blocks): every teleport link asked of its object (tpLink(): the grid, Grid::place()); Links::to() takes one

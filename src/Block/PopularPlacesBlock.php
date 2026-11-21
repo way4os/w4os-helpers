@@ -34,7 +34,8 @@ final class PopularPlacesBlock implements Block
                 // What you go to, then where, as the engine says it (Grid::card())
                 'label' => (string) ($place['title'] ?? $place['name']),
                 'value' => (string) $place['label'],
-                'url' => Links::to($grid->place((string) $place['url']), $args),
+                'url' => Links::to($at = $grid->place((string) $place['url']), $args),
+                'links' => Links::all($at),
             ],
             $places,
         );

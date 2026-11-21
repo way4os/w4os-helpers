@@ -87,4 +87,16 @@ final class SearchData
 
         return $place === null ? null : Links::to($place, $args);
     }
+
+    /**
+     * The links to a place the search knows, for both clients (Links::all()); none without a region.
+     *
+     * @return array{browser?:list<array{format:int,link:string,label:string}>,viewer?:list<array{format:int,link:string,label:string}>}
+     */
+    public function links(string $gatekeeper, string $region, string $landing = ''): array
+    {
+        $place = $this->grid->placeAt($region, $landing, $gatekeeper);
+
+        return $place === null ? [] : Links::all($place);
+    }
 }

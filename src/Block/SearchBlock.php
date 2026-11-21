@@ -180,6 +180,7 @@ final class SearchBlock implements Block
             'detail' => trim($region !== '' && $detail !== '' ? "$region · $detail" : $region . $detail),
             'text' => trim((string) $text),
             'url' => $search->teleport((string) ($row['gatekeeper'] ?? ''), $region, (string) ($row['landingpoint'] ?? ''), $args),
+            'links' => $search->links((string) ($row['gatekeeper'] ?? ''), $region, (string) ($row['landingpoint'] ?? '')),
         ];
     }
 }
