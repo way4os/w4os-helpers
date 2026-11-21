@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace W4OS\Helpers\Block;
 
-use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Hypergrid\Destination;
+use W4OS\Engine\Hypergrid\Reachable;
 
 /**
- * The teleport link of a destination for where a block is shown, the engine's to choose (Grid::link(), Destination::AUTO): it
+ * The teleport link of a destination for where a block is shown, asked of it (its tpLink() in Destination::AUTO): it
  * tells a viewer by the user agent, and gives hop:// out of it, the form of the viewer in it (and on its login screen). A block gives the engine what it knows of where it is shown:
  * `client` (the class of the visitor a site gives, `viewer` or `browser`, Destination::client(): it wins), else `agent` (the user
  * agent of the page that shows it, the one of the request without it).
@@ -15,16 +16,18 @@ use W4OS\Engine\Models\Grid;
 final class Links
 {
     /**
-     * @param string $destination host:port/Region/x/y/z, host:port:Region, hop://..., a region of the grid by its name
+     * @param Reachable $place a grid, a region, a parcel, or a place of the grid (Grid::place())
      * @param array<string,mixed> $args the arguments of the block
      * @return ?string null when there is no link to give
      */
-    public static function to(Grid $grid, string $destination, array $args): ?string
+    public static function to(Reachable $place, array $args): ?string
     {
-        $agent = isset($args['agent']) ? (string) $args['agent'] : null;
-        $client = isset($args['client']) ? (string) $args['client'] : null;
-        $link = $grid->link($destination, $agent, client: $client);
+        $context = array_filter([
+            'agent' => isset($args['agent']) ? (string) $args['agent'] : null,
+            'client' => isset($args['client']) ? (string) $args['client'] : null,
+        ], static fn(?string $value): bool => $value !== null);
+        $link = $place->tpLink(Destination::AUTO, $context);
 
-        return $link === '' ? null : $link;
+        return $link === null || $link === '' ? null : $link;
     }
 }

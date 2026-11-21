@@ -18,8 +18,8 @@ final class GridInfoBlock implements Block
         if ($login !== null && $login !== '') {
             $rows[] = [
                 'label' => I18n::text('Login URI'),
-                'value' => (string) Destination::format($login, Destination::TXT),
-                'url' => Links::to($grid, (string) $login, $args),
+                'value' => (string) $grid->tpLink(Destination::TXT),
+                'url' => Links::to($grid, $args),
             ];
         }
 

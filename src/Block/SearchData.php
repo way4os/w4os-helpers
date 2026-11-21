@@ -91,6 +91,6 @@ final class SearchData
         $point = Destination::position($landing);
         $uri = Destination::uri(rtrim($grid, '/') . '/' . $region . ($point === '' ? '' : '/' . str_replace(',', '/', $point)), $login !== '' ? $login : null);
 
-        return Links::to($this->grid, $uri, $args);
+        return Links::to($this->grid->place($uri), $args);
     }
 }

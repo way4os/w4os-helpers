@@ -60,7 +60,7 @@ final class DestinationGuideBlock implements Block
                 static fn(array $d): array => [
                     // What you go to, then where, as the engine says it (Grid::card()): the title above, its label under it
                     'name' => (string) ($d['title'] ?? $d['name']),
-                    'url' => Links::to($grid, Destination::uri($d['url'], $login), $args),
+                    'url' => Links::to($grid->place((string) $d['url']), $args),
                     'picture' => $d['picture'],
                     'data' => (string) ($d['label'] ?? ''),
                 ],
