@@ -142,7 +142,12 @@ describe('The title of a block', function () {
         $view = new View(dirname(__DIR__, 2) . '/templates');
         $profile = $view->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en', 'title' => '']);
         $search = $view->block('search', profile_grid(), ['lang' => 'en', 'title' => '']);
-        $guide = $view->block('destination_guide', profile_grid(), ['lang' => 'en', 'title' => '']);
+        // A guide that has destinations: one with none shows nothing at all
+        $dir = sys_get_temp_dir() . '/helpers-title-guide-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[GridInfoService]\nlogin = \"http://grid.example.org:8002/\"\n");
+        file_put_contents("$dir/Helpers.ini", "[Helpers]\nGuideSource = \"" . dirname(__DIR__) . "/fixtures/guide/one-category.txt\"\n");
+        $guide = $view->block('destination_guide', Grid::at(W4OS\Engine\Runtime\Environment::system(W4OS\Engine\Config\Layout::load()), $dir), ['lang' => 'en', 'title' => '']);
 
         expect($profile)->toContain('<header class="profile-banner">', '<dt>Born</dt>')->not->toContain('<h1', 'Ada Love</h')
             ->and($search)->toContain('search-form')->not->toContain('class="block-title"')

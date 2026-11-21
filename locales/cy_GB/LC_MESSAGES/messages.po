@@ -17,16 +17,6 @@ msgstr "Ni ellir cyrraedd cronfa ddata'r grid: %s"
 msgid "Destinations Guide"
 msgstr "Canllaw cyrchfannau"
 
-msgid ""
-"The realm of destinations you seek has eluded our grasp, spirited away by "
-"elusive knomes. Rally the grid managers, let them venture forth to curate a "
-"grand tapestry of remarkable places for your exploration!"
-msgstr ""
-"Yr ystafellau o cyrchfannau rydych chi'n eu chwilio amdanynt wedi eu dwyn "
-"oddi ar ein gafael, wedi'u cludo i ffwrdd gan gnomes anhysbys. Raliwch y "
-"rheolwyr grid, gadewch iddynt anturio ymlaen i guradu taflen fawr o leoedd "
-"rhyfeddol ar gyfer eich archwilio!"
-
 #, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"

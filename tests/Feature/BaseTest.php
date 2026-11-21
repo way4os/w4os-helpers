@@ -138,8 +138,12 @@ describe('a block of the helpers', function () {
         $grid = Grid::at(Environment::system(Layout::load()), $dir);
         $view = new View(dirname(__DIR__, 2) . '/templates');
 
-        foreach (['destination_guide', 'grid-info', 'grid-status', 'search', 'profile', 'popular_places', 'motd', 'new_users', 'directory_info'] as $block) {
+        foreach (['grid-info', 'grid-status', 'search', 'profile', 'motd', 'new_users', 'directory_info'] as $block) {
             expect($view->block($block, $grid, ['client' => 'browser']))->toContain('data-helpers-block="' . $block . '"');
+        }
+        // The guide and the popular places of a grid that has none: no block at all
+        foreach (['destination_guide', 'popular_places'] as $block) {
+            expect($view->block($block, $grid, ['client' => 'browser']))->toBe('');
         }
     });
 });

@@ -70,6 +70,10 @@ final class Blocks
             return null;
         }
         $data = (new $class())->data($grid, $args);
+        // Nothing to show: no block at all
+        if ($data === []) {
+            return [];
+        }
         $level = $args['level'] ?? 'h3';
         $data['level'] = in_array($level, self::LEVELS, true) ? $level : 'h3';
         // A title of the call wins, an empty one leaves the title out

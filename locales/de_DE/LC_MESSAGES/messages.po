@@ -16,16 +16,6 @@ msgstr "Die Datenbank des Grids ist nicht erreichbar: %s"
 msgid "Destinations Guide"
 msgstr "Reiseführer für Ziele"
 
-msgid ""
-"The realm of destinations you seek has eluded our grasp, spirited away by "
-"elusive knomes. Rally the grid managers, let them venture forth to curate a "
-"grand tapestry of remarkable places for your exploration!"
-msgstr ""
-"Die Welt der Ziele, die du suchst, ist uns entwischt, von flüchtigen Gnomen "
-"fortgetragen. Rufe die Grid-Manager zusammen, lass sie sich aufmachen, um "
-"eine großartige Sammlung bemerkenswerter Orte für deine Erkundung zu "
-"kuratieren!"
-
 #, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"

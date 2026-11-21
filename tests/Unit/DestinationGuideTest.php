@@ -456,16 +456,23 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
     });
 });
 
-describe('the destination guide without destinations', function () {
-    test('says where its list is read: its source, else the guide of 2do.directory', function () {
+describe('a block with nothing to show', function () {
+    test('shows nothing, its title neither: the guide without destinations, the popular places without places', function () {
         $dir = sys_get_temp_dir() . '/helpers-guide-empty-' . bin2hex(random_bytes(4));
         mkdir($dir, 0o755, true);
         file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"http://example.org:8002/\"\n");
         file_put_contents("$dir/empty.txt", '');
         file_put_contents("$dir/Helpers.ini", "[Helpers]\nGuideSource = \"$dir/empty.txt\"\n");
+        $grid = Grid::at(Environment::system(Layout::load()), $dir);
+        // A search with no place
+        $search = guide_search();
+        $search->exec('DELETE FROM popularplaces');
+        W4OS\Engine\Data\Connections::using(fn () => $search);
+        $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
 
-        $data = Blocks::data('destination_guide', Grid::at(Environment::system(Layout::load()), $dir));
-
-        expect($data['reason'] ?? '')->toContain('GuideSource')->toContain('2do.directory');
+        expect(Blocks::data('destination_guide', $grid))->toBe([])
+            ->and(Blocks::data('popular_places', $grid))->toBe([])
+            ->and($view->block('destination_guide', $grid, ['client' => 'browser', 'level' => 'h2']))->toBe('')
+            ->and($view->block('popular_places', $grid, ['client' => 'browser', 'level' => 'h2']))->toBe('');
     });
 });

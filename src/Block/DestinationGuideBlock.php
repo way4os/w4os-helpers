@@ -31,13 +31,9 @@ final class DestinationGuideBlock implements Block
 
             return $data + ['unavailable' => true, 'items' => []];
         }
+        // No destination: nothing to show, the title neither
         if ($sections === []) {
-            return $data + [
-                'reason' => 'no destination: the source of the guide (GuideSource of Helpers.ini, else the guide of 2do.directory) is not readable or empty',
-                'text' => I18n::text(
-                    'The realm of destinations you seek has eluded our grasp, spirited away by elusive knomes. Rally the grid managers, let them venture forth to curate a grand tapestry of remarkable places for your exploration!',
-                ),
-            ];
+            return [];
         }
         $category = count($sections) === 1 ? array_key_first($sections) : ($args['category'] ?? null);
         $category = isset($sections[$category]) ? $category : null;

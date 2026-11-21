@@ -39,6 +39,11 @@ final class PopularPlacesBlock implements Block
             $places,
         );
 
+        // No place: nothing to show, the title neither (a database that cannot be reached is said, it is not empty)
+        if ($rows === [] && !isset($unavailable)) {
+            return [];
+        }
+
         return ['title' => I18n::text('Popular places'), 'rows' => $rows, 'placeholder' => WebAssets::PLACEHOLDER]
             + (isset($unavailable) ? ['unavailable' => true] : []);
     }

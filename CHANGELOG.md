@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (blocks): the popular places and the guide show nothing, their title neither, when they have nothing to show
 - fix (texts): translated without the gettext extension or the system's locales (gettext/gettext, gettext/translator)
 - fix (assets): the grid's pictures are served at the address of its web assets too (helpers/assets), not only /pictures
 - fix (guide): the guide block keeps its own title in a browser, its category under it; no work-in-progress line

@@ -9,11 +9,8 @@
         {% elseif browsing %}<h2>{{ category }}</h2>{% elseif category ?? title %}<h1>{{ category ?? title }}</h1>{% endif %}
         {% if back is defined and back %}<a href="{{ back.url }}" class="back">{{ back.label }}</a>{% endif %}
     </div>
-    {% if reason is defined %}<!-- {{ reason }} -->{% endif %}
     {% if unavailable ?? false %}
         <p class="block-unavailable">{{ labels.unavailable }}</p>
-    {% elseif text is defined %}
-        <div class="error">{{ text }}</div>
     {% else %}
         <div class="list">
             {% for item in items %}

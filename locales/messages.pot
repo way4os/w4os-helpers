@@ -27,13 +27,6 @@ msgstr ""
 msgid "Destinations Guide"
 msgstr ""
 
-#: src/Block/DestinationGuideBlock.php:38
-msgid ""
-"The realm of destinations you seek has eluded our grasp, spirited away by "
-"elusive knomes. Rally the grid managers, let them venture forth to curate a "
-"grand tapestry of remarkable places for your exploration!"
-msgstr ""
-
 #: src/Block/DestinationGuideBlock.php:53
 #, php-format
 msgid "%s destination"

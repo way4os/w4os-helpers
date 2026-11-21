@@ -16,16 +16,6 @@ msgstr "Il database della griglia non è raggiungibile: %s"
 msgid "Destinations Guide"
 msgstr "Guida delle destinazioni"
 
-msgid ""
-"The realm of destinations you seek has eluded our grasp, spirited away by "
-"elusive knomes. Rally the grid managers, let them venture forth to curate a "
-"grand tapestry of remarkable places for your exploration!"
-msgstr ""
-"The magical realm of destinations you're searching for has slipped through "
-"our fingers, hidden away by mischievous creatures. Gather the grid managers "
-"and send them on a quest to curate a magnificent collection of extraordinary "
-"places for you to explore!"
-
 #, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"

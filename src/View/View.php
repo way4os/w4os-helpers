@@ -115,7 +115,8 @@ final class View
         $assets = (string) ($args['assets'] ?? rtrim($served ?? rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/pictures', '/'));
 
         // Its name on its root (data-helpers-block), for a site, and the health, to find it in a page
-        return $data === null ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets, 'helpers_block' => $name]);
+        // A block with nothing to show shows nothing, its title neither
+        return $data === null || $data === [] ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets, 'helpers_block' => $name]);
     }
 
     /** @param array<string,mixed> $args the arguments of the request, for the block the page is */
