@@ -34,8 +34,9 @@ function arch_calls(string $code, string $class, string $method): bool
 }
 
 describe('A teleport link', function () {
-    test('is asked of the grid, its region, its parcel or its place (tpLink()), never made with Destination::format()', function () {
-        $found = array_keys(array_filter(arch_sources(dirname(__DIR__, 2) . '/src'), static fn(string $code): bool => arch_calls($code, 'Destination', 'format')));
+    test('is asked of the grid, its region, its parcel or its place (tpLink()), never made or its address assembled here', function () {
+        $makes = static fn(string $code): bool => arch_calls($code, 'Destination', 'format') || arch_calls($code, 'Destination', 'uri') || arch_calls($code, 'Destination', 'sanitize');
+        $found = array_keys(array_filter(arch_sources(dirname(__DIR__, 2) . '/src'), $makes));
 
         expect($found)->toBe([])
             ->and(arch_calls('<?php \W4OS\Engine\Hypergrid\Destination::format($a, 8);', 'Destination', 'format'))->toBeTrue()
