@@ -29,6 +29,8 @@
 .search-pages { display: flex; justify-content: space-between; gap: 1rem; margin: .75rem 0 0; }
 .search-pages a[rel=next] { margin-left: auto; }
 .search-detail:empty { display: none; }
+/* Beside a long list, the detail stays in sight */
+.search-detail { position: sticky; top: 1rem; }
 .search-split:has(.search-detail:empty) { grid-template-columns: 1fr; }
 .search-detail-title { margin: 0 0 .5rem; font-size: 1.15rem; }
 .search-detail .search-picture { display: block; width: 100%; max-width: 20rem; aspect-ratio: 4 / 3; border-radius: .3rem; margin: 0 0 .75rem; }
@@ -43,6 +45,7 @@
 /* On a narrow screen the labels above the fields, the detail under the list */
 @media (max-width: 48rem) {
     .search-split { grid-template-columns: 1fr; }
+    .search-detail { position: static; }
 }
 @media (max-width: 36rem) {
     .search-field { grid-template-columns: 1fr; }
