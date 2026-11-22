@@ -103,7 +103,6 @@ final class View
         $this->loader = new FilesystemLoader($templates);
         $this->twig = new Twig($this->loader, ['autoescape' => 'html']);
         $this->twig->addFunction(new \Twig\TwigFunction('picture', Picture::tag(...), ['is_safe' => ['html']]));
-        $this->twig->addFunction(new \Twig\TwigFunction('place_picture', Picture::titled(...), ['is_safe' => ['html']]));
         $this->twig->addFunction(new \Twig\TwigFunction('tp_link', $this->tpLink(...), ['is_safe' => ['html']]));
         $this->twig->addFunction(new \Twig\TwigFunction('list_detail', $this->listDetail(...), ['is_safe' => ['html']]));
     }
@@ -182,7 +181,8 @@ final class View
             // Its dates as dates, never relative (an event is weeks ahead)
             'dates' => 'long',
             'empty' => $empty,
-            'picture' => static fn(?string $picture, ?string $default, string $name): string => Picture::tag(rtrim($assets, '/') . '/' . ($picture ?? '00000000-0000-0000-0000-000000000000') . '.jpg', $name, 'search-picture'),
+            // A place, a group: its picture or the image of its title, from the engine; a person: its initials without a picture
+            'picture' => static fn(?string $picture, ?string $default, string $name): string => Picture::tag(rtrim($assets, '/') . '/' . ($picture ?? '00000000-0000-0000-0000-000000000000') . '.jpg', $default === 'person' ? $name : null, 'search-picture'),
             'actions' => static fn(ItemView $item): string => implode('', array_map(
                 static fn(array $action): string => '<a class="search-action" href="' . $esc($action['url']) . '">' . $esc($action['label']) . '</a>',
                 (array) ($item->item['searchActions'] ?? []),

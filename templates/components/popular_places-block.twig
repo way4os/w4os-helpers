@@ -1,12 +1,12 @@
 {% extends 'components/block-component.twig' %}
-{# A grid of cards, as many rows as it needs: the picture of the parcel (the grid's placeholder without one), its name over it, its
-   region under it (assets/css/places.css) #}
+{# A grid of cards, as many rows as it needs: the picture of the parcel (the image of its title without one: the engine's), its name
+   over it (assets/css/places.css) #}
 {% block body %}
     {% if unavailable ?? false %}<p class="block-unavailable">{{ labels.unavailable }}</p>{% endif %}
     <div class="places">
         {% for row in rows %}
             {# The card: its teleport link over all of it (tp_link), the button of its other links in a corner (places.css) #}
-            {% set card %}{{ picture(assets ~ '/' ~ (row.picture ?: placeholder) ~ '.jpg', row.label, 'place-picture' ~ (row.picture ? '' : ' no-picture')) }}<span class="place-name">{{ row.label }}</span>{% if row.value %}<span class="place-region">{{ row.value }}</span>{% endif %}{% endset %}
+            {% set card %}{{ picture(assets ~ '/' ~ row.picture ~ '.jpg', null, 'place-picture') }}<span class="place-name">{{ row.label }}</span>{% endset %}
             <div class="place">{{ tp_link(row.links ?? [], row.label, card) }}</div>
         {% endfor %}
     </div>

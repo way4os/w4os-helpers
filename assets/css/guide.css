@@ -1,9 +1,9 @@
 /**
- * css/guide.css: the destination guide, a card for each category or destination (its picture, its name, where it is). In a browser
- * it is a block of the page as the popular places are: on the column of the content, without a background, in the colours of the
- * theme (light or dark), its title the one of the blocks, its pictures smaller than theirs. In a viewer (#guide.client-viewer, or a
- * page of the helpers for a viewer, body.viewer) it is the viewers' Destinations panel: dark, one row scrolling sideways. The
- * colours are variables a site may set.
+ * css/guide.css: the destination guide, a card for each category or destination (its picture, its name; a category how many
+ * destinations it has). In a browser it is a block of the page as the popular places are: on the column of the content, without
+ * a background, in the colours of the theme (light or dark), its title the one of the blocks, its pictures smaller than theirs. In
+ * a viewer (#guide.client-viewer, or a page of the helpers for a viewer, body.viewer) it is the viewers' Destinations panel: dark,
+ * one row scrolling sideways. The colours are variables a site may set.
  *
  * @package    w4os/w4os-helpers
  * @license    AGPLv3
@@ -88,10 +88,6 @@
 #guide .item .w4os-tp-toggle[aria-expanded="true"] {
 	background: color-mix(in srgb, CanvasText 10%, Canvas);
 }
-/* The name of a destination without a picture keeps clear of the button in its corner */
-#guide .item .w4os-tp .picture-title {
-	padding-top: 2rem;
-}
 /* The menu opens leftwards from the corner */
 #guide .item .w4os-tp-menu {
 	left: auto;
@@ -105,7 +101,7 @@
 	background: var(--guide-picture);
 	border-radius: 0.25rem;
 }
-/* What you go to, the largest; where it is under it */
+/* What you go to, the largest */
 #guide .name {
 	margin-top: 6px;
 	font-size: 0.85rem;
@@ -114,7 +110,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-/* A label on two lines at most, cut after a slash or a colon only, never in a word */
+/* How many destinations a category has, on two lines at most */
 #guide .data {
 	font-size: 0.75rem;
 	color: var(--guide-muted);

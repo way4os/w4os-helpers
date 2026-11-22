@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace W4OS\Helpers\Block;
 
-use W4OS\Engine\Assets\WebAssets;
 use W4OS\Engine\Models\Grid;
 use W4OS\Helpers\I18n;
 
 /**
- * The parcels with the most visitors, as a grid of cards: the picture of the parcel (its snapshot), what you go to (its name here,
- * its region on another grid) and where under it (its region and point here, its grid elsewhere), as the engine gives them
- * (Grid::popularPlaces()). The options of w4os-wp 2.x and its defaults: `include_hypergrid` and `include_landsales`, true to show the
+ * The parcels with the most visitors, as a grid of cards: the picture of the parcel (its snapshot, else the image of its title) and
+ * what you go to (its name here, its region on another grid), as the engine gives them (Grid::popularPlaces()); a card does not say
+ * where it is, its picture takes the room. The options of w4os-wp 2.x and its defaults: `include_hypergrid` and `include_landsales`, true to show the
  * places of the other grids and the land for sale (both left out by default).
  */
 final class PopularPlacesBlock implements Block
@@ -31,9 +30,8 @@ final class PopularPlacesBlock implements Block
         $rows = array_map(
             static fn(array $place): array => [
                 'picture' => $place['picture'],
-                // What you go to, then where, as the engine says it (Grid::card())
+                // What you go to, as the engine says it (Grid::card())
                 'label' => (string) ($place['title'] ?? $place['name']),
-                'value' => (string) $place['label'],
                 'url' => Links::to($at = $grid->place((string) $place['url']), $args),
                 'links' => Links::all($at),
             ],
@@ -45,7 +43,7 @@ final class PopularPlacesBlock implements Block
             return [];
         }
 
-        return ['title' => I18n::text('Popular places'), 'rows' => $rows, 'placeholder' => WebAssets::PLACEHOLDER]
+        return ['title' => I18n::text('Popular places'), 'rows' => $rows]
             + (isset($unavailable) ? ['unavailable' => true] : []);
     }
 

@@ -168,21 +168,22 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         expect($places)->toBe(['Local places' => 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Welcome landing' => 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'])
             ->and($categories['Destinations Guide'])->toBe('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
             ->and($categories['Hypergrid'])->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
-            ->and($categories['Apart'])->toBeNull()
-            ->and($html)->toContain('src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
-            // No picture: its name fills the card (guide.js), never initials nor the placeholder
-            ->and($html)->toContain('<span class="picture thumbnail titled"><span class="picture-title" aria-hidden="true">Apart</span></span>')
+            // No picture: the image of its title, the engine's, never initials nor the placeholder
+            ->and($categories['Apart'])->toBe(W4OS\Engine\Assets\TitleImage::id('Apart'))
+            ->and($html)->toContain('<span class="picture thumbnail"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
+            ->and($html)->toContain('<span class="picture thumbnail"><img src="/pictures/' . W4OS\Engine\Assets\TitleImage::id('Apart') . '.jpg"')
             ->and($html)->not->toContain(W4OS\Engine\Assets\WebAssets::PLACEHOLDER)
             ->and($html)->not->toContain('data-initials');
     });
 
-    test('the popular places are cards with the picture of their parcel, the placeholder without one', function () {
+    test('the popular places are cards with the picture of their parcel, the image of their title without one', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
         expect($html)->toContain('class="places"')
-            ->and($html)->toMatch('#<div class="place"><span class="w4os-tp"[^>]*><a class="w4os-tp-main" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '"[^>]*><span class="picture place-picture" data-initials="LP"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
-            ->and($html)->toContain('src="/pictures/' . W4OS\Engine\Assets\WebAssets::PLACEHOLDER . '.jpg"');
+            ->and($html)->toMatch('#<div class="place"><span class="w4os-tp"[^>]*><a class="w4os-tp-main" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '"[^>]*><span class="picture place-picture"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
+            ->and($html)->not->toContain('data-initials')->not->toContain(W4OS\Engine\Assets\WebAssets::PLACEHOLDER)
+            ->and($html)->toContain('<span class="picture place-picture"><img src="/pictures/' . W4OS\Engine\Assets\TitleImage::id('Garden') . '.jpg"');
     });
 
     test('the popular places take the options of w4os-wp 2.x and its defaults: the other grids and the land for sale, both left out unless asked', function () {
@@ -246,23 +247,18 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->toContain('class="back"');
     });
 
-    test('the picture of nothing is lighter than a picture: half seen in the popular places, set in one place; in the guide the name behind the picture', function () {
+    test('a card says what you go to, not where it is: its picture takes the room', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
-        // The categories: one of them has no picture (Apart)
-        $guide = $view->block('destination_guide', $grid, ['assets' => '/pictures']);
+        $destinations = $view->block('destination_guide', $grid, ['assets' => '/pictures', 'category' => 'Hypergrid']);
+        $categories = $view->block('destination_guide', $grid, ['assets' => '/pictures']);
         $places = $view->block('popular_places', $grid, ['assets' => '/pictures']);
-        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/blocks.css');
-        $placeholder = W4OS\Engine\Assets\WebAssets::PLACEHOLDER;
 
-        expect($guide)
-            ->toMatch('#<span class="picture thumbnail titled"><span class="picture-title" aria-hidden="true">[^<]+</span><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\.jpg"#')
-            ->and($places)
-            ->toMatch('#<span class="picture place-picture no-picture" data-initials="[^"]*"><img src="/pictures/' . $placeholder . '\.jpg"#')
-            ->and($css)
-            ->toContain('--helpers-placeholder-opacity: 0.5')
-            ->toContain('opacity: var(--helpers-placeholder-opacity)');
+        expect($destinations)->toContain('class="name"')->not->toContain('class="data"')
+            // A category says how many destinations it has
+            ->and($categories)->toContain('<span class="data">')
+            ->and($places)->toContain('class="place-name"')->not->toContain('place-region');
     });
 
     test('the dark look of the viewers is the one of the viewer only: in a browser the colours are the theme\'s', function () {
@@ -491,19 +487,19 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         expect(W4OS\Helpers\Block\Links::to($grid->placeAt('Welcome', '116/136/21.75', 'http://grid.example.org:8002'), ['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/116/136/21.75');
     });
 
-    test('a card shows what you go to, then where: on this grid the name of the list and its region and point, on another its region and its grid', function () {
+    test('a card shows what you go to: on this grid the name of the list, on another its region', function () {
         $grid = guide_grid('big-display', 'http://speculoos.world:8002');
-        $cards = fn (string $section) => array_map(fn (array $item) => [$item['name'], $item['data']], Blocks::data('destination_guide', $grid, ['category' => $section])['items']);
+        $cards = fn (string $section) => array_column(Blocks::data('destination_guide', $grid, ['category' => $section])['items'], 'name');
 
-        expect($cards('Speculoos'))->toContain(['Grand Place', 'Grand Place'], ['Residences', 'Residences/128/128/30'])
-            ->and($cards('Hang out'))->toContain(['Exupery', 'hg.osgrid.org:80'], ['Wyldwood Bayou', 'wyldwoodbayou.com:8002']);
+        expect($cards('Speculoos'))->toContain('Grand Place', 'Residences')
+            ->and($cards('Hang out'))->toContain('Exupery', 'Wyldwood Bayou');
     });
 
-    test('a popular place shows the label of its destination under its name, not the bare name of its region', function () {
+    test('a popular place shows what you go to, the name of its destination', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
-        expect($html)->toMatch('#<span class="place-name">Local places</span>\s*<span class="place-region">Welcome/128/128/25</span>#');
+        expect($html)->toContain('<span class="place-name">Local places</span></a>');
     });
 });
 

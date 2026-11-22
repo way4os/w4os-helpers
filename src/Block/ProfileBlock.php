@@ -234,7 +234,8 @@ final class ProfileBlock implements Block
         return [
             'name' => (string) ($row['name'] ?? ''),
             'description' => trim((string) ($row['description'] ?? '')),
-            'picture' => (string) ($row['picture'] ?? '') ?: WebAssets::PLACEHOLDER,
+            // Its snapshot, else the image of its name: the engine's
+            'picture' => (string) $row['picture'],
             'place' => implode(', ', array_filter([$row['parcel'] ?? null, $row['region'] ?? null])) . (($row['region'] ?? null) === null ? '' : $position),
             // The teleport of the engine (hop://) as the link for where it is shown (Links::to())
             'url' => ($row['teleport'] ?? null) === null || $grid === null ? ($row['teleport'] ?? null) : Links::to($grid->place((string) $row['teleport']), $args),

@@ -46,6 +46,9 @@ test('the API is the engine\'s, served by its own entry point: the helpers do no
 test('the pictures of the grid are served at /pictures, by the engine', function () {
     expect(Engine::target([], '/pictures/c14a1985-c549-4485-8779-7103d74ef5e0.jpg'))->toBe('/assets/c14a1985-c549-4485-8779-7103d74ef5e0.jpg');
     expect(Engine::target([], '/pictures/nothing.exe'))->toBeNull();
+    // The image of a title, the picture of a place that has none, is asked as any picture
+    expect(Engine::target([], '/pictures/title-48616e67206f7574.jpg'))->toBe('/assets/title-48616e67206f7574.jpg');
+    expect(Engine::target([], '/pictures/title-Hang.jpg'))->toBeNull();
 });
 
 test('the pictures of the grid are served at the address of its web assets too, the helpers\' own files left theirs', function () {

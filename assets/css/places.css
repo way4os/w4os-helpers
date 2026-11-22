@@ -1,6 +1,6 @@
 /**
  * css/places.css: the popular places, a grid of cards that takes as many rows as it needs: the picture of the parcel, its name over
- * it, its region under it. Each card is a teleport link (W4OS\Views\TeleportLink) over all of it, the button of its other links
+ * it. Each card is a teleport link (W4OS\Views\TeleportLink) over all of it, the button of its other links
  * in its top right corner.
  *
  * @package    w4os/w4os-helpers
@@ -60,8 +60,7 @@
 	aspect-ratio: 4 / 3;
 	object-fit: cover;
 }
-.block-popular_places .place-name,
-.block-popular_places .place-region {
+.block-popular_places .place-name {
 	position: absolute;
 	left: 0;
 	right: 0;
@@ -69,17 +68,10 @@
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-}
-.block-popular_places .place-name {
 	top: 0;
 	padding-right: 2.25rem;
 	font-weight: bold;
 	background: linear-gradient(rgba(0, 0, 0, 0.55), transparent);
-}
-.block-popular_places .place-region {
-	bottom: 0;
-	font-size: 0.85em;
-	background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
 }
 .block-popular_places .place:hover .place-picture,
 .block-popular_places .place:focus .place-picture {

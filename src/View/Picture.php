@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace W4OS\Helpers\View;
 
 /**
- * A picture of the grid that never shows broken: the initials of its name on a tint of the text, the picture over them, hidden
- * when it cannot be loaded (a texture the grid has not: a 404 without a picture). Its class gives its size and its shape
- * (assets/css/blocks.css); the templates call it as `picture(src, name, class)`.
+ * A picture of the grid that never shows broken: the picture on a tint of the text, hidden when it cannot be loaded (a texture the
+ * grid has not: a 404 without a picture); a person's with the initials of its name under it. Its class gives its size and its shape
+ * (assets/css/blocks.css); the templates call it as `picture(src, name, class)`, without a name for what is not a person: a place,
+ * a group always has a picture, the image of its title when it has none of its own (the engine's Pictured).
  */
 final class Picture
 {
@@ -15,20 +16,10 @@ final class Picture
     {
         $esc = static fn(string $text): string => htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        return '<span class="' . $esc(trim("picture $class")) . '" data-initials="' . $esc(self::initials($name)) . '">'
+        $initials = self::initials($name);
+
+        return '<span class="' . $esc(trim("picture $class")) . '"' . ($initials === '' ? '' : ' data-initials="' . $esc($initials) . '"') . '>'
             . '<img src="' . $esc($src) . '" alt="" loading="lazy" onerror="this.hidden=true"></span>';
-    }
-
-    /**
-     * The picture of a place: its name where it has none, filling it with its words whole (guide.js), the picture over it when it
-     * has one. Initials mean nothing for a place.
-     */
-    public static function titled(?string $src, string $name, string $class = ''): string
-    {
-        $esc = static fn(string $text): string => htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-        return '<span class="' . $esc(trim("picture $class titled")) . '"><span class="picture-title" aria-hidden="true">' . $esc($name) . '</span>'
-            . ($src === null ? '' : '<img src="' . $esc($src) . '" alt="" loading="lazy" onerror="this.hidden=true">') . '</span>';
     }
 
     /** The initials of a name (Ada Love: AL; Plaza: P), '' for none. */

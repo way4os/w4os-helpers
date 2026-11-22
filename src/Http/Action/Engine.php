@@ -155,11 +155,11 @@ final class Engine
     public static function target(array $paths, string $path): ?string
     {
         $path = '/' . trim($path, '/');
-        // The pictures of the grid (a texture, a profile picture, a map tile), at /pictures and at the address of its web assets:
-        // the asset of the engine (a picture only, by its id: the files of the helpers' own /assets are theirs)
+        // The pictures of the grid (a texture, a profile picture, a map tile, the image of a title), at /pictures and at the address
+        // of its web assets: the asset of the engine (a picture only, by its id: the files of the helpers' own /assets are theirs)
         $formats = implode('|', array_keys(\W4OS\Engine\Models\Image::FORMATS));
         foreach (array_unique(['pictures', trim($paths['assets'] ?? '', '/')]) as $base) {
-            if ($base !== '' && preg_match('#^/' . preg_quote($base, '#') . '/([0-9a-fA-F-]{36}\.(?:' . $formats . '))$#', $path, $m) === 1) {
+            if ($base !== '' && preg_match('#^/' . preg_quote($base, '#') . '/((?:' . \W4OS\Engine\Assets\TitleImage::ID_PATTERN . ')\.(?:' . $formats . '))$#', $path, $m) === 1) {
                 return "/assets/{$m[1]}";
             }
         }

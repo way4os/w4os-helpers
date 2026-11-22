@@ -12,7 +12,8 @@ use W4OS\Helpers\I18n;
  * The destinations of the grid, by category, as the viewers' guide shows them: a card for each category (the picture of one of its
  * places, its name, how many), then a card for each destination (the picture of its parcel, its name), linked as the viewers open
  * it where it is shown (Links::to(): the engine's AUTO), a region named alone being one of the grid. One category is the guide itself. The
- * engine finds the pictures (Grid::guide()); the block shows them, the name of the place where there is none.
+ * engine finds the pictures (Grid::guide()), the image of a title where there is none; the block shows them. A destination's card
+ * does not say where it is: its picture takes the room.
  */
 final class DestinationGuideBlock implements Block
 {
@@ -54,12 +55,11 @@ final class DestinationGuideBlock implements Block
             'category' => $category,
             'items' => array_map(
                 static fn(array $d): array => [
-                    // What you go to, then where, as the engine says it (Grid::card()): the title above, its label under it
+                    // What you go to, as the engine says it (Grid::card())
                     'name' => (string) ($d['title'] ?? $d['name']),
                     'url' => Links::to($at = $grid->place((string) $d['url']), $args),
                     'links' => Links::all($at),
                     'picture' => $d['picture'],
-                    'data' => (string) ($d['label'] ?? ''),
                 ],
                 $sections[$category]['destinations'],
             ),

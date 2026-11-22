@@ -93,7 +93,8 @@ describe('The block of a profile', function () {
         expect($html)->toContain(
             '<li><a href="#profile-pick-1">Welcome</a></li>',
             '<article id="profile-pick-1" class="profile-item">',
-            '201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg',
+            // No snapshot: the image of its name, the engine's
+            '/' . W4OS\Engine\Assets\TitleImage::id('Welcome') . '.jpg"',
             'No description given.',
             'Welcome (128, 128, 26)',
             'class="profile-item-teleport" href="hop://',
@@ -117,9 +118,9 @@ describe('The block of a profile', function () {
 
     test('shows the picks or classifieds a site gives the same way, from their API', function () {
         $view = new View(dirname(__DIR__, 2) . '/templates');
-        $html = $view->items('classifieds', [['name' => 'Shop', 'description' => '', 'picture' => null, 'parcel' => 'Mall', 'region' => 'Town', 'position' => [10, 20, 30], 'teleport' => 'hop://g:8002/Town/10/20/30', 'expires' => 1893456000]], '/assets/', 'en');
+        $html = $view->items('classifieds', [['name' => 'Shop', 'description' => '', 'picture' => W4OS\Engine\Assets\TitleImage::id('Shop'), 'parcel' => 'Mall', 'region' => 'Town', 'position' => [10, 20, 30], 'teleport' => 'hop://g:8002/Town/10/20/30', 'expires' => 1893456000]], '/assets/', 'en');
 
-        expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/201ce950-aa38-46d8-a8f1-4396e9d6be00.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', W4OS\Helpers\I18n::date(1893456000), 'href="hop://g:8002/Town/10/20/30"')
+        expect($html)->toContain('<article id="profile-classified-1" class="profile-item">', '/assets/' . W4OS\Engine\Assets\TitleImage::id('Shop') . '.jpg', 'Mall, Town (10, 20, 30)', 'No description given.', W4OS\Helpers\I18n::date(1893456000), 'href="hop://g:8002/Town/10/20/30"')
             ->and($view->items('picks', [], '/assets'))->toContain('<p class="profile-none">None.</p>');
     });
 });

@@ -1,18 +1,12 @@
 /**
- * css/blocks.css: what every block that shows pictures shares. The picture of nothing (the grid's placeholder, where a parcel or a
- * place has none) is lighter than a picture, so that it takes less room in the eye: its opacity is set here, in one place.
+ * css/blocks.css: what every block that shows pictures shares. A place without a picture has the image of its title, the engine's:
+ * a picture as the others.
  *
  * @package    w4os/w4os-helpers
  * @license    AGPLv3
  */
-:root {
-	--helpers-placeholder-opacity: 0.5;
-}
-.no-picture img {
-	opacity: var(--helpers-placeholder-opacity);
-}
-/* A picture of the grid (picture() of the templates): the initials of its name on a tint of the text, the picture over them,
-   hidden when it cannot be loaded; its own class gives its size */
+/* A picture of the grid (picture() of the templates): the picture on a tint of the text (a person's over the initials of its
+   name), hidden when it cannot be loaded; its own class gives its size */
 .picture {
 	display: inline-grid;
 	place-items: center;
@@ -37,20 +31,4 @@
 }
 .picture img[hidden] {
 	display: none;
-}
-/* A place without a picture: its name fills it (guide.js sets its size), its words whole */
-.picture-title {
-	grid-area: 1 / 1;
-	box-sizing: border-box;
-	width: 100%;
-	max-height: 100%;
-	padding: 8%;
-	text-align: center;
-	text-wrap: balance;
-	overflow-wrap: normal;
-	word-break: normal;
-	hyphens: manual;
-	line-height: 1.1;
-	/* Softened by its color, not its opacity, which would draw it over the picture */
-	color: color-mix(in srgb, currentColor 70%, transparent);
 }
