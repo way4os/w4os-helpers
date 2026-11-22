@@ -82,12 +82,12 @@ final class Engine
         );
     }
 
-    /** The tasks of a grid: its search tasks (the snapshots of the simulators, the events), when it has a search database. */
+    /** The tasks of a grid: the ones of its search (SearchTasks), the grid given, when it has a search database. */
     public static function scheduler(Grid $grid): Scheduler
     {
         $scheduler = Scheduler::for($grid->environment());
         if (($config = $grid->config()) !== null) {
-            SearchTasks::add($scheduler, $grid->environment(), $config);
+            SearchTasks::add($scheduler, $grid->environment(), $config, $grid);
         }
 
         return $scheduler;

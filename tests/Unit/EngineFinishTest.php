@@ -45,6 +45,14 @@ describe('What waits for the answer', function () {
             ->not->toBeNull();
     });
 
+    test('the grid a site makes of its description, with no folder, has the tasks of its guide and its health too', function () {
+        $machine = new Machine();
+        $grid = W4OS\Engine\Models\SiteDescription::grid($machine->environment, W4OS\Engine\Models\SiteDescription::of(search_tasks_grid()));
+
+        expect(array_column(Engine::scheduler($grid)->status(), 'id'))
+            ->toBe(['search-parse.demo', 'events-parse.demo', 'guide-pictures.demo', 'health.demo']);
+    });
+
     test('a visit that asked no API runs the tasks that are due all the same: the pseudo cron of the grid served', function () {
         $grid = search_tasks_grid();
 
