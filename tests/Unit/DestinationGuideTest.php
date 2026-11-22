@@ -158,7 +158,7 @@ describe('the hypergrid destinations the pictures are tried with', function () {
 describe('the pictures of the guide and of the popular places: the parcel, never the region', function () {
     afterEach(fn () => W4OS\Engine\Data\Connections::using(null));
 
-    test('each card shows the picture the engine finds (Grid::guide()): a destination its parcel, a section its first place with one, else the placeholder', function () {
+    test('each card shows the picture the engine finds (Grid::guide()): a destination its parcel, a section its first place with one, else its name', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $categories = array_column(Blocks::data('destination_guide', $grid)['items'], 'picture', 'name');
@@ -170,7 +170,10 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->and($categories['Hypergrid'])->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
             ->and($categories['Apart'])->toBeNull()
             ->and($html)->toContain('src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
-            ->and($html)->toContain('src="/pictures/' . W4OS\Engine\Assets\WebAssets::PLACEHOLDER . '.jpg"');
+            // No picture: its name fills the card (guide.js), never initials nor the placeholder
+            ->and($html)->toContain('<span class="picture thumbnail titled"><span class="picture-title" aria-hidden="true">Apart</span></span>')
+            ->and($html)->not->toContain(W4OS\Engine\Assets\WebAssets::PLACEHOLDER)
+            ->and($html)->not->toContain('data-initials');
     });
 
     test('the popular places are cards with the picture of their parcel, the placeholder without one', function () {
@@ -243,7 +246,7 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->toContain('class="back"');
     });
 
-    test('the picture of nothing is lighter than a picture: half seen, in the guide and the popular places, set in one place', function () {
+    test('the picture of nothing is lighter than a picture: half seen in the popular places, set in one place; in the guide the name behind the picture', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
@@ -254,8 +257,7 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $placeholder = W4OS\Engine\Assets\WebAssets::PLACEHOLDER;
 
         expect($guide)
-            ->toMatch('#<span class="picture thumbnail no-picture" data-initials="[^"]*"><img src="/pictures/' . $placeholder . '\.jpg"#')
-            ->toMatch('#<span class="picture thumbnail" data-initials="[^"]*"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\.jpg"#')
+            ->toMatch('#<span class="picture thumbnail titled"><span class="picture-title" aria-hidden="true">[^<]+</span><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\.jpg"#')
             ->and($places)
             ->toMatch('#<span class="picture place-picture no-picture" data-initials="[^"]*"><img src="/pictures/' . $placeholder . '\.jpg"#')
             ->and($css)

@@ -38,3 +38,18 @@
 .picture img[hidden] {
 	display: none;
 }
+/* A place without a picture: its name fills it (guide.js sets its size), its words whole */
+.picture-title {
+	grid-area: 1 / 1;
+	box-sizing: border-box;
+	width: 100%;
+	max-height: 100%;
+	padding: 8%;
+	text-align: center;
+	text-wrap: balance;
+	overflow-wrap: normal;
+	word-break: normal;
+	hyphens: manual;
+	line-height: 1.1;
+	opacity: 0.7;
+}

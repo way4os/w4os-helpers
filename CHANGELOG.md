@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (guide): a place without a picture shows its name, filling the card with its words whole, never initials
 - fix (tasks): the grid a site describes has the tasks of its guide pictures and its health
 - change (texts): the informal register, tu in French and ti in Welsh, as in the other languages
 - fix (services): a script not provided here answers an XML-RPC fault, no alert to the avatar; logged once a day

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace W4OS\Helpers\Block;
 
-use W4OS\Engine\Assets\WebAssets;
 use W4OS\Engine\Hypergrid\Destination;
 use W4OS\Engine\Models\Grid;
 use W4OS\Helpers\I18n;
@@ -13,17 +12,14 @@ use W4OS\Helpers\I18n;
  * The destinations of the grid, by category, as the viewers' guide shows them: a card for each category (the picture of one of its
  * places, its name, how many), then a card for each destination (the picture of its parcel, its name), linked as the viewers open
  * it where it is shown (Links::to(): the engine's AUTO), a region named alone being one of the grid. One category is the guide itself. The
- * engine finds the pictures (Grid::guide()); the block shows them, the grid's placeholder where there is none.
+ * engine finds the pictures (Grid::guide()); the block shows them, the name of the place where there is none.
  */
 final class DestinationGuideBlock implements Block
 {
     public function data(Grid $grid, array $args = []): array
     {
         // The sections of the guide with their pictures, the engine's to find (Grid::guide())
-        $data = [
-            'title' => I18n::text('Destinations Guide'),
-            'placeholder' => WebAssets::PLACEHOLDER,
-        ];
+        $data = ['title' => I18n::text('Destinations Guide')];
         try {
             $sections = $grid->guide();
         } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
