@@ -88,6 +88,10 @@
 #guide .item .w4os-tp-toggle[aria-expanded="true"] {
 	background: color-mix(in srgb, CanvasText 10%, Canvas);
 }
+/* The name of a destination without a picture keeps clear of the button in its corner */
+#guide .item .w4os-tp .picture-title {
+	padding-top: 2rem;
+}
 /* The menu opens leftwards from the corner */
 #guide .item .w4os-tp-menu {
 	left: auto;
