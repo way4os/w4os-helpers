@@ -178,6 +178,8 @@ final class View
         return ListHtml::listDetail($view, [
             't' => static fn(string $key, array $vars = []): string => vsprintf((string) ($texts[$key] ?? $key), $vars),
             'language' => I18n::current(),
+            // Its dates as dates, never relative (an event is weeks ahead)
+            'dates' => 'long',
             'empty' => $empty,
             'picture' => static fn(?string $picture, ?string $default, string $name): string => Picture::tag(rtrim($assets, '/') . '/' . ($picture ?? '00000000-0000-0000-0000-000000000000') . '.jpg', $name, 'search-picture'),
             'actions' => static fn(ItemView $item): string => implode('', array_map(
