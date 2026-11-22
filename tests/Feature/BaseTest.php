@@ -144,7 +144,9 @@ describe('a block of the helpers', function () {
     test('says which it is, for the health to find it on a page of the site', function () {
         $dir = sys_get_temp_dir() . '/helpers-blocks-' . bin2hex(random_bytes(4));
         mkdir($dir, 0o755, true);
-        file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"http://grid.example.org:8002/\"\n");
+        // Its guide an empty list of its own: never the default one, read online
+        file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\nlogin = \"http://grid.example.org:8002/\"\n[Helpers]\nGuideSource = \"destinations.txt\"\n");
+        file_put_contents("$dir/destinations.txt", '');
         $grid = Grid::at(helpers_environment(), $dir);
         $view = new View(dirname(__DIR__, 2) . '/templates');
 
