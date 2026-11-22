@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (grid info): the login URI a teleport link of the grid: adding it to the viewer, its exact address to copy
 - change (search): one flex row of criteria, the list and its detail by w4os-views, the page title by key (View::blockTitle)
 - change (search): results, sorts and pages from the engine's search models, links asked of each result
 - change (search): results as a table with the viewers' columns, the one chosen detailed beside it (?id=); No results only once asked
