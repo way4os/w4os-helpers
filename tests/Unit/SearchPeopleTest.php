@@ -142,7 +142,7 @@ describe('The kinds of search', function () {
         $land = Blocks::data('search', $grid, ['topic' => 'land', 'level' => 'h1']);
         $short = Blocks::data('search', $grid, ['topic' => 'places', 'q' => 'be', 'level' => 'h1']);
 
-        expect(array_column($places['topics'], 'topic'))->toBe(['places', 'land', 'events', 'classifieds', 'people'])
+        expect(array_column($places['topics'], 'topic'))->toBe(['people', 'groups', 'places', 'land', 'events', 'classifieds'])
             ->and(array_column($places['fields'], 'name'))->toBe(['q', 'category', 'rating'])
             ->and($places['asked'])->toBeFalse()
             ->and($short['asked'])->toBeFalse()
@@ -173,3 +173,48 @@ describe('The kinds of search', function () {
             ->and(array_column($classifieds['results'], 'category'))->toBe(['Shopping']);
     });
 });
+
+/** The grid of people_grid() with groups: one shown in the search with two members, one of them in a role that hides its members. */
+function groups_grid(): Grid
+{
+    $grid = people_grid();
+    $pdo = Connections::pdo($grid->config(), W4OS\Engine\Data\Database::Robust);
+    $pdo->exec('CREATE TABLE os_groups_groups (GroupID CHAR(36), Location VARCHAR(255), Name VARCHAR(255), Charter TEXT, InsigniaID CHAR(36), FounderID CHAR(36), MembershipFee INT, OpenEnrollment VARCHAR(255), ShowInList INT, AllowPublish INT, MaturePublish INT, OwnerRoleID CHAR(36))');
+    $pdo->exec('CREATE TABLE os_groups_membership (GroupID CHAR(36), PrincipalID VARCHAR(255), SelectedRoleID CHAR(36), Contribution INT, ListInProfile INT, AcceptNotices INT, AccessToken CHAR(36))');
+    $pdo->exec('CREATE TABLE os_groups_roles (GroupID CHAR(36), RoleID CHAR(36), Name VARCHAR(255), Description VARCHAR(255), Title VARCHAR(255), Powers BIGINT)');
+    $pdo->exec("INSERT INTO os_groups_groups VALUES ('g1', '', 'Lovers of lace', 'We knit', '', '11111111-1111-4111-8111-111111111111', 5, '1', 1, 1, 0, 'r1'), ('g2', '', 'Hidden lace', '', '', '', 0, '', 0, 0, 0, '')");
+    $pdo->exec("INSERT INTO os_groups_roles VALUES ('g1', 'r1', 'Owners', '', 'Chief', " . W4OS\Engine\Models\Group::MEMBER_VISIBLE . "), ('g1', 'r2', 'Shy', '', 'Shy', 0)");
+    $pdo->exec("INSERT INTO os_groups_membership VALUES ('g1', '11111111-1111-4111-8111-111111111111', 'r1', 0, 1, 1, ''), ('g1', '22222222-2222-4222-8222-222222222222', 'r2', 0, 1, 1, ''), ('g2', '11111111-1111-4111-8111-111111111111', 'r1', 0, 1, 1, '')");
+
+    return $grid;
+}
+
+describe('The search of groups', function () {
+    test('finds the groups shown in the search, with their members, as the viewers', function () {
+        $data = Blocks::data('search', groups_grid(), ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1']);
+        $group = $data['results'][0];
+
+        expect(array_column($data['results'], 'title'))->toBe(['Lovers of lace'])
+            ->and(array_column($group['columns'], 'value'))->toBe(['2'])
+            ->and(array_column($group['details'], 'value'))->toBe(['g1', 'Ada Lovelace', 'Yes', '5', 'General Content'])
+            ->and($group['text'])->toBe('We knit')
+            ->and(array_column($group['members']['rows'], 'name'))->toBe(['Ada Lovelace'])
+            ->and(array_column($data['sorts'], 'key'))->toBe(['name', 'members']);
+    });
+
+    test('asks words, as the search of people', function () {
+        $data = Blocks::data('search', groups_grid(), ['topic' => 'groups', 'level' => 'h1']);
+
+        expect($data['asked'])->toBeFalse()->and($data['note'])->toBe('')->and(array_column($data['fields'], 'name'))->toBe(['q']);
+    });
+
+    test('shows a person as the viewers: key, birth, account, partner, groups, a link to the profile', function () {
+        $data = Blocks::data('search', groups_grid(), ['q' => 'ada', 'topic' => 'people', 'level' => 'h1']);
+        $person = $data['results'][0];
+
+        expect(array_column($person['details'], 'label'))->toBe(['Key', 'Birthdate', 'Account', 'Partner', 'Groups'])
+            ->and($person['details'][0]['value'])->toBe('11111111-1111-4111-8111-111111111111')
+            ->and($person['details'][4]['value'])->toBe('Hidden lace, Lovers of lace')
+            ->and($person['actions'][0]['url'])->toBe($person['url']);
+    });
+})->skip(fn() => !extension_loaded('pdo_sqlite'), 'pdo_sqlite is missing');

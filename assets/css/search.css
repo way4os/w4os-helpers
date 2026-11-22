@@ -45,3 +45,5 @@
 .search-fields { display: grid; grid-template-columns: max-content 1fr; gap: .15rem .9rem; margin: 0 0 .5rem; }
 .search-fields dt { opacity: .75; }
 .search-fields dd { margin: 0; }
+.search-members { width: 100%; border-collapse: collapse; margin: .5rem 0; font-size: .95em; }
+.search-members th, .search-members td { text-align: left; padding: .15rem .5rem .15rem 0; }

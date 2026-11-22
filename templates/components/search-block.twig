@@ -68,8 +68,15 @@
                             <div class="search-detail">
                                 {% if item.picture is defined %}{{ picture(assets ~ '/' ~ (item.picture ?: '00000000-0000-0000-0000-000000000000') ~ '.jpg', item.title, 'search-picture') }}{% endif %}
                                 <div class="search-text">
-                                    {% if item.details ?? [] %}<dl class="search-fields">{% for d in item.details %}<dt>{{ d.label }}</dt><dd>{{ d.value }}</dd>{% endfor %}</dl>{% endif %}
+                                    {% if item.details ?? [] %}<dl class="search-fields">{% for d in item.details %}<dt>{{ d.label }}</dt><dd>{% if d.url ?? null %}<a href="{{ d.url }}">{{ d.value }}</a>{% else %}{{ d.value }}{% endif %}</dd>{% endfor %}</dl>{% endif %}
                                     {% if item.text %}<p class="search-description">{{ item.text|nl2br }}</p>{% endif %}
+                                    {% if item.members.rows ?? [] %}
+                                        <table class="search-members">
+                                            <thead><tr>{% for label in item.members.labels %}<th>{{ label }}</th>{% endfor %}</tr></thead>
+                                            <tbody>{% for m in item.members.rows %}<tr><td>{% if m.url %}<a href="{{ m.url }}">{{ m.name }}</a>{% else %}{{ m.name }}{% endif %}</td><td>{{ m.title }}</td><td>{{ m.status }}</td></tr>{% endfor %}</tbody>
+                                        </table>
+                                    {% endif %}
+                                    {% for action in item.actions ?? [] %}<a class="search-action" href="{{ action.url }}">{{ action.label }}</a>{% endfor %}
                                 </div>
                             </div>
                         </details>

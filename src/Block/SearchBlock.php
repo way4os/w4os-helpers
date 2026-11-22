@@ -7,23 +7,25 @@ namespace W4OS\Helpers\Block;
 use W4OS\Engine\I18n\Catalog;
 use W4OS\Engine\Models\Avatar;
 use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Models\Group;
 use W4OS\Engine\Services\SearchFilters;
 use W4OS\Helpers\I18n;
 
 /**
- * The web search, as the search of the viewers: a kind of search at a time (places, land for sale, events, classifieds, people),
- * always offered, each with its own form and its own results. What each asks is written once with the search of the viewers
+ * The web search, as the search of the viewers: a kind of search at a time (people, groups, places, land for sale, events,
+ * classifieds), always offered in the order of their tabs, each with its own form and its own results. What each asks is written once with the search of the viewers
  * (SearchFilters): the same terms, the same results.
  *
  *  - places: words (3 letters at least), a category, the ratings;
  *  - land for sale: no words; its type, its price at most, its area at least, the ratings;
  *  - events: words if any; the ones to come or a day (the previous one, the next one), a category, the ratings;
  *  - classifieds: words if any; a category, the ratings;
- *  - people: a name, the ones who published their profile.
+ *  - people: words of a name, the ones who published their profile;
+ *  - groups: words of a name, the ones shown in the search, of this grid, with members (the ratings asked change nothing there).
  */
 final class SearchBlock implements Block
 {
-    public const TOPICS = ['places', 'land', 'events', 'classifieds', 'people'];
+    public const TOPICS = ['people', 'groups', 'places', 'land', 'events', 'classifieds'];
 
     /** What a search asks, in the address of its page: a site gives each of them to the block (rating is a list). */
     public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go', 'sort', 'dir', 'page'];
@@ -134,7 +136,7 @@ final class SearchBlock implements Block
 
         return match ($topic) {
             'places' => mb_strlen($asked['q']) >= SearchFilters::MIN_TEXT ? [true, ''] : [false, $short],
-            'people' => [$asked['q'] !== '', ''],
+            'people', 'groups' => [$asked['q'] !== '', ''],
             default => [true, ''],
         };
     }
@@ -162,7 +164,7 @@ final class SearchBlock implements Block
         $words = ['name' => 'q', 'type' => 'search', 'value' => $asked['q']];
         $fields[] = match ($topic) {
             'places' => $words + ['label' => $texts['web_search_words'], 'required' => true, 'min' => SearchFilters::MIN_TEXT, 'help' => sprintf($texts['web_search_min_letters'], SearchFilters::MIN_TEXT)],
-            'people' => $words + ['label' => $texts['web_search_name'], 'required' => true],
+            'people', 'groups' => $words + ['label' => $texts['web_search_words'], 'required' => true],
             'land' => null,
             default => $words + ['label' => $texts['web_search_words']],
         };
@@ -193,7 +195,7 @@ final class SearchBlock implements Block
                 ),
             ]];
         }
-        if ($topic !== 'people') {
+        if (!in_array($topic, ['people', 'groups'], true)) {
             $fields[] = ['name' => 'rating', 'type' => 'ratings', 'label' => $texts['web_search_ratings'], 'options' => array_map(
                 static fn(string $rating): array => ['value' => $rating, 'label' => $texts["web_search_rating_$rating"], 'selected' => in_array($rating, $asked['ratings'], true)],
                 self::RATINGS,
@@ -214,7 +216,7 @@ final class SearchBlock implements Block
         [$sort, $dir] = self::sort($topic, $args);
         $labels = [
             'name' => 'web_search_name', 'traffic' => 'web_search_traffic', 'price' => 'web_search_price', 'area' => 'web_search_area',
-            'price_m2' => 'web_search_price_m2', 'type' => 'web_search_land_type', 'time' => 'web_search_time',
+            'price_m2' => 'web_search_price_m2', 'type' => 'web_search_land_type', 'time' => 'web_search_time', 'members' => 'web_search_members',
         ];
         $sorts = [];
         foreach (array_keys(self::SORTS[$topic]) as $key) {
@@ -287,6 +289,7 @@ final class SearchBlock implements Block
         'events' => ['time' => 'e.dateUTC', 'name' => 'e.name'],
         'classifieds' => ['price' => 'priceforlisting', 'name' => 'name'],
         'people' => [],
+        'groups' => ['name' => 'name', 'members' => 'members'],
     ];
 
     /** The way each sort goes first: the most visited places, the most expensive classifieds first, the others up. */
@@ -455,36 +458,92 @@ final class SearchBlock implements Block
                     ];
                 }, $rows);
             case 'people':
+            case 'groups':
                 if ($search->config === null) {
                     return [];
                 }
+                $page = max(1, (int) ($args['page'] ?? 1));
                 try {
-                    // Only who published their profile ("show in search" in the viewer), as the search of the viewers does
-                    $page = max(1, (int) ($args['page'] ?? 1));
-                    $found = Avatar::all($search->config, ['search' => $asked['q'], 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => self::LIMIT, 'page' => $page]);
+                    // People: only who published their profile ("show in search" in the viewer), as the search of the viewers does
+                    $found = $kind === 'people'
+                        ? Avatar::all($search->config, ['search' => $asked['q'], 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => self::LIMIT, 'page' => $page])
+                        : Group::all($search->config, ['search' => $asked['q'], 'sort' => self::SORTS['groups'][$sort] . " $dir", 'perPage' => self::LIMIT, 'page' => $page]);
                     $this->more = $found->total() > $page * self::LIMIT;
-                    $people = $found->array();
+
+                    return array_map(fn($found): array => $kind === 'people' ? $this->person($search, $found, $args, $texts) : $this->group($search, $found, $args, $texts), $found->items());
                 } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                     Blocks::unreachable($e);
                     $this->unavailable = true;
-                    $people = [];
-                }
-                $profile = Blocks::siteAddress($args, 'web_profile_url') ?? (string) $search->grid->address('web-profile');
 
-                return array_map(
-                    fn($p) => [
-                        'title' => $p['name'],
-                        'detail' => '',
-                        'text' => '',
-                        'url' => Avatar::profileAt($profile, $p['firstName'] . ' ' . $p['lastName']),
-                        'columns' => [],
-                        'details' => [],
-                    ],
-                    $people,
-                );
+                    return [];
+                }
         }
 
         return [];
+    }
+
+    /** A person found, as the viewers show them: their name, their key, their birth with their age, their account, their partner, about them, their groups. */
+    private function person(SearchData $search, Avatar $avatar, array $args, array $texts): array
+    {
+        $d = $avatar->detail();
+        $profile = Blocks::siteAddress($args, 'web_profile_url') ?? (string) $search->grid->address('web-profile');
+        $url = Avatar::profileAt($profile, $avatar->name());
+        $created = (int) ($d['created'] ?? 0);
+        $partner = $d['partner'] === null ? '' : $this->organizer($search, (string) $d['partner']);
+        $groups = array_column($avatar->groups(), 'name');
+        $column = static fn(string $label, string $value, ?string $link = null): array => ['label' => $label, 'value' => $value, 'number' => false, 'url' => $link];
+
+        return [
+            'title' => $avatar->name(),
+            'detail' => '',
+            'text' => trim((string) ($d['about'] ?? '')),
+            'url' => $url,
+            'picture' => self::picture($d['profileImage'] ?? null),
+            'columns' => [],
+            'details' => [
+                $column($texts['web_search_key'], (string) $d['uuid']),
+                $column($texts['web_search_born'], $created > 0 ? I18n::date($created, 'date') . ' (' . ProfileBlock::age(intdiv(max(0, time() - $created), 86400)) . ')' : ''),
+                $column($texts['web_search_account'], (string) ($texts[Catalog::roleKey((string) ($d['role'] ?? ''))] ?? '')),
+                $column($texts['web_search_partner'], $partner ?: $texts['web_search_none'], $partner === '' ? null : Avatar::profileAt($profile, $partner)),
+                $column($texts['web_search_groups'], $groups === [] ? $texts['web_search_none'] : implode(', ', $groups)),
+            ],
+            'actions' => $url === null ? [] : [['label' => $texts['web_search_show_profile'], 'url' => $url]],
+        ];
+    }
+
+    /** A group found, as the viewers show it to who is not a member: its key, its founder, its insignia, its charter, its members, who can join and at what fee, its content rating. */
+    private function group(SearchData $search, Group $group, array $args, array $texts): array
+    {
+        $d = $group->detail();
+        $profile = Blocks::siteAddress($args, 'web_profile_url') ?? (string) $search->grid->address('web-profile');
+        $founder = $d['founder'] === null ? '' : $this->organizer($search, $d['founder']);
+        $column = static fn(string $label, string $value, ?string $link = null, bool $number = false): array => ['label' => $label, 'value' => $value, 'number' => $number, 'url' => $link];
+
+        return [
+            'title' => $d['name'],
+            'detail' => '',
+            'text' => $d['charter'],
+            'url' => null,
+            'picture' => $d['picture'],
+            'columns' => [$column($texts['web_search_members'], number_format($d['members']), number: true)],
+            'details' => [
+                $column($texts['web_search_group_key'], $d['id']),
+                $column($texts['web_search_founder'], $founder ?: $texts['web_search_none'], $founder === '' ? null : Avatar::profileAt($profile, $founder)),
+                $column($texts['web_search_open_enrollment'], $d['open'] ? $texts['web_search_yes'] : $texts['web_search_no']),
+                $column($texts['web_search_join_fee'], number_format($d['fee'])),
+                $column($texts['web_search_content_type'], $d['mature'] ? $texts['web_search_content_moderate'] : $texts['web_search_content_general']),
+            ],
+            // Who is in it, as the list of its members: their name, the title they wear, in the world or the day they last came
+            'members' => [
+                'labels' => [$texts['web_search_member'], $texts['web_search_title'], $texts['web_search_status']],
+                'rows' => array_map(static fn(array $m): array => [
+                    'name' => $m['name'],
+                    'url' => Avatar::profileAt($profile, $m['name']),
+                    'title' => (string) $m['title'],
+                    'status' => $m['online'] ? $texts['web_search_online'] : ($m['login'] ? I18n::date($m['login'], 'date') : ''),
+                ], $group->members()),
+            ],
+        ];
     }
 
     /** @var array<string,string> the names of the organizers asked during this request */

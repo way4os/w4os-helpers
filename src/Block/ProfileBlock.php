@@ -199,7 +199,7 @@ final class ProfileBlock implements Block
     }
 
     /** The age of an account as the viewer says it: joined today, else its days, in the form of their number. */
-    private static function age(int $days): string
+    public static function age(int $days): string
     {
         return $days === 0
             ? (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)['profile_age_today'] ?? 'Joined today')

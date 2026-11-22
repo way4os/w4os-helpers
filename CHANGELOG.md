@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (search): Groups, and people as the viewers show them; the tabs in the order of the viewers
 - fix (search): no instruction where the form is plain enough
 - new (search): the results come by pages of 100, as the viewers, with Next and Previous
 - new (search): each result shows the columns and the details the viewers show, sorted as they sort; a test of parity with query.php
