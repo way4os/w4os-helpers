@@ -20,6 +20,12 @@
 }
 .block-popular_places .place .w4os-tp {
 	display: block;
+	/* The picture is the whole card: the joiner after its link takes no line under it */
+	line-height: 0;
+}
+.block-popular_places .place .w4os-tp-more,
+.block-popular_places .place-name {
+	line-height: normal;
 }
 .block-popular_places .place .w4os-tp-main {
 	position: relative;
