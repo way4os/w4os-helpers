@@ -28,7 +28,7 @@
                         {% for option in field.options %}<option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>{% endfor %}
                     </select>
                 {% elseif field.type == 'number' %}
-                    <label class="search-number"><span>{{ field.label }}</span><span class="search-affix"><input type="number" min="0" name="{{ field.name }}" value="{{ field.value }}"><span class="search-suffix" aria-hidden="true">{{ field.suffix }}</span></span></label>
+                    <span class="search-number"><label for="search-{{ field.name }}">{{ field.label }}</label><span class="search-affix"><input id="search-{{ field.name }}" type="number" min="0" name="{{ field.name }}" value="{{ field.value }}"><span class="search-suffix" aria-hidden="true">{{ field.suffix }}</span></span></span>
                 {% else %}
                     <input class="search-words" type="text" enterkeyhint="search" name="{{ field.name }}" value="{{ field.value }}" aria-label="{{ field.label }}"{% if field.placeholder is defined %} placeholder="{{ field.placeholder }}"{% endif %}{% if field.min is defined %} minlength="{{ field.min }}"{% endif %}{% if field.required ?? false %} required{% endif %}{% if loop.first %} autofocus{% endif %}>
                 {% endif %}
