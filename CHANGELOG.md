@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (services): the answer sent and its client freed before the tasks, on any server (the engine's Server::release())
 - change (pictures): a place shows the engine's picture, the image of its title without one; no address on its card, no initials
 - fix (tasks): the grid a site describes has the tasks of its guide pictures and its health
 - change (texts): the informal register, tu in French and ti in Welsh, as in the other languages

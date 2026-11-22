@@ -100,11 +100,13 @@ final class Engine
     }
 
     /**
-     * What waits for the answer, once it is sent: what the APIs of the request left (a simulator that registered is read), then the
-     * tasks that are due, the ones of the grid served when the request asked no API.
+     * What waits for the answer, once it is sent and its client freed (the engine's Server::release(): a simulator that registers,
+     * a viewer that searches never wait, whatever the server): what the APIs of the request left (a simulator that registered is
+     * read), then the tasks that are due, the ones of the grid served when the request asked no API.
      */
     public static function finish(): void
     {
+        \W4OS\Engine\Api\Server::release();
         $apis = self::$apis;
         self::$apis = [];
         if ($apis === [] && self::$served !== null) {

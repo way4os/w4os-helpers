@@ -34,6 +34,8 @@ final class App
             return Grid::find($environment, $nick);
         };
 
+        // The answer held to be sent whole, its client freed before what waits for it (Engine::finish())
+        \W4OS\Engine\Api\Server::hold();
         $container = new \DI\Container([
             View::class => static fn() => new View(dirname(__DIR__) . '/templates'),
         ]);
