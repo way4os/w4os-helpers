@@ -130,11 +130,11 @@ final class SearchBlock implements Block
      */
     private static function ready(string $topic, array $asked, array $texts): array
     {
-        $short = $asked['q'] === '' ? $texts['web_search_ask'] : sprintf($texts['web_search_min_letters'], SearchFilters::MIN_TEXT);
+        $short = $asked['q'] === '' ? '' : sprintf($texts['web_search_min_letters'], SearchFilters::MIN_TEXT);
 
         return match ($topic) {
             'places' => mb_strlen($asked['q']) >= SearchFilters::MIN_TEXT ? [true, ''] : [false, $short],
-            'people' => $asked['q'] !== '' ? [true, ''] : [false, $texts['web_search_ask']],
+            'people' => [$asked['q'] !== '', ''],
             default => [true, ''],
         };
     }
