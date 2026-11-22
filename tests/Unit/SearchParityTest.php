@@ -139,6 +139,26 @@ describe('The web search and the search of the viewers', function () {
         expect($compared)->toBeGreaterThan(20);
     });
 
+    test('give the same events over their pages, a page as long as the one of the viewers', function () {
+        [$grid, $viewer] = parity_search();
+        $pdo = Connections::pdo($grid->config(), \W4OS\Engine\Data\Database::Search);
+        $now = time();
+        foreach (range(1, 150) as $n) {
+            $pdo->exec(sprintf("INSERT INTO events (owneruuid, name, creatoruuid, category, description, dateUTC, duration, covercharge, coveramount, simname, parcelUUID, globalPos, eventflags, gatekeeperURL, landingpoint) VALUES ('o', 'Party %03d', 'c', 23, 'Dance', %d, 60, 0, 0, 'Welcome', 'p', '128,128,25', 0, 'http://grid.example.org:8002', '128/128/25')", $n, $now + $n * 60));
+        }
+        $args = ['topic' => 'events', 'q' => 'party', 'when' => 'u', 'rating' => ['general'], 'go' => 1, 'level' => 'h1'];
+        $first = Blocks::data('search', $grid, $args);
+        $second = Blocks::data('search', $grid, $args + ['page' => 2]);
+        $asked = [...$viewer->events(['text' => 'u|0|party', 'flags' => 1 << 24, 'query_start' => 0])['data'], ...$viewer->events(['text' => 'u|0|party', 'flags' => 1 << 24, 'query_start' => 100])['data']];
+
+        expect($first['results'])->toHaveCount(100)
+            ->and($first['pages']['next'])->toContain('page=2')
+            ->and($second['results'])->toHaveCount(50)
+            ->and($second['pages']['next'])->toBeNull()
+            ->and($second['pages']['previous'])->not->toBeNull()
+            ->and(parity_names([...$first['results'], ...$second['results']], 'title'))->toBe(array_values(array_unique(parity_names($asked, 'name'))));
+    });
+
     test('find the same classifieds, by words, category and ratings, none expired', function () {
         [$grid, $viewer] = parity_search();
         $compared = 0;

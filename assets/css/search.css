@@ -35,6 +35,8 @@
 }
 .search-sorts { display: flex; flex-wrap: wrap; gap: .25rem .9rem; margin: 0 0 .75rem; font-size: .95em; }
 .search-sorts a[aria-current] { font-weight: 700; }
+.search-pages { display: flex; justify-content: space-between; gap: 1rem; margin: .75rem 0 0; }
+.search-pages a[rel=next] { margin-left: auto; }
 .search-item details > summary { display: flex; flex-wrap: wrap; gap: .25rem 1rem; align-items: baseline; cursor: pointer; }
 .search-item .search-title { flex: 1 1 14rem; font-weight: 600; }
 .search-column { opacity: .85; }

@@ -76,6 +76,12 @@
                     </li>
                 {% endfor %}
             </ul>
+            {% if pages.previous or pages.next %}
+                <nav class="search-pages">
+                    {% if pages.previous %}<a rel="prev" href="{{ pages.previous }}">{{ pages.previous_label }}</a>{% endif %}
+                    {% if pages.next %}<a rel="next" href="{{ pages.next }}">{{ pages.next_label }}</a>{% endif %}
+                </nav>
+            {% endif %}
         {% endif %}
     {% endif %}
 </section>

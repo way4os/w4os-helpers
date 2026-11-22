@@ -26,20 +26,25 @@ final class SearchBlock implements Block
     public const TOPICS = ['places', 'land', 'events', 'classifieds', 'people'];
 
     /** What a search asks, in the address of its page: a site gives each of them to the block (rating is a list). */
-    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go', 'sort', 'dir'];
+    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go', 'sort', 'dir', 'page'];
 
     /** The ratings, and the ones asked when a form has not been sent yet (as the viewers: general and moderate). */
     public const RATINGS = ['general', 'moderate', 'adult'];
     public const DEFAULT_RATINGS = ['general', 'moderate'];
 
-    public const LIMIT = 30;
+    /** The results a page shows, as the viewers (each asks the next page on its own). */
+    public const LIMIT = 100;
 
     /** Whether a part of the search could not be done (a database of the grid that cannot be reached) */
     private bool $unavailable = false;
 
+    /** Whether there are more results than the page shows, for a kind of search that counts them (people) */
+    private bool $more = false;
+
     public function data(Grid $grid, array $args = []): array
     {
         $this->unavailable = false;
+        $this->more = false;
         $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
         $topic = in_array($args['topic'] ?? '', self::TOPICS, true) ? (string) $args['topic'] : 'places';
         $asked = self::criteria($topic, $args);
@@ -49,9 +54,10 @@ final class SearchBlock implements Block
         $search = new SearchData($grid);
         [$ready, $note] = self::ready($topic, $asked, $texts);
         $items = [];
+        $page = max(1, (int) ($args['page'] ?? 1));
         if ($ready && !$embedded) {
             try {
-                $items = $this->find($search, $topic, $asked, $args);
+                $items = $this->find($search, $topic, $asked, $args + ['page' => $page]);
             } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                 Blocks::unreachable($e);
                 $this->unavailable = true;
@@ -75,8 +81,9 @@ final class SearchBlock implements Block
             'asked' => $ready,
             'note' => $note,
             'nothing' => $texts['web_search_nothing'],
-            'results' => $items,
+            'results' => array_slice($items, 0, self::LIMIT),
             'sorts' => self::sorts($topic, $asked, $args, $texts),
+            'pages' => self::pages($asked, $args, $page, $this->more || count($items) > self::LIMIT, $texts),
             // Each kind lists its own results: what a column says
             'columns' => [
                 'sort' => $texts['web_search_sort'], 'name' => $texts['web_search_name'], 'region' => $texts['web_search_region'], 'traffic' => $texts['web_search_traffic'], 'price' => $texts['web_search_price'],
@@ -218,6 +225,24 @@ final class SearchBlock implements Block
         return $sorts;
     }
 
+    /**
+     * The links to the previous and the next page of results, the sort and what else it asks kept; null where there is none.
+     *
+     * @return array{previous:?string,next:?string,previous_label:string,next_label:string}
+     */
+    private static function pages(array $asked, array $args, int $page, bool $more, array $texts): array
+    {
+        $kept = self::query($asked) + array_intersect_key($args, ['sort' => 1, 'dir' => 1]);
+        $url = static fn(int $to): string => '?' . http_build_query($kept + ($to > 1 ? ['page' => $to] : []));
+
+        return [
+            'previous' => $page > 1 ? $url($page - 1) : null,
+            'next' => $more ? $url($page + 1) : null,
+            'previous_label' => $texts['web_search_previous'],
+            'next_label' => $texts['web_search_next'],
+        ];
+    }
+
     /** What a search asks, as the query of its address (PARAMETERS): to keep it on another link. */
     private static function query(array $asked): array
     {
@@ -285,7 +310,8 @@ final class SearchBlock implements Block
     /** @return list<array<string,mixed>> */
     private function find(SearchData $search, string $kind, array $asked, array $args = []): array
     {
-        $limit = self::LIMIT;
+        // One more than a page: whether there is a next one
+        $limit = (self::LIMIT + 1) . ' OFFSET ' . (max(1, (int) ($args['page'] ?? 1)) - 1) * self::LIMIT;
         $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
         // The table of the regions, for the kinds that join it
         $regions = in_array($kind, ['places', 'land'], true) ? $search->regions() : '';
@@ -434,7 +460,10 @@ final class SearchBlock implements Block
                 }
                 try {
                     // Only who published their profile ("show in search" in the viewer), as the search of the viewers does
-                    $people = Avatar::all($search->config, ['search' => $asked['q'], 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => $limit])->array();
+                    $page = max(1, (int) ($args['page'] ?? 1));
+                    $found = Avatar::all($search->config, ['search' => $asked['q'], 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => self::LIMIT, 'page' => $page]);
+                    $this->more = $found->total() > $page * self::LIMIT;
+                    $people = $found->array();
                 } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                     Blocks::unreachable($e);
                     $this->unavailable = true;
