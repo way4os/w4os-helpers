@@ -51,5 +51,6 @@
 	word-break: normal;
 	hyphens: manual;
 	line-height: 1.1;
-	opacity: 0.7;
+	/* Softened by its color, not its opacity, which would draw it over the picture */
+	color: color-mix(in srgb, currentColor 70%, transparent);
 }

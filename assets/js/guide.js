@@ -55,7 +55,11 @@ const guideTitles = document.querySelectorAll("#guide .picture-title");
 if (guideTitles.length) {
 	const fitAll = () => guideTitles.forEach(guideFitTitle);
 	fitAll();
-	document.fonts && document.fonts.ready.then(fitAll);
+	// Again once the font of the page is there
+	if (document.fonts) {
+		document.fonts.ready.then(fitAll);
+		document.fonts.addEventListener("loadingdone", fitAll);
+	}
 	if (window.ResizeObserver) {
 		const resized = new ResizeObserver((entries) => entries.forEach((entry) => guideFitTitle(entry.target.querySelector(".picture-title"))));
 		guideTitles.forEach((title) => resized.observe(title.parentElement));
