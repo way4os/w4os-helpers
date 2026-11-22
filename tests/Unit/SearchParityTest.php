@@ -86,7 +86,7 @@ describe('The web search and the search of the viewers', function () {
                     $bits = array_sum(array_intersect_key(SearchFilters::RATING_BITS, array_flip($ratings)));
                     $asked = $viewer->places(['text' => $q, 'category' => $category, 'flags' => $bits]);
 
-                    expect(parity_names($web, 'title'))->toBe(parity_names($asked['data'], 'name'), "places $q $category " . implode(',', $ratings));
+                    expect(parity_names($web, 'name'))->toBe(parity_names($asked['data'], 'name'), "places $q $category " . implode(',', $ratings));
                     $compared += count($web);
                 }
             }
@@ -108,7 +108,7 @@ describe('The web search and the search of the viewers', function () {
                             | ($price === null ? 0 : 1 << 20) | ($area === null ? 0 : 1 << 21);
                         $asked = $viewer->land(['type' => $typeBits, 'flags' => $bits, 'price' => $price ?? 0, 'area' => $area ?? 0]);
 
-                        expect(parity_names($web, 'title'))->toBe(parity_names($asked['data'], 'name'), "land $type $price $area " . implode(',', $ratings));
+                        expect(parity_names($web, 'name'))->toBe(parity_names($asked['data'], 'name'), "land $type $price $area " . implode(',', $ratings));
                         $compared += count($web);
                     }
                 }
@@ -129,7 +129,7 @@ describe('The web search and the search of the viewers', function () {
                         $bits = array_sum(array_intersect_key(SearchFilters::RATING_BITS, array_flip($ratings)));
                         $asked = $viewer->events(['text' => "$day|$category|$words", 'flags' => $bits]);
 
-                        expect(parity_names($web, 'title'))->toBe(parity_names($asked['data'], 'name'), "events $day $category $words " . implode(',', $ratings));
+                        expect(parity_names($web, 'name'))->toBe(parity_names($asked['data'], 'name'), "events $day $category $words " . implode(',', $ratings));
                         $compared += count($web);
                     }
                 }
@@ -152,11 +152,10 @@ describe('The web search and the search of the viewers', function () {
         $asked = [...$viewer->events(['text' => 'u|0|party', 'flags' => 1 << 24, 'query_start' => 0])['data'], ...$viewer->events(['text' => 'u|0|party', 'flags' => 1 << 24, 'query_start' => 100])['data']];
 
         expect($first['results'])->toHaveCount(100)
-            ->and($first['pages']['next'])->toContain('page=2')
+            ->and($first['list']->list->pages)->toBe(2)
             ->and($second['results'])->toHaveCount(50)
-            ->and($second['pages']['next'])->toBeNull()
-            ->and($second['pages']['previous'])->not->toBeNull()
-            ->and(parity_names([...$first['results'], ...$second['results']], 'title'))->toBe(array_values(array_unique(parity_names($asked, 'name'))));
+            ->and($second['list']->list->page)->toBe(2)
+            ->and(parity_names([...$first['results'], ...$second['results']], 'name'))->toBe(array_values(array_unique(parity_names($asked, 'name'))));
     });
 
     test('find the same classifieds, by words, category and ratings, none expired', function () {
@@ -169,8 +168,8 @@ describe('The web search and the search of the viewers', function () {
                     $bits = array_sum(array_intersect_key(SearchFilters::CLASSIFIED_BITS, array_flip($ratings)));
                     $asked = $viewer->classifieds(['text' => $q, 'category' => $category, 'flags' => $bits]);
 
-                    expect(parity_names($web, 'title'))->toBe(parity_names($asked['data'], 'name'), "classifieds $q $category " . implode(',', $ratings))
-                        ->and(parity_names($web, 'title'))->not->toContain('Old shoes');
+                    expect(parity_names($web, 'name'))->toBe(parity_names($asked['data'], 'name'), "classifieds $q $category " . implode(',', $ratings))
+                        ->and(parity_names($web, 'name'))->not->toContain('Old shoes');
                     $compared += count($web);
                 }
             }

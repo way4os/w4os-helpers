@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (search): one flex row of criteria, the list and its detail by w4os-views, the page title by key (View::blockTitle)
 - change (search): results, sorts and pages from the engine's search models, links asked of each result
 - change (search): results as a table with the viewers' columns, the one chosen detailed beside it (?id=); No results only once asked
 - new (search): Groups, and people as the viewers show them; the tabs in the order of the viewers

@@ -33,7 +33,7 @@ afterEach(fn() => Connections::using(null));
 describe('The search of people', function () {
     test('finds only the avatars who published their profile ("show in search")', function () {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1']);
-        $people = array_column($data['results'] ?? [], 'title');
+        $people = array_column($data['results'] ?? [], 'name');
 
         expect($people)->toBe(['Ada Lovelace']);
     });
@@ -41,7 +41,7 @@ describe('The search of people', function () {
     test('links each one to their profile, at the address the grid gives', function () {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1']);
 
-        expect($data['results'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
+        expect($data['results'][0]['profilePage'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
     });
 });
 
@@ -53,14 +53,14 @@ describe('The links of a search a site shows', function () {
 
         expect($data['action'])->toBe('https://site.example.org/fr/search/people/')
             ->and(array_column($data['topics'], 'url'))->toContain('https://site.example.org/fr/search/people/?q=la', 'https://site.example.org/fr/search/places/?q=la')
-            ->and($data['results'][0]['url'])->toBe('https://site.example.org/fr/profile/Ada.Lovelace');
+            ->and($data['results'][0]['profilePage'])->toBe('https://site.example.org/fr/profile/Ada.Lovelace');
     });
 
     test('are the grid\'s without an address of the site, or with one that is not a page', function () {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1', 'search_url' => 'javascript:alert(1)', 'web_profile_url' => 'javascript:[AGENT_NAME]']);
 
         expect($data['action'])->toBe('/search/people/')
-            ->and($data['results'][0]['url'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
+            ->and($data['results'][0]['profilePage'])->toBe('https://demo.example.org/profile/Ada.Lovelace?tab=web');
     });
 });
 
@@ -92,8 +92,8 @@ describe('The events found', function () {
         $data = Blocks::data('search', $grid, ['q' => 'jazz', 'topic' => 'events', 'level' => 'h1']);
         $item = $data['results'][0] ?? [];
 
-        expect($item['title'] ?? null)->toBe('Jazz night')
-            ->and($item['links']['browser'] ?? [])->not->toBe([]);
+        expect($item['name'] ?? null)->toBe('Jazz night')
+            ->and($item['tpLinks']['browser'] ?? [])->not->toBe([]);
     });
 
     test('of another grid are linked to their region, the name of its grid kept apart, exactly as the place gives its links', function () {
@@ -105,10 +105,10 @@ describe('The events found', function () {
         $item = Blocks::data('search', $grid, ['q' => 'far', 'topic' => 'events', 'level' => 'h1'])['results'][0] ?? [];
         $place = W4OS\Helpers\Block\Links::all($grid->placeAt('Far Away', '46/232/24', 'http://far.example.org:8002'));
 
-        expect($item['links'] ?? null)->toBe($place)
-            ->and(array_column($item['links']['browser'], 'format'))->toBe(array_keys($grid->placeAt('Far Away', '46/232/24', 'http://far.example.org:8002')->tpLinks('browser')))
+        expect($item['tpLinks'] ?? null)->toBe($place)
+            ->and(array_column($item['tpLinks']['browser'], 'format'))->toBe(array_keys($grid->placeAt('Far Away', '46/232/24', 'http://far.example.org:8002')->tpLinks('browser')))
             // Shown as kept: its grid, then its region
-            ->and(array_column(Blocks::data('search', $grid, ['q' => 'far', 'topic' => 'events', 'level' => 'h1', 'id' => '1'])['selected']['details'], 'value', 'label')['Location'])->toBe('far.example.org:8002 Far Away');
+            ->and(Blocks::data('search', $grid, ['q' => 'far', 'topic' => 'events', 'level' => 'h1', 'id' => '1'])['selected']['location'])->toBe('far.example.org:8002 Far Away');
     });
 });
 
@@ -146,7 +146,7 @@ describe('The kinds of search', function () {
             ->and($short['asked'])->toBeFalse()
             ->and($short['note'])->toBe('At least 3 letters.')
             ->and(array_column($land['fields'], 'name'))->toBe(['type', 'price', 'area', 'rating'])
-            ->and(array_column($land['results'], 'title'))->toBe(['Lot 1']);
+            ->and(array_column($land['results'], 'name'))->toBe(['Lot 1']);
     });
 
     test('take the ratings asked, general and moderate before the form is sent, as the viewers', function () {
@@ -154,8 +154,8 @@ describe('The kinds of search', function () {
         $usual = Blocks::data('search', $grid, ['topic' => 'places', 'q' => 'beach', 'level' => 'h1']);
         $adult = Blocks::data('search', $grid, ['topic' => 'places', 'q' => 'beach', 'rating' => ['adult'], 'go' => 1, 'level' => 'h1']);
 
-        expect(array_column($usual['results'], 'title'))->toBe(['Beach house'])
-            ->and(array_column($adult['results'], 'title'))->toBe(['Beach club'])
+        expect(array_column($usual['results'], 'name'))->toBe(['Beach house'])
+            ->and(array_column($adult['results'], 'name'))->toBe(['Beach club'])
             ->and(array_column(array_filter(end($usual['fields'])['options'], static fn($o) => $o['selected']), 'value'))->toBe(['general', 'moderate']);
     });
 
@@ -164,12 +164,12 @@ describe('The kinds of search', function () {
         $events = Blocks::data('search', $grid, ['topic' => 'events', 'level' => 'h1']);
         $sports = Blocks::data('search', $grid, ['topic' => 'events', 'category' => 19, 'go' => 1, 'rating' => ['general'], 'level' => 'h1']);
         $classifieds = Blocks::data('search', $grid, ['topic' => 'classifieds', 'level' => 'h1', 'id' => 'c1']);
-        $shown = static fn(array $data): array => array_column($data['selected']['details'], 'value', 'label');
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('search', $grid, ['topic' => 'events', 'level' => 'h1', 'id' => '1', 'lang' => 'en']);
 
-        expect(array_column($events['results'], 'title'))->toBe(['Jazz night'])
-            ->and($shown(Blocks::data('search', $grid, ['topic' => 'events', 'level' => 'h1', 'id' => '1']))['Type'])->toBe('Live Music')
+        expect(array_column($events['results'], 'name'))->toBe(['Jazz night'])
+            ->and($html)->toContain('<dt>Type</dt><dd>Live Music</dd>')
             ->and($sports['results'])->toBe([])
-            ->and($shown($classifieds)['Category'])->toBe('Shopping');
+            ->and($classifieds['selected']['category'])->toBe('1');
     });
 });
 
@@ -193,14 +193,13 @@ describe('The search of groups', function () {
         $data = Blocks::data('search', groups_grid(), ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1', 'id' => 'g1']);
         $group = $data['selected'];
 
-        expect(array_column($data['results'], 'title'))->toBe(['Lovers of lace'])
-            ->and(array_column($data['results'][0]['columns'], 'value'))->toBe(['2'])
-            ->and(array_column($group['details'], 'value'))->toBe(['g1', 'Ada Lovelace', 'Yes', '5', 'General Content'])
-            ->and($group['text'])->toBe('We knit')
-            ->and(array_column(array_column($group['members']['rows'], 0), 'value'))->toBe(['Ada Lovelace'])
-            ->and(array_column($data['head'], 'key'))->toBe(['name', 'members'])
-            ->and(array_column($data['head'], 'label'))->toBe(['Name', 'Members'])
-            ->and($group['id'])->toBe('g1');
+        expect(array_column($data['results'], 'name'))->toBe(['Lovers of lace'])
+            ->and($data['results'][0]['members'])->toBe(2)
+            ->and([$group['id'], $group['founderName'], $group['open'], $group['fee'], $group['rating']])->toBe(['g1', 'Ada Lovelace', true, 5, 'general'])
+            ->and($group['charter'])->toBe('We knit')
+            ->and(array_column($group['roster'], 'name'))->toBe(['Ada Lovelace'])
+            ->and(array_map(static fn($column): string => (string) $column->sort, $data['list']->list->columns))->toBe(['name', 'members'])
+            ->and(array_map(static fn($column): string => $column->label, $data['list']->list->columns))->toBe(['web_search_name', 'web_search_members']);
     });
 
     test('lists the results with their columns, the one chosen (?id=) showing its detail beside them, its search kept', function () {
@@ -209,11 +208,11 @@ describe('The search of groups', function () {
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('search', $grid, ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1', 'id' => 'g1', 'lang' => 'en']);
 
         expect($list['selected'])->toBeNull()
-            ->and($list['results'][0]['select'])->toBe('?q=lace&rating%5B0%5D=general&rating%5B1%5D=moderate&go=1&sort=-members&id=g1')
-            ->and($list['results'][0])->not->toHaveKey('members')
-            ->and($list['head'][1]['url'])->toContain('sort=members')
-            ->and($html)->toContain('<table class="search-results">', 'aria-controls="search-detail" aria-current="true">Lovers of lace</a>', '<section id="search-detail"', 'We knit')
-            ->and($html)->not->toContain('<details');
+            ->and($list['list']->select['g1'])->toBe(['q' => 'lace', 'rating' => ['general', 'moderate'], 'go' => 1, 'sort' => '-members', 'id' => 'g1'])
+            ->and($list['results'][0])->not->toHaveKey('roster')
+            ->and($list['list']->list->columns[1]->next)->toBe('members')
+            ->and($html)->toContain('w4os-list', 'aria-controls="search-detail" aria-current="true"', '<section id="search-detail"', 'We knit', 'Lovers of lace')
+            ->and($html)->not->toContain('<details', 'role="search"', 'type="search"');
     });
 
     test('says nothing was found only of a search the visitor asked', function () {
@@ -222,7 +221,8 @@ describe('The search of groups', function () {
         $asked = Blocks::data('search', $grid, ['topic' => 'classifieds', 'level' => 'h1', 'go' => 1]);
 
         expect($opened['results'])->toBe([])->and($opened['sent'])->toBeFalse()
-            ->and($asked['sent'])->toBeTrue()->and($asked['nothing'])->toBe('No results');
+            ->and($opened['empty'])->toBeNull()
+            ->and($asked['sent'])->toBeTrue()->and($asked['empty'])->toBe('web_search_nothing');
     });
 
     test('asks words, as the search of people', function () {
@@ -235,9 +235,11 @@ describe('The search of groups', function () {
         $data = Blocks::data('search', groups_grid(), ['q' => 'ada', 'topic' => 'people', 'level' => 'h1', 'id' => '11111111-1111-4111-8111-111111111111']);
         $person = $data['selected'];
 
-        expect(array_column($person['details'], 'label'))->toBe(['Key', 'Birthdate', 'Account', 'Partner', 'Groups'])
-            ->and($person['details'][0]['value'])->toBe('11111111-1111-4111-8111-111111111111')
-            ->and($person['details'][4]['value'])->toBe('Hidden lace, Lovers of lace')
-            ->and($person['actions'][0]['url'])->toBe($person['url']);
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('search', groups_grid(), ['q' => 'ada', 'topic' => 'people', 'level' => 'h1', 'id' => '11111111-1111-4111-8111-111111111111', 'lang' => 'en']);
+
+        expect($person['id'])->toBe('11111111-1111-4111-8111-111111111111')
+            ->and($person['groups'])->toBe(['Hidden lace', 'Lovers of lace'])
+            ->and($person['searchActions'][0]['url'])->toBe($person['profilePage'])
+            ->and($html)->toContain('<dt>Key</dt>', '<dt>Birthdate</dt>', '<dt>Account</dt>', '<dt>Groups</dt>', 'Open Profile');
     });
 })->skip(fn() => !extension_loaded('pdo_sqlite'), 'pdo_sqlite is missing');

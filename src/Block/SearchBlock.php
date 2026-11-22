@@ -15,6 +15,9 @@ use W4OS\Engine\Models\SearchPerson;
 use W4OS\Engine\Models\SearchPlace;
 use W4OS\Engine\Services\SearchFilters;
 use W4OS\Helpers\I18n;
+use W4OS\Views\Contract as ViewsContract;
+use W4OS\Views\ListDetailView;
+use W4OS\Views\ListView;
 
 /**
  * The web search, as the search of the viewers: a kind of search at a time (people, groups, places, land for sale, events,
@@ -53,9 +56,6 @@ final class SearchBlock implements Block
     /** The results a page shows, as the viewers (each asks the next page on its own). */
     public const LIMIT = 100;
 
-    /** The fields of a page shown as its text, under its other fields. */
-    private const TEXTS = ['description', 'about', 'charter'];
-
     /** Whether a part of the search could not be done (a database of the grid that cannot be reached) */
     private bool $unavailable = false;
 
@@ -70,10 +70,12 @@ final class SearchBlock implements Block
         $embedded = !isset($args['level']) && !isset($args['topic']) && !$asked['sent'];
         $config = $grid->config();
         [$ready, $note] = self::ready($topic, $asked, $texts);
-        $items = [];
-        $more = false;
-        $selected = null;
         $page = max(1, (int) ($args['page'] ?? 1));
+        // The search kept on every link of its list (its sorts, its pages, the results it selects)
+        $query = self::query($asked) + array_filter(['sort' => (string) ($args['sort'] ?? ''), 'page' => $page > 1 ? $page : null, 'id' => (string) ($args['id'] ?? '')]);
+        $type = self::MODELS[$topic]::type();
+        $list = self::contract()->listOf($type) ?? [];
+        $view = null;
         if ($ready && !$embedded && $config !== null) {
             try {
                 [$sort, $descending] = self::sort($topic, $args);
@@ -84,26 +86,21 @@ final class SearchBlock implements Block
                     'page' => $page,
                     'perPage' => self::LIMIT,
                 ]);
-                $more = $found->total() > $page * self::LIMIT;
-                $items = array_map(fn($model): array => $this->item($topic, $model, $args, $texts), $found->items());
+                $rows = array_map(fn($model): array => self::row($model, $args, $texts), $found->items());
+                $list = ListView::of($list, $rows, ['total' => $found->total(), 'page' => $page, 'perPage' => self::LIMIT], $query);
                 // The result asked, shown beside the list: read again by its id, with all its page shows (the members of a group)
-                $id = isset($args['id']) ? (string) $args['id'] : '';
+                $id = (string) ($args['id'] ?? '');
                 $model = $id === '' ? null : self::MODELS[$topic]::find($config, $id);
-                $selected = $model === null ? null : $this->item($topic, $model, $args, $texts, true);
+                $view = ListDetailView::of($list, $model === null ? null : self::row($model, $args, $texts), self::groups($type), param: 'id', region: 'search-detail');
             } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                 Blocks::unreachable($e);
                 $this->unavailable = true;
             }
         }
-        // Each result selects itself (its detail beside the list), the search kept
-        $kept = self::query($asked) + array_intersect_key($args, ['sort' => 1]) + ($page > 1 ? ['page' => $page] : []);
-        foreach ($items as $i => $item) {
-            $items[$i]['select'] = '?' . http_build_query($kept + ['id' => $item['id']]);
-            $items[$i]['current'] = $selected !== null && $selected['id'] === $item['id'];
-        }
 
         return [
-            'title' => I18n::text('Search'),
+            // The page of the search, a noun, as a site takes it (View::blockTitle())
+            'title' => \W4OS\Helpers\View\View::blockTitle('search', I18n::current()),
             'form' => true,
             'embedded' => $embedded,
             'action' => self::page($grid, $args) . "/$topic/",
@@ -114,18 +111,18 @@ final class SearchBlock implements Block
                 fn(string $kind): array => ['topic' => $kind, 'title' => $texts["web_search_$kind"], 'url' => self::page($grid, $args) . "/$kind/" . ($asked['q'] === '' ? '' : '?q=' . rawurlencode($asked['q'])), 'current' => $kind === $topic],
                 self::TOPICS,
             ),
-            'fields' => self::fields($topic, $asked, $texts),
+            'fields' => self::fields($topic, $asked, $texts, (string) ($config?->find('LoginService', 'Currency') ?: 'L$')),
             'submit' => $texts['web_search_submit'],
             'asked' => $ready,
             'note' => $note,
-            'nothing' => $texts['web_search_nothing'],
-            // A search the visitor asked (their form, their words): one made on its own, at the opening of a page, says nothing of none found
+            // The list and the detail of the result asked (w4os-views); what it says without a result, of a search the visitor
+            // asked only (their form, their words): one made on its own, at the opening of a page, says nothing
+            'list' => $view,
+            // The same as plain values: each result as its model gives it, and the one asked
+            'results' => $view === null ? [] : array_map(static fn($row): array => $row->item, $view->list->rows),
+            'selected' => $view?->detail?->item,
+            'empty' => $asked['sent'] ? 'web_search_nothing' : null,
             'sent' => $asked['sent'],
-            'results' => $items,
-            'selected' => $selected,
-            // The head of the list: the columns of the kind, each a sort when the kind sorts on it
-            'head' => self::head($topic, $asked, $args, $texts),
-            'pages' => self::pages($asked, $args, $page, $more, $texts),
             // What could not be searched (a database of the grid that cannot be reached): unavailable for now, not nothing found
             'unavailable' => $this->unavailable,
         ];
@@ -192,12 +189,13 @@ final class SearchBlock implements Block
      *
      * @return list<array<string,mixed>>
      */
-    private static function fields(string $topic, array $asked, array $texts): array
+    private static function fields(string $topic, array $asked, array $texts, string $currency = 'L$'): array
     {
         $fields = [];
-        $words = ['name' => 'q', 'type' => 'search', 'value' => $asked['q']];
+        // Its words: the field alone, its label for the readers of the screen only (what to type is plain), its few letters said in it
+        $words = ['name' => 'q', 'type' => 'text', 'value' => $asked['q']];
         $fields[] = match ($topic) {
-            'places' => $words + ['label' => $texts['web_search_words'], 'required' => true, 'min' => SearchFilters::MIN_TEXT, 'help' => sprintf($texts['web_search_min_letters'], SearchFilters::MIN_TEXT)],
+            'places' => $words + ['label' => $texts['web_search_words'], 'required' => true, 'min' => SearchFilters::MIN_TEXT, 'placeholder' => sprintf($texts['web_search_min_letters'], SearchFilters::MIN_TEXT)],
             'people', 'groups' => $words + ['label' => $texts['web_search_words'], 'required' => true],
             'land' => null,
             default => $words + ['label' => $texts['web_search_words']],
@@ -207,8 +205,9 @@ final class SearchBlock implements Block
                 static fn(string $type): array => ['value' => $type, 'label' => $texts["web_search_land_$type"], 'selected' => $type === $asked['type']],
                 SearchFilters::LAND_TYPES,
             )];
-            $fields[] = ['name' => 'price', 'type' => 'number', 'label' => $texts['web_search_price_max'], 'value' => $asked['price']];
-            $fields[] = ['name' => 'area', 'type' => 'number', 'label' => $texts['web_search_area_min'], 'value' => $asked['area'], 'unit' => 'm²'];
+            // The only ones a label shows, their unit in the field
+            $fields[] = ['name' => 'price', 'type' => 'number', 'label' => $texts['web_search_price_max'], 'value' => $asked['price'], 'suffix' => $currency, 'shown' => true];
+            $fields[] = ['name' => 'area', 'type' => 'number', 'label' => $texts['web_search_area_min'], 'value' => $asked['area'], 'suffix' => 'm²', 'shown' => true];
         }
         if ($topic === 'events') {
             $date = I18n::date(time() + $asked['day'] * 86400, 'date');
@@ -237,52 +236,6 @@ final class SearchBlock implements Block
         }
 
         return array_values(array_filter($fields));
-    }
-
-    /**
-     * The head of the list of a kind, as its model describes it (its Listing): each column its label and, when it sorts the list,
-     * the link that sorts it so (the other way when it is the sort already), what else it asks kept.
-     *
-     * @return list<array{key:string,label:string,url:?string,current:bool,dir:string}>
-     */
-    private static function head(string $topic, array $asked, array $args, array $texts): array
-    {
-        $listing = self::MODELS[$topic]::listing();
-        [$sort, $descending] = self::sort($topic, $args);
-        $head = [];
-        foreach ($listing->document()['columns'] as $column) {
-            $key = $column['sort'] ?? null;
-            $current = $key !== null && $key === $sort;
-            // The way it goes first: its default one when it is the list's, else up
-            $first = $key === ltrim($listing->sort, '-') && str_starts_with($listing->sort, '-') ? "-$key" : $key;
-            $head[] = [
-                'key' => (string) ($key ?? $column['name']),
-                'label' => (string) ($texts[$column['label']] ?? $column['label']),
-                'url' => $key === null ? null : '?' . http_build_query(self::query($asked) + ['sort' => $current ? ($descending ? $key : "-$key") : $first]),
-                'current' => $current,
-                'dir' => $current ? ($descending ? 'desc' : 'asc') : '',
-            ];
-        }
-
-        return $head;
-    }
-
-    /**
-     * The links to the previous and the next page of results, the sort and what else it asks kept; null where there is none.
-     *
-     * @return array{previous:?string,next:?string,previous_label:string,next_label:string}
-     */
-    private static function pages(array $asked, array $args, int $page, bool $more, array $texts): array
-    {
-        $kept = self::query($asked) + array_intersect_key($args, ['sort' => 1]);
-        $url = static fn(int $to): string => '?' . http_build_query($kept + ($to > 1 ? ['page' => $to] : []));
-
-        return [
-            'previous' => $page > 1 ? $url($page - 1) : null,
-            'next' => $more ? $url($page + 1) : null,
-            'previous_label' => $texts['web_search_previous'],
-            'next_label' => $texts['web_search_next'],
-        ];
     }
 
     /** What a search asks, as the query of its address (PARAMETERS): to keep it on another link. */
@@ -356,57 +309,45 @@ final class SearchBlock implements Block
     }
 
     /**
-     * A result as the block shows it: its name, its columns (the ones of its list, after its name), its links asked of it; with its
-     * page (`details`, its text, its members, its actions) when it is the one shown.
+     * A result as its list and its page show it: what its model gives, its links asked of it (`tpLinks`), the web profiles it links
+     * to at the site's addresses, and the actions of its page (`searchActions`: its fields that are an action, a profile to open).
      *
      * @return array<string,mixed>
      */
-    private function item(string $topic, object $model, array $args, array $texts, bool $page = false): array
+    private static function row(object $model, array $args, array $texts): array
     {
-        $d = self::sited($model->detail(), $args);
-        $columns = array_slice(self::MODELS[$topic]::listing()->document()['columns'], 1);
-        $item = [
-            'id' => (string) $d['id'],
-            'title' => (string) $d['name'],
-            'columns' => array_map(fn(array $column): array => [
-                'label' => (string) ($texts[$column['label']] ?? $column['label']),
-                'value' => $this->value($column, $d, $texts),
-                'number' => $column['type'] === 'number',
-            ], $columns),
-            'links' => $model instanceof Reachable ? Links::all($model) : [],
-            'url' => $model instanceof Reachable ? Links::to($model, $args) : ($d['profilePage'] ?? null),
-        ];
-        if (!$page) {
-            return $item;
-        }
-        $item += ['picture' => null, 'details' => [], 'text' => '', 'actions' => [], 'members' => null];
-        foreach (self::MODELS[$topic]::itemForm()->fields as $field) {
-            $name = (string) $field['name'];
-            $label = (string) ($texts[$field['label']] ?? $field['label']);
-            match (true) {
-                $field['type'] === 'picture' => $item['picture'] = $d[$name] ?? null,
-                $name === 'name' => null,
-                in_array($name, self::TEXTS, true) => $item['text'] = trim((string) ($d[$name] ?? '')),
-                !empty($field['action']) => ($d[$name] ?? null) === null || $item['actions'][] = ['label' => $label, 'url' => (string) $d[$name]],
-                $field['type'] === 'records' => $item['members'] = [
-                    'labels' => array_map(static fn(array $part): string => (string) ($texts[$part[1]] ?? $part[1]), $field['parts']),
-                    'rows' => array_map(fn(array $record): array => array_map(
-                        fn(array $part): array => [
-                            'value' => $this->value(['name' => $part[0], 'type' => $part[2]] + ($part[3] ?? []), $record, $texts),
-                            'url' => isset($part[3]['link']) ? ($record[$part[3]['link']] ?? null) : null,
-                        ],
-                        $field['parts'],
-                    ), (array) ($d[$name] ?? [])),
-                ],
-                default => $item['details'][] = [
-                    'label' => $label,
-                    'value' => $this->value($field, $d, $texts),
-                    'url' => $field['type'] === 'link' && isset($field['link']) ? ($d[$field['link']] ?? null) : null,
-                ],
-            };
+        $row = self::sited($model->detail(), $args);
+        $model instanceof Reachable && ($row['tpLinks'] = Links::all($model));
+        $row['searchActions'] = [];
+        foreach ($model::itemForm()->fields as $field) {
+            empty($field['action']) || empty($row[$field['name']]) || $row['searchActions'][] = ['label' => (string) ($texts[$field['label']] ?? $field['label']), 'url' => (string) $row[$field['name']]];
         }
 
-        return $item;
+        return $row;
+    }
+
+    /**
+     * The groups of fields of the page of a kind, as the contract describes it (x-form): the ones that are an action left to the
+     * actions of the page.
+     *
+     * @return list<array{label:string,fields:list<array<string,mixed>>}>
+     */
+    private static function groups(string $type): array
+    {
+        $form = self::contract()->itemOf($type) ?? ['groups' => [], 'fields' => []];
+
+        return array_map(static fn(array $group): array => [
+            'label' => $group['label'],
+            'fields' => array_values(array_filter($form['fields'], static fn(array $field): bool => ($field['group'] ?? '') === $group['name'] && empty($field['action']))),
+        ], $form['groups']);
+    }
+
+    /** The contract of the engine as w4os-views reads it: what each list and each page show. */
+    private static function contract(): ViewsContract
+    {
+        static $contract = null;
+
+        return $contract ??= new ViewsContract(\W4OS\Engine\Api\Contract::document());
     }
 
     /**
@@ -429,34 +370,5 @@ final class SearchBlock implements Block
         isset($detail['roster']) && ($detail['roster'] = array_map(static fn(array $m): array => ['page' => $at($m['name'])] + $m, $detail['roster']));
 
         return $detail;
-    }
-
-    /**
-     * A value of a result as its column or its field says it shows (its type): a number with its decimals and its unit, a date, a
-     * word of the catalog, yes or no; what an empty one says (`empty`).
-     *
-     * @param array<string,mixed> $field a column of its list or a field of its page
-     */
-    private function value(array $field, array $item, array $texts): string
-    {
-        $value = $item[$field['name']] ?? null;
-        if (isset($field['online']) && !empty($item[$field['online']])) {
-            return (string) ($texts[$field['onlineLabel']] ?? '');
-        }
-        if ($value === null || $value === '' || $value === []) {
-            return isset($field['empty']) ? (string) ($texts[$field['empty']] ?? '') : '';
-        }
-        $days = static fn(int $time): string => ProfileBlock::age(intdiv(max(0, time() - $time), 86400));
-
-        return match ($field['type']) {
-            'number' => number_format((float) $value, (int) ($field['decimals'] ?? 0)) . (isset($field['unit']) ? ' ' . $field['unit'] : ''),
-            'date' => I18n::date((int) $value, 'date') . (empty($field['age']) ? '' : ' (' . $days((int) $value) . ')'),
-            'datetime' => I18n::date((int) $value, 'long', 'UTC') . ' UTC',
-            'boolean' => $value ? $texts['web_search_yes'] : $texts['web_search_no'],
-            'select' => (string) ($texts[$field['options'][(string) $value] ?? ''] ?? ''),
-            'list' => implode(', ', array_map(static fn($one): string => (string) ($texts[array_column((array) ($field['values'] ?? []), 'label', 'value')[$one] ?? ''] ?? $one), (array) $value)),
-            'role' => (string) ($texts[Catalog::roleKey((string) $value)] ?? $value),
-            default => (string) $value,
-        };
     }
 }

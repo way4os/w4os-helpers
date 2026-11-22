@@ -18,6 +18,13 @@ The engine ([w4os-engine](https://github.com/way4os/w4os-engine)) owns what is k
 
 Tests are Pest: `tests/Feature` sends PSR-7 requests to the application without a web server, `tests/Unit` and `tests/Environment` check the rest, `tests/Packaging` the packages in a container.
 
+## Translations
+
+- A text is a key with its English default (its `msgctxt` in the `.po` files), never raw English: one English word can take two translations.
+- Every text the helpers share with the sites is taken from the catalog of w4os-engine by its key (`W4OS\Engine\I18n\Catalog`); the helpers define only their own.
+- A text that mirrors the viewer takes the viewer's own wording, from Firestorm's `indra/newview/skins/default/xui/<lang>/`.
+- A page or a catalog is translated as a whole with the glossary of its language (the engine's DEVELOPERS.md), never string by string.
+
 ## Build
 
 `dev/build.sh` makes what the project distributes into `dist/`, from the last commit (it refuses when changes are not committed or when `composer.lock` is not up to date; `DIRTY=1` builds the last commit anyway):

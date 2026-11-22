@@ -4,18 +4,17 @@
     <nav class="search-topics" role="tablist">
         {% for t in topics %}<a role="tab" href="{{ t.url }}"{% if t.current %} aria-current="page" aria-selected="true"{% endif %}>{{ t.title }}</a>{% endfor %}
     </nav>
-    <form class="search-form" action="{{ action }}" method="get" role="search">
-        <input type="hidden" name="go" value="1">
-        {% for field in fields %}
-            <div class="search-field search-field-{{ field.type }}">
+    {# One row of its criteria, each as wide as it needs, the words taking the rest, the button at its end #}
+    <search>
+        <form class="search-form" action="{{ action }}" method="get">
+            <input type="hidden" name="go" value="1">
+            {% for field in fields %}
                 {% if field.type == 'ratings' %}
-                    <span class="search-label" id="search-{{ field.name }}">{{ field.label }}</span>
-                    <span class="search-input search-checks" role="group" aria-labelledby="search-{{ field.name }}">
+                    <span class="search-checks" role="group" aria-label="{{ field.label }}">
                         {% for option in field.options %}<label><input type="checkbox" name="rating[]" value="{{ option.value }}"{% if option.selected %} checked{% endif %}> {{ option.label }}</label>{% endfor %}
                     </span>
                 {% elseif field.type == 'when' %}
-                    <span class="search-label" id="search-when">{{ field.label }}</span>
-                    <span class="search-input search-when" role="group" aria-labelledby="search-when">
+                    <span class="search-when" role="group" aria-label="{{ field.label }}">
                         {% for option in field.options %}<label><input type="radio" name="when" value="{{ option.value }}"{% if option.selected %} checked{% endif %}> {{ option.label }}</label>{% endfor %}
                         <span class="search-day">
                             <a href="{{ field.previous_url }}" aria-label="{{ field.previous }}" title="{{ field.previous }}">&larr;</a>
@@ -24,73 +23,27 @@
                             <a href="{{ field.next_url }}" aria-label="{{ field.next }}" title="{{ field.next }}">&rarr;</a>
                         </span>
                     </span>
+                {% elseif field.type == 'select' %}
+                    <select class="search-select-menu" name="{{ field.name }}" aria-label="{{ field.label }}">
+                        {% for option in field.options %}<option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>{% endfor %}
+                    </select>
+                {% elseif field.type == 'number' %}
+                    <label class="search-number"><span>{{ field.label }}</span><span class="search-affix"><input type="number" min="0" name="{{ field.name }}" value="{{ field.value }}"><span class="search-suffix" aria-hidden="true">{{ field.suffix }}</span></span></label>
                 {% else %}
-                    <label class="search-label" for="search-{{ field.name }}">{{ field.label }}</label>
-                    <span class="search-input">
-                        {% if field.type == 'select' %}
-                            <select id="search-{{ field.name }}" name="{{ field.name }}">
-                                {% for option in field.options %}<option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>{% endfor %}
-                            </select>
-                        {% elseif field.type == 'number' %}
-                            <input id="search-{{ field.name }}" type="number" min="0" name="{{ field.name }}" value="{{ field.value }}">{% if field.unit is defined %} {{ field.unit }}{% endif %}
-                        {% else %}
-                            <input id="search-{{ field.name }}" type="search" name="{{ field.name }}" value="{{ field.value }}"{% if field.min is defined %} minlength="{{ field.min }}"{% endif %}{% if field.required ?? false %} required{% endif %}{% if loop.first %} autofocus{% endif %}>
-                        {% endif %}
-                        {% if field.help is defined %}<small class="search-help">{{ field.help }}</small>{% endif %}
-                    </span>
+                    <input class="search-words" type="text" enterkeyhint="search" name="{{ field.name }}" value="{{ field.value }}" aria-label="{{ field.label }}"{% if field.placeholder is defined %} placeholder="{{ field.placeholder }}"{% endif %}{% if field.min is defined %} minlength="{{ field.min }}"{% endif %}{% if field.required ?? false %} required{% endif %}{% if loop.first %} autofocus{% endif %}>
                 {% endif %}
-            </div>
-        {% endfor %}
-        <div class="search-field search-submit"><span class="search-label"></span><span class="search-input"><button type="submit">{{ submit }}</button></span></div>
-    </form>
+            {% endfor %}
+            <button type="submit">{{ submit }}</button>
+        </form>
+    </search>
     {% if not embedded %}
         {% if unavailable ?? false %}
             <p class="block-unavailable">{{ labels.unavailable }}</p>
         {% elseif not asked %}
             {% if note %}<p class="search-none">{{ note }}</p>{% endif %}
-        {% elseif not results %}
-            {% if sent %}<p class="search-none">{{ nothing }}</p>{% endif %}
         {% else %}
-            {# The list as the viewers have it, its columns sorting it; the result chosen shows its detail beside it #}
-            <div class="search-split">
-                <div class="search-list">
-                    <table class="search-results">
-                        <thead><tr>
-                            {% for h in head %}<th scope="col"{% if h.current %} aria-sort="{{ h.dir == 'asc' ? 'ascending' : 'descending' }}"{% endif %}>{% if h.url %}<a href="{{ h.url }}">{{ h.label }}{% if h.current %} {{ h.dir == 'asc' ? '↑' : '↓' }}{% endif %}</a>{% else %}{{ h.label }}{% endif %}</th>{% endfor %}
-                        </tr></thead>
-                        <tbody>
-                            {% for item in results %}
-                                <tr{% if item.current %} class="current"{% endif %}>
-                                    <td><a class="search-select" href="{{ item.select }}" aria-controls="search-detail"{% if item.current %} aria-current="true"{% endif %}>{{ item.title }}</a></td>
-                                    {% for column in item.columns ?? [] %}<td{% if column.number %} class="number"{% endif %}>{{ column.value }}</td>{% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% if pages.previous or pages.next %}
-                        <nav class="search-pages">
-                            {% if pages.previous %}<a rel="prev" href="{{ pages.previous }}">{{ pages.previous_label }}</a>{% endif %}
-                            {% if pages.next %}<a rel="next" href="{{ pages.next }}">{{ pages.next_label }}</a>{% endif %}
-                        </nav>
-                    {% endif %}
-                </div>
-                <section id="search-detail" class="search-detail" aria-live="polite">
-                    {%- if selected %}
-                        {% set item = selected %}
-                        <h3 class="search-detail-title">{% if item.links is defined and item.links %}{{ tp_link(item.links, item.title) }}{% elseif item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
-                        {% if item.picture is defined %}{{ picture(assets ~ '/' ~ (item.picture ?: '00000000-0000-0000-0000-000000000000') ~ '.jpg', item.title, 'search-picture') }}{% endif %}
-                        {% if item.details ?? [] %}<dl class="search-fields">{% for d in item.details %}<dt>{{ d.label }}</dt><dd>{% if d.url ?? null %}<a href="{{ d.url }}">{{ d.value }}</a>{% else %}{{ d.value }}{% endif %}</dd>{% endfor %}</dl>{% endif %}
-                        {% if item.text %}<p class="search-description">{{ item.text|nl2br }}</p>{% endif %}
-                        {% if item.members.rows ?? [] %}
-                            <table class="search-members">
-                                <thead><tr>{% for label in item.members.labels %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead>
-                                <tbody>{% for m in item.members.rows %}<tr>{% for cell in m %}<td>{% if cell.url %}<a href="{{ cell.url }}">{{ cell.value }}</a>{% else %}{{ cell.value }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
-                            </table>
-                        {% endif %}
-                        {% for action in item.actions ?? [] %}<a class="search-action" href="{{ action.url }}">{{ action.label }}</a>{% endfor %}
-                    {% endif -%}
-                </section>
-            </div>
+            {# The list as the viewers have it, its columns sorting it; the result chosen shows its detail beside it (w4os-views) #}
+            {{ list_detail(list, empty, assets) }}
         {% endif %}
     {% endif %}
 </section>

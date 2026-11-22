@@ -12,6 +12,9 @@ use W4OS\Engine\Models\Grid;
 use Twig\Environment as Twig;
 use Twig\Loader\FilesystemLoader;
 use Twig\Markup;
+use W4OS\Views\ItemView;
+use W4OS\Views\ListDetailView;
+use W4OS\Views\ListHtml;
 use W4OS\Views\TeleportLink;
 
 /** Renders a page inside the layout; a viewer (the one that shows the splash page) gets the content alone. */
@@ -38,7 +41,7 @@ final class View
         'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']],
         'popular_places' => ['css' => ['css/blocks.css', 'css/places.css'], 'js' => []],
         'profile' => ['css' => ['css/profile.css'], 'js' => []],
-        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'js' => ['js/search.js']],
+        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'js' => []],
     ];
 
     /**
@@ -101,6 +104,7 @@ final class View
         $this->twig = new Twig($this->loader, ['autoescape' => 'html']);
         $this->twig->addFunction(new \Twig\TwigFunction('picture', Picture::tag(...), ['is_safe' => ['html']]));
         $this->twig->addFunction(new \Twig\TwigFunction('tp_link', $this->tpLink(...), ['is_safe' => ['html']]));
+        $this->twig->addFunction(new \Twig\TwigFunction('list_detail', $this->listDetail(...), ['is_safe' => ['html']]));
     }
 
     /** A block as an HTML fragment. @param array<string,mixed> $args */
@@ -129,10 +133,12 @@ final class View
         // Its name on its root (data-helpers-block), for a site, and the health, to find it in a page
         // A block with nothing to show shows nothing, its title neither
         $html = $data === null || $data === [] ? '' : $this->twig->render("components/$name-block.twig", $data + ['labels' => self::labels(), 'assets' => $assets, 'helpers_block' => $name]);
-        // Its teleport links need the style and the script of w4os-views on the pages of the helpers (a site loads its own)
-        if (str_contains($html, 'data-w4os-tp')) {
-            foreach (TeleportLink::ASSETS as $kind => $files) {
-                $this->files[$kind] = array_values(array_unique([...$this->files[$kind], ...array_map(static fn(string $file): string => self::VIEWS . $file, $files)]));
+        // Its teleport links and its lists need the style and the script of w4os-views on the pages of the helpers (a site loads its own)
+        foreach (['data-w4os-tp' => TeleportLink::ASSETS, 'data-w4os-list-detail' => ListDetailView::ASSETS + TeleportLink::ASSETS] as $mark => $assets) {
+            if (str_contains($html, $mark)) {
+                foreach ($assets as $kind => $files) {
+                    $this->files[$kind] = array_values(array_unique([...$this->files[$kind], ...array_map(static fn(string $file): string => self::VIEWS . $file, $files)]));
+                }
             }
         }
 
@@ -152,6 +158,36 @@ final class View
         $pattern = trim((string) preg_replace('#^/(.*)/[a-z]*$#s', '$1', Destination::VIEWER_PATTERN));
 
         return TeleportLink::html($links, $label, $this->client, ['more' => (string) ($texts['tp_more'] ?? ''), 'copied' => (string) ($texts['copied'] ?? '')], $pattern, $html === null ? null : (string) $html);
+    }
+
+    /**
+     * A list with the detail of the result it selects (W4OS\Views\ListHtml, as the sites show it): its texts from the engine's
+     * catalog in the language of the page, its pictures at the address of the block, the teleport links of the client of the block,
+     * the actions of a result (`searchActions`); the templates call it as `list_detail(view, empty, assets)`.
+     *
+     * @param ?string $empty the key of what a list without results says, null for nothing
+     */
+    public function listDetail(?ListDetailView $view, ?string $empty, string $assets): string
+    {
+        if ($view === null) {
+            return '';
+        }
+        $texts = \W4OS\Engine\I18n\Catalog::messages(I18n::current()) + \W4OS\Engine\I18n\Catalog::MESSAGES;
+        $esc = static fn(string $text): string => htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        return ListHtml::listDetail($view, [
+            't' => static fn(string $key, array $vars = []): string => vsprintf((string) ($texts[$key] ?? $key), $vars),
+            'language' => I18n::current(),
+            'empty' => $empty,
+            'picture' => static fn(?string $picture, ?string $default, string $name): string => Picture::tag(rtrim($assets, '/') . '/' . ($picture ?? '00000000-0000-0000-0000-000000000000') . '.jpg', $name, 'search-picture'),
+            'actions' => static fn(ItemView $item): string => implode('', array_map(
+                static fn(array $action): string => '<a class="search-action" href="' . $esc($action['url']) . '">' . $esc($action['label']) . '</a>',
+                (array) ($item->item['searchActions'] ?? []),
+            )),
+            'client' => $this->client,
+            'pattern' => trim((string) preg_replace('#^/(.*)/[a-z]*$#s', '$1', Destination::VIEWER_PATTERN)),
+            'texts' => ['more' => (string) ($texts['tp_more'] ?? ''), 'copied' => (string) ($texts['copied'] ?? '')],
+        ]);
     }
 
     /** @param array<string,mixed> $args the arguments of the request, for the block the page is */
@@ -274,6 +310,20 @@ final class View
         ]);
     }
 
+    /** The default title of the blocks that are a whole page, by the key of the engine's catalog it is: a site may give its own. */
+    public const BLOCK_TITLES = ['search' => 'search_title', 'profile' => 'profile_title'];
+
+    /**
+     * The default title of a block that is a whole page, in a language, without making the block: the one its heading shows (a site
+     * takes it for its page and its menu, unless it gives its own); null for a block without one.
+     */
+    public static function blockTitle(string $name, string $lang): ?string
+    {
+        $key = self::BLOCK_TITLES[str_replace('-', '_', $name)] ?? null;
+
+        return $key === null ? null : (\W4OS\Engine\I18n\Catalog::messages($lang)[$key] ?? \W4OS\Engine\I18n\Catalog::MESSAGES[$key]);
+    }
+
     /** @return array<string,string> the words of the templates */
     public static function labels(): array
     {
@@ -283,11 +333,6 @@ final class View
         return [
             'skip' => I18n::text('Skip to content'),
             'powered_by' => 'w4os-helpers',
-            'search' => I18n::text('Search'),
-            'search_for' => I18n::text('Search for'),
-            'search_all' => I18n::text('All'),
-            'search_nothing' => I18n::text('Nothing found.'),
-            'search_empty' => I18n::text('Type something to look for.'),
             'profile_not_found' => I18n::text('This profile does not exist.'),
             'unavailable' => I18n::text('This is temporarily unavailable. Please try again later.'),
             'member_since' => I18n::text('Member since'),
