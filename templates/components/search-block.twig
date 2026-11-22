@@ -49,46 +49,48 @@
         {% elseif not asked %}
             {% if note %}<p class="search-none">{{ note }}</p>{% endif %}
         {% elseif not results %}
-            <p class="search-none">{{ nothing }}</p>
+            {% if sent %}<p class="search-none">{{ nothing }}</p>{% endif %}
         {% else %}
-            {% if sorts %}
-                <p class="search-sorts">{{ columns.sort }}
-                    {% for sort in sorts %}<a href="{{ sort.url }}"{% if sort.current %} aria-current="true"{% endif %}>{{ sort.label }}{% if sort.current %} {{ sort.dir == 'asc' ? '↑' : '↓' }}{% endif %}</a>{% endfor %}
-                </p>
-            {% endif %}
-            {# Each result as the viewers list it (its name and its columns), its detail under it, its actions those of its place #}
-            <ul class="search-results search-list">
-                {% for item in results %}
-                    <li class="search-item">
-                        <details>
-                            <summary>
-                                <span class="search-title">{% if item.links is defined and item.links %}{{ tp_link(item.links, item.title) }}{% elseif item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</span>
-                                {% for column in item.columns ?? [] %}<span class="search-column{% if column.number %} number{% endif %}" title="{{ column.label }}">{{ column.value }}</span>{% endfor %}
-                            </summary>
-                            <div class="search-detail">
-                                {% if item.picture is defined %}{{ picture(assets ~ '/' ~ (item.picture ?: '00000000-0000-0000-0000-000000000000') ~ '.jpg', item.title, 'search-picture') }}{% endif %}
-                                <div class="search-text">
-                                    {% if item.details ?? [] %}<dl class="search-fields">{% for d in item.details %}<dt>{{ d.label }}</dt><dd>{% if d.url ?? null %}<a href="{{ d.url }}">{{ d.value }}</a>{% else %}{{ d.value }}{% endif %}</dd>{% endfor %}</dl>{% endif %}
-                                    {% if item.text %}<p class="search-description">{{ item.text|nl2br }}</p>{% endif %}
-                                    {% if item.members.rows ?? [] %}
-                                        <table class="search-members">
-                                            <thead><tr>{% for label in item.members.labels %}<th>{{ label }}</th>{% endfor %}</tr></thead>
-                                            <tbody>{% for m in item.members.rows %}<tr><td>{% if m.url %}<a href="{{ m.url }}">{{ m.name }}</a>{% else %}{{ m.name }}{% endif %}</td><td>{{ m.title }}</td><td>{{ m.status }}</td></tr>{% endfor %}</tbody>
-                                        </table>
-                                    {% endif %}
-                                    {% for action in item.actions ?? [] %}<a class="search-action" href="{{ action.url }}">{{ action.label }}</a>{% endfor %}
-                                </div>
-                            </div>
-                        </details>
-                    </li>
-                {% endfor %}
-            </ul>
-            {% if pages.previous or pages.next %}
-                <nav class="search-pages">
-                    {% if pages.previous %}<a rel="prev" href="{{ pages.previous }}">{{ pages.previous_label }}</a>{% endif %}
-                    {% if pages.next %}<a rel="next" href="{{ pages.next }}">{{ pages.next_label }}</a>{% endif %}
-                </nav>
-            {% endif %}
+            {# The list as the viewers have it, its columns sorting it; the result chosen shows its detail beside it #}
+            <div class="search-split">
+                <div class="search-list">
+                    <table class="search-results">
+                        <thead><tr>
+                            {% for h in head %}<th scope="col"{% if h.current %} aria-sort="{{ h.dir == 'asc' ? 'ascending' : 'descending' }}"{% endif %}>{% if h.url %}<a href="{{ h.url }}">{{ h.label }}{% if h.current %} {{ h.dir == 'asc' ? '↑' : '↓' }}{% endif %}</a>{% else %}{{ h.label }}{% endif %}</th>{% endfor %}
+                        </tr></thead>
+                        <tbody>
+                            {% for item in results %}
+                                <tr{% if item.current %} class="current"{% endif %}>
+                                    <td><a class="search-select" href="{{ item.select }}" aria-controls="search-detail"{% if item.current %} aria-current="true"{% endif %}>{{ item.title }}</a></td>
+                                    {% for column in item.columns ?? [] %}<td{% if column.number %} class="number"{% endif %}>{{ column.value }}</td>{% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if pages.previous or pages.next %}
+                        <nav class="search-pages">
+                            {% if pages.previous %}<a rel="prev" href="{{ pages.previous }}">{{ pages.previous_label }}</a>{% endif %}
+                            {% if pages.next %}<a rel="next" href="{{ pages.next }}">{{ pages.next_label }}</a>{% endif %}
+                        </nav>
+                    {% endif %}
+                </div>
+                <section id="search-detail" class="search-detail" aria-live="polite">
+                    {%- if selected %}
+                        {% set item = selected %}
+                        <h3 class="search-detail-title">{% if item.links is defined and item.links %}{{ tp_link(item.links, item.title) }}{% elseif item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
+                        {% if item.picture is defined %}{{ picture(assets ~ '/' ~ (item.picture ?: '00000000-0000-0000-0000-000000000000') ~ '.jpg', item.title, 'search-picture') }}{% endif %}
+                        {% if item.details ?? [] %}<dl class="search-fields">{% for d in item.details %}<dt>{{ d.label }}</dt><dd>{% if d.url ?? null %}<a href="{{ d.url }}">{{ d.value }}</a>{% else %}{{ d.value }}{% endif %}</dd>{% endfor %}</dl>{% endif %}
+                        {% if item.text %}<p class="search-description">{{ item.text|nl2br }}</p>{% endif %}
+                        {% if item.members.rows ?? [] %}
+                            <table class="search-members">
+                                <thead><tr>{% for label in item.members.labels %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead>
+                                <tbody>{% for m in item.members.rows %}<tr><td>{% if m.url %}<a href="{{ m.url }}">{{ m.name }}</a>{% else %}{{ m.name }}{% endif %}</td><td>{{ m.title }}</td><td>{{ m.status }}</td></tr>{% endfor %}</tbody>
+                            </table>
+                        {% endif %}
+                        {% for action in item.actions ?? [] %}<a class="search-action" href="{{ action.url }}">{{ action.label }}</a>{% endfor %}
+                    {% endif -%}
+                </section>
+            </div>
         {% endif %}
     {% endif %}
 </section>

@@ -28,11 +28,21 @@ final class SearchBlock implements Block
     public const TOPICS = ['people', 'groups', 'places', 'land', 'events', 'classifieds'];
 
     /** What a search asks, in the address of its page: a site gives each of them to the block (rating is a list). */
-    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go', 'sort', 'dir', 'page'];
+    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go', 'sort', 'dir', 'page', 'id'];
 
     /** The ratings, and the ones asked when a form has not been sent yet (as the viewers: general and moderate). */
     public const RATINGS = ['general', 'moderate', 'adult'];
     public const DEFAULT_RATINGS = ['general', 'moderate'];
+
+    /** The columns of the list of each kind, after the name, as the viewers have them: the sort each is, its text. */
+    public const COLUMNS = [
+        'people' => [],
+        'groups' => ['members' => 'web_search_members'],
+        'places' => ['traffic' => 'web_search_traffic'],
+        'land' => ['type' => 'web_search_land_type', 'price' => 'web_search_price', 'area' => 'web_search_area', 'price_m2' => 'web_search_price_m2'],
+        'events' => ['time' => 'web_search_time'],
+        'classifieds' => ['price' => 'web_search_price'],
+    ];
 
     /** The results a page shows, as the viewers (each asks the next page on its own). */
     public const LIMIT = 100;
@@ -66,6 +76,19 @@ final class SearchBlock implements Block
             }
         }
 
+        $more = $this->more || count($items) > self::LIMIT;
+        $items = array_slice($items, 0, self::LIMIT);
+        // Each result selects itself (its detail beside the list), the search kept: the one asked is shown
+        $kept = self::query($asked) + array_intersect_key($args, ['sort' => 1, 'dir' => 1]) + ($page > 1 ? ['page' => $page] : []);
+        $selected = null;
+        foreach ($items as $i => $item) {
+            $items[$i]['select'] = '?' . http_build_query($kept + ['id' => $item['id'] ?? (string) $i]);
+            $items[$i]['current'] = isset($args['id']) && (string) $args['id'] === (string) ($item['id'] ?? $i);
+            $items[$i]['current'] && ($selected = $items[$i]);
+        }
+        $sorts = self::sorts($topic, $asked, $args, $texts);
+        $sortBy = array_column($sorts, null, 'key');
+
         return [
             'title' => I18n::text('Search'),
             'form' => true,
@@ -83,9 +106,18 @@ final class SearchBlock implements Block
             'asked' => $ready,
             'note' => $note,
             'nothing' => $texts['web_search_nothing'],
-            'results' => array_slice($items, 0, self::LIMIT),
-            'sorts' => self::sorts($topic, $asked, $args, $texts),
-            'pages' => self::pages($asked, $args, $page, $this->more || count($items) > self::LIMIT, $texts),
+            // A search the visitor asked (their form, their words): one made on its own, at the opening of a page, says nothing of none found
+            'sent' => $asked['sent'],
+            'results' => $items,
+            'selected' => $selected,
+            'sorts' => $sorts,
+            // The head of the list: the name, then the columns of the kind, each a sort when the kind sorts on it
+            'head' => array_map(
+                static fn(string $key, string $label): array => ['label' => $texts[$label], 'url' => $sortBy[$key]['url'] ?? null, 'current' => $sortBy[$key]['current'] ?? false, 'dir' => $sortBy[$key]['dir'] ?? ''],
+                ['name', ...array_keys(self::COLUMNS[$topic])],
+                ['web_search_name', ...array_values(self::COLUMNS[$topic])],
+            ),
+            'pages' => self::pages($asked, $args, $page, $more, $texts),
             // Each kind lists its own results: what a column says
             'columns' => [
                 'sort' => $texts['web_search_sort'], 'name' => $texts['web_search_name'], 'region' => $texts['web_search_region'], 'traffic' => $texts['web_search_traffic'], 'price' => $texts['web_search_price'],
@@ -288,7 +320,7 @@ final class SearchBlock implements Block
         'land' => ['price_m2' => 's.saleprice * 1.0 / s.area', 'name' => 's.parcelname', 'type' => 's.parentestate', 'price' => 's.saleprice', 'area' => 's.area'],
         'events' => ['time' => 'e.dateUTC', 'name' => 'e.name'],
         'classifieds' => ['price' => 'priceforlisting', 'name' => 'name'],
-        'people' => [],
+        'people' => ['name' => 'name'],
         'groups' => ['name' => 'name', 'members' => 'members'],
     ];
 
@@ -338,6 +370,7 @@ final class SearchBlock implements Block
                     'name' => $row['parcelname'], 'region' => (string) ($row['region'] ?? ''), 'landingpoint' => $row['landingpoint'] ?? '',
                     'gatekeeper' => $row['gatekeeperURL'] ?? '',
                 ], '', $row['description'] ?? '', $args) + [
+                    'id' => (string) $row['parcelUUID'],
                     'picture' => self::picture($row['imageUUID'] ?? null),
                     'traffic' => (int) ($row['dwell'] ?? 0),
                     'columns' => [$column($texts['web_search_traffic'], number_format((int) ($row['dwell'] ?? 0)), true)],
@@ -365,6 +398,7 @@ final class SearchBlock implements Block
                         'name' => $row['parcelname'], 'region' => (string) ($row['region'] ?? ''), 'landingpoint' => $row['landingpoint'] ?? '',
                         'gatekeeper' => $row['gatekeeperURL'] ?? '',
                     ], sprintf('%s m², %s', number_format($area), number_format($price)), $row['about'] ?? '', $args) + [
+                        'id' => (string) $row['parcelUUID'],
                         'area' => $area,
                         'price' => $price,
                         'picture' => self::picture($row['picture'] ?? null),
@@ -407,6 +441,7 @@ final class SearchBlock implements Block
                         $row['description'],
                         $args,
                     ) + [
+                        'id' => (string) $row['eventid'],
                         'date' => I18n::date((int) $row['dateUTC'], 'long', 'UTC') . ' UTC',
                         'duration' => sprintf(I18n::text('%d min'), $minutes),
                         'category' => isset($categories[(int) ($row['category'] ?? 0)]) ? $texts[$categories[(int) $row['category']]] : '',
@@ -440,6 +475,7 @@ final class SearchBlock implements Block
                     $price = number_format((int) ($row['priceforlisting'] ?? 0));
 
                     return [
+                        'id' => (string) $row['classifieduuid'],
                         'title' => (string) $row['name'],
                         'detail' => $location,
                         'text' => trim((string) $row['description']),
@@ -466,7 +502,7 @@ final class SearchBlock implements Block
                 try {
                     // People: only who published their profile ("show in search" in the viewer), as the search of the viewers does
                     $found = $kind === 'people'
-                        ? Avatar::all($search->config, ['search' => $asked['q'], 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'perPage' => self::LIMIT, 'page' => $page])
+                        ? Avatar::all($search->config, ['search' => $asked['q'], 'filters' => ['active' => 'yes', 'technical' => 'no', 'published' => 'yes'], 'sort' => "name $dir", 'perPage' => self::LIMIT, 'page' => $page])
                         : Group::all($search->config, ['search' => $asked['q'], 'sort' => self::SORTS['groups'][$sort] . " $dir", 'perPage' => self::LIMIT, 'page' => $page]);
                     $this->more = $found->total() > $page * self::LIMIT;
 
@@ -494,6 +530,7 @@ final class SearchBlock implements Block
         $column = static fn(string $label, string $value, ?string $link = null): array => ['label' => $label, 'value' => $value, 'number' => false, 'url' => $link];
 
         return [
+            'id' => (string) $d['uuid'],
             'title' => $avatar->name(),
             'detail' => '',
             'text' => trim((string) ($d['about'] ?? '')),
@@ -520,6 +557,7 @@ final class SearchBlock implements Block
         $column = static fn(string $label, string $value, ?string $link = null, bool $number = false): array => ['label' => $label, 'value' => $value, 'number' => $number, 'url' => $link];
 
         return [
+            'id' => $d['id'],
             'title' => $d['name'],
             'detail' => '',
             'text' => $d['charter'],
@@ -533,7 +571,8 @@ final class SearchBlock implements Block
                 $column($texts['web_search_join_fee'], number_format($d['fee'])),
                 $column($texts['web_search_content_type'], $d['mature'] ? $texts['web_search_content_moderate'] : $texts['web_search_content_general']),
             ],
-            // Who is in it, as the list of its members: their name, the title they wear, in the world or the day they last came
+            // Who is in it, as the list of its members: their name, the title they wear, in the world or the day they last came; read
+            // for the group shown only
             'members' => [
                 'labels' => [$texts['web_search_member'], $texts['web_search_title'], $texts['web_search_status']],
                 'rows' => array_map(static fn(array $m): array => [
@@ -541,7 +580,7 @@ final class SearchBlock implements Block
                     'url' => Avatar::profileAt($profile, $m['name']),
                     'title' => (string) $m['title'],
                     'status' => $m['online'] ? $texts['web_search_online'] : ($m['login'] ? I18n::date($m['login'], 'date') : ''),
-                ], $group->members()),
+                ], ($args['id'] ?? null) === $d['id'] ? $group->members() : []),
             ],
         ];
     }

@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (search): results as a table with the viewers' columns, the one chosen detailed beside it (?id=); No results only once asked
 - new (search): Groups, and people as the viewers show them; the tabs in the order of the viewers
 - fix (search): no instruction where the form is plain enough
 - new (search): the results come by pages of 100, as the viewers, with Next and Previous

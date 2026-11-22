@@ -191,7 +191,7 @@ function groups_grid(): Grid
 
 describe('The search of groups', function () {
     test('finds the groups shown in the search, with their members, as the viewers', function () {
-        $data = Blocks::data('search', groups_grid(), ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1']);
+        $data = Blocks::data('search', groups_grid(), ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1', 'id' => 'g1']);
         $group = $data['results'][0];
 
         expect(array_column($data['results'], 'title'))->toBe(['Lovers of lace'])
@@ -199,7 +199,30 @@ describe('The search of groups', function () {
             ->and(array_column($group['details'], 'value'))->toBe(['g1', 'Ada Lovelace', 'Yes', '5', 'General Content'])
             ->and($group['text'])->toBe('We knit')
             ->and(array_column($group['members']['rows'], 'name'))->toBe(['Ada Lovelace'])
-            ->and(array_column($data['sorts'], 'key'))->toBe(['name', 'members']);
+            ->and(array_column($data['sorts'], 'key'))->toBe(['name', 'members'])
+            ->and(array_column($data['head'], 'label'))->toBe(['Name', 'Members'])
+            ->and($data['selected']['id'])->toBe('g1');
+    });
+
+    test('lists the results with their columns, the one chosen (?id=) showing its detail beside them, its search kept', function () {
+        $grid = groups_grid();
+        $list = Blocks::data('search', $grid, ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1', 'sort' => 'members', 'dir' => 'desc']);
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('search', $grid, ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1', 'id' => 'g1', 'lang' => 'en']);
+
+        expect($list['selected'])->toBeNull()
+            ->and($list['results'][0]['select'])->toBe('?q=lace&rating%5B0%5D=general&rating%5B1%5D=moderate&go=1&sort=members&dir=desc&id=g1')
+            ->and($list['results'][0]['members']['rows'])->toBe([])
+            ->and($html)->toContain('<table class="search-results">', 'aria-controls="search-detail" aria-current="true">Lovers of lace</a>', '<section id="search-detail"', 'We knit')
+            ->and($html)->not->toContain('<details');
+    });
+
+    test('says nothing was found only of a search the visitor asked', function () {
+        $grid = groups_grid();
+        $opened = Blocks::data('search', $grid, ['topic' => 'classifieds', 'level' => 'h1']);
+        $asked = Blocks::data('search', $grid, ['topic' => 'classifieds', 'level' => 'h1', 'go' => 1]);
+
+        expect($opened['results'])->toBe([])->and($opened['sent'])->toBeFalse()
+            ->and($asked['sent'])->toBeTrue()->and($asked['nothing'])->toBe('No results');
     });
 
     test('asks words, as the search of people', function () {
