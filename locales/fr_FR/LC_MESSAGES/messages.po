@@ -154,13 +154,13 @@ msgid "Nothing found."
 msgstr "Aucun résultat."
 
 msgid "Type something to look for."
-msgstr "Tapez ce que vous cherchez."
+msgstr "Tape ce que tu cherches."
 
 msgid "This profile does not exist."
 msgstr "Ce profil n’existe pas."
 
 msgid "This is temporarily unavailable. Please try again later."
-msgstr "Ceci est temporairement indisponible. Veuillez réessayer plus tard."
+msgstr "C'est indisponible pour le moment. Réessaie plus tard."
 
 msgid "Member since"
 msgstr "Membre depuis"

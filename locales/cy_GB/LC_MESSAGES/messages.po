@@ -163,13 +163,13 @@ msgid "Nothing found."
 msgstr "Dim wedi’i ganfod."
 
 msgid "Type something to look for."
-msgstr "Teipiwch rywbeth i chwilio amdano."
+msgstr "Teipia rywbeth i chwilio amdano."
 
 msgid "This profile does not exist."
 msgstr "Nid yw’r proffil hwn yn bodoli."
 
 msgid "This is temporarily unavailable. Please try again later."
-msgstr "Nid yw hyn ar gael dros dro. Rhowch gynnig arall arni yn nes ymlaen."
+msgstr "Nid yw hyn ar gael dros dro. Rho gynnig arall arni nes ymlaen."
 
 msgid "Member since"
 msgstr "Aelod ers"
