@@ -9,6 +9,8 @@
    name), hidden when it cannot be loaded; its own class gives its size */
 .picture {
 	display: inline-grid;
+	/* One cell the size of the box: a picture fills it, centered (object-fit), never its top part only */
+	grid-template: minmax(0, 1fr) / minmax(0, 1fr);
 	place-items: center;
 	overflow: hidden;
 	vertical-align: middle;
