@@ -447,7 +447,7 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
         $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
         $place = $grid->place('grid.example.org:8002/Welcome/128/128/25');
         $links = Blocks::data('popular_places', $grid)['rows'][0]['links'];
-        $found = (new W4OS\Helpers\Block\SearchData($grid))->links('http://grid.example.org:8002', 'Welcome', '128/128/25');
+        $found = W4OS\Helpers\Block\Links::all($grid->placeAt('Welcome', '128/128/25', 'http://grid.example.org:8002'));
         $guide = Blocks::data('destination_guide', $grid, ['category' => 'Destinations Guide'])['items'][0]['links'];
 
         foreach (['browser', 'viewer'] as $client) {
@@ -484,9 +484,9 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
     });
 
     test('a place of the grid with a landing point in decimals keeps its region in a viewer', function () {
-        $search = new W4OS\Helpers\Block\SearchData(guide_grid('edge-cases', 'http://grid.example.org:8002'));
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
 
-        expect($search->teleport('http://grid.example.org:8002', 'Welcome', '116/136/21.75', ['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/116/136/21.75');
+        expect(W4OS\Helpers\Block\Links::to($grid->placeAt('Welcome', '116/136/21.75', 'http://grid.example.org:8002'), ['client' => 'viewer']))->toBe('secondlife://grid.example.org:8002/secondlife/Welcome/116/136/21.75');
     });
 
     test('a card shows what you go to, then where: on this grid the name of the list and its region and point, on another its region and its grid', function () {

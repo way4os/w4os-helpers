@@ -84,7 +84,7 @@
                         {% if item.members.rows ?? [] %}
                             <table class="search-members">
                                 <thead><tr>{% for label in item.members.labels %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead>
-                                <tbody>{% for m in item.members.rows %}<tr><td>{% if m.url %}<a href="{{ m.url }}">{{ m.name }}</a>{% else %}{{ m.name }}{% endif %}</td><td>{{ m.title }}</td><td>{{ m.status }}</td></tr>{% endfor %}</tbody>
+                                <tbody>{% for m in item.members.rows %}<tr>{% for cell in m %}<td>{% if cell.url %}<a href="{{ cell.url }}">{{ cell.value }}</a>{% else %}{{ cell.value }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
                             </table>
                         {% endif %}
                         {% for action in item.actions ?? [] %}<a class="search-action" href="{{ action.url }}">{{ action.label }}</a>{% endfor %}

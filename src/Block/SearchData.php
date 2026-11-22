@@ -9,7 +9,6 @@ use W4OS\Engine\Data\Connections;
 use W4OS\Engine\Data\Database;
 use W4OS\Engine\Data\OSPDO;
 use W4OS\Engine\Exceptions\ChannelUnavailable;
-use W4OS\Engine\Hypergrid\Destination;
 use W4OS\Engine\Models\Grid;
 use W4OS\Engine\Models\Region;
 
@@ -73,45 +72,5 @@ final class SearchData
     private function reachable(): void
     {
         $this->unreachable === null || throw ChannelUnavailable::for('read the search', $this->unreachable);
-    }
-
-    /**
-     * The link to a place the search knows, for where the block is shown (Links::to()), as the engine writes it: its grid (the
-     * grid's own when the row has none), its region, its landing point (Destination::position()); null without a region.
-     *
-     * @param array<string,mixed> $args the arguments of the block (`client`, `agent`)
-     */
-    public function teleport(string $gatekeeper, string $region, string $landing = '', array $args = []): ?string
-    {
-        $place = $this->grid->placeAt($region, $landing, $gatekeeper);
-
-        return $place === null ? null : Links::to($place, $args);
-    }
-
-    /**
-     * The name of a region as a row of the search keeps it, without the grid it may be kept with (`host:port Region`,
-     * `host:port:Region`, the events of a calendar), when that grid is the row's gatekeeper.
-     */
-    public static function regionName(string $kept, string $gatekeeper): string
-    {
-        $parts = parse_url(preg_match('#://#', $gatekeeper) === 1 ? $gatekeeper : "http://$gatekeeper") ?: [];
-        $grid = isset($parts['host']) ? $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '') : '';
-        $kept = trim($kept);
-
-        return $grid !== '' && stripos($kept, $grid) === 0 && in_array(substr($kept, strlen($grid), 1), [' ', ':'], true)
-            ? trim(substr($kept, strlen($grid) + 1))
-            : $kept;
-    }
-
-    /**
-     * The links to a place the search knows, for both clients (Links::all()); none without a region.
-     *
-     * @return array{browser?:list<array{format:int,link:string,label:string}>,viewer?:list<array{format:int,link:string,label:string}>}
-     */
-    public function links(string $gatekeeper, string $region, string $landing = ''): array
-    {
-        $place = $this->grid->placeAt($region, $landing, $gatekeeper);
-
-        return $place === null ? [] : Links::all($place);
     }
 }
