@@ -21,7 +21,8 @@
 .search-number { display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; }
 .search-number label { margin: 0; }
 .search-affix { position: relative; display: inline-block; }
-.block-search .search-affix input { width: 8rem; margin: 0; padding-inline-end: 2.6rem; }
+.block-search .search-affix input { width: 8rem; margin: 0; padding-inline-end: 2.6rem; appearance: textfield; -moz-appearance: textfield; }
+.block-search .search-affix input::-webkit-inner-spin-button, .block-search .search-affix input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .search-suffix { position: absolute; inset-inline-end: .6rem; top: 50%; transform: translateY(-50%); opacity: .7; pointer-events: none; }
 .search-none { opacity: .8; }
 .search-action { display: inline-block; margin: .5rem 0 0; }
