@@ -60,7 +60,7 @@ final class Site
         // would have under the helpers (an address the grid does not set is no address of the grid)
         $page = $this->page($grid, $path);
         if ($page === null) {
-            return self::notProvided($response, $path);
+            return self::notProvided($response, $path, $grid, (string) ($request->getServerParams()['REMOTE_ADDR'] ?? ''));
         }
         if ($page === 'grid_status_rss') {
             return GridStatus::respondRss($response, $grid);
@@ -111,21 +111,42 @@ final class Site
     /** The scripts the viewers and the simulators call in XML-RPC, which read an answer in that format: an error as they read it. */
     private const XMLRPC = ['currency.php', 'landtool.php', 'query.php'];
 
+    /** How long a refusal is logged once for a caller and a path: a day. */
+    private const LOGGED = 86400;
+
     /**
-     * The answer to what the helpers do not provide here (the grid gives it another address, or none): in XML-RPC, with its reason,
-     * for what a viewer or a simulator reads so (the currency, the land tool, the search), else a 404 that says so, never an empty one.
+     * The answer to what the helpers do not provide here (the grid gives it another address, or none): a fault of XML-RPC for what a
+     * viewer or a simulator reads so (the currency, the land tool, the search), which the simulator logs and never says to the
+     * avatar, else a 404 that says so, never an empty one. Logged once a day for each caller and path.
      */
-    private static function notProvided(ResponseInterface $response, string $path): ResponseInterface
+    private static function notProvided(ResponseInterface $response, string $path, Grid $grid, string $caller): ResponseInterface
     {
         $reason = sprintf(I18n::text('%s is not provided here: the grid gives it another address, or none.'), $path);
+        self::logOnce($grid, $caller, $path, $reason);
         if (in_array(basename($path), self::XMLRPC, true)) {
-            $response->getBody()->write(\W4OS\Engine\Services\XmlRpc::encode(\W4OS\Engine\Services\XmlRpc::envelope(false, $reason)));
+            $response->getBody()->write(\W4OS\Engine\Services\XmlRpc::fault(404, $reason));
 
             return $response->withHeader('Content-Type', 'text/xml; charset=utf-8');
         }
         $response->getBody()->write($reason . "\n");
 
         return $response->withStatus(404)->withHeader('Content-Type', 'text/plain; charset=utf-8');
+    }
+
+    /** A refusal in the log of the web server, once a day for each caller and path (the engine's cache of the grid keeps when). */
+    private static function logOnce(Grid $grid, string $caller, string $path, string $reason): void
+    {
+        $key = 'helpers-not-provided:' . sha1($grid->name() . "|$caller|$path");
+        try {
+            $cache = \W4OS\Engine\Data\Cache::for($grid->environment(), $grid->config());
+            if ($cache->has($key)) {
+                return;
+            }
+            $cache->set($key, time(), self::LOGGED);
+        } catch (\Throwable) {
+            // Without a cache, logged each time rather than never
+        }
+        error_log("w4os-helpers: $reason (asked by " . ($caller !== '' ? $caller : 'an unknown caller') . ')');
     }
 
     /**

@@ -96,24 +96,36 @@ describe('a service the grid does not provide here', function () {
         return App::create(static fn(string $nick) => $grid);
     }
 
-    test('is refused in the format the viewer reads for the currency and the search, with its reason', function () {
+    test('is refused with a fault of XML-RPC for the currency and the search, which the simulator logs and never says to the avatar', function () {
         $app = elsewhere_app();
+        // The log of the web server, in a file of the test
+        $log = tempnam(sys_get_temp_dir(), 'helpers-log-');
+        $previous = ini_set('error_log', $log);
+        // A caller of its own (an address of the documentation), whatever an earlier run logged
+        $caller = '2001:db8::' . bin2hex(random_bytes(2));
         $post = static fn(string $path): Psr\Http\Message\ResponseInterface => $app->handle(
-            (new ServerRequestFactory())->createServerRequest('POST', $path)->withHeader('Content-Type', 'text/xml')
+            (new ServerRequestFactory())->createServerRequest('POST', $path, ['REMOTE_ADDR' => $caller])->withHeader('Content-Type', 'text/xml')
                 ->withBody((new Slim\Psr7\Factory\StreamFactory())->createStream(W4OS\Engine\Services\XmlRpc::request('getCurrencyQuote', [['agentId' => '00000000-0000-0000-0000-000000000000', 'currencyBuy' => 1000]]))),
         );
 
         foreach (['/helpers/currency.php', '/helpers/landtool.php', '/helpers/query.php'] as $path) {
             $answer = $post($path);
-            // As the engine answers the viewers (the format of the extension of PHP): success false, the reason
+            // A fault (faultCode, faultString), not an answer whose errorMessage the search module says to the avatar
             $body = (string) $answer->getBody();
             expect($answer->getStatusCode())->toBe(200)
                 ->and($answer->getHeaderLine('Content-Type'))->toContain('xml')
-                ->and($body)->toContain('<name>success</name>')
-                ->and($body)->toContain('<boolean>0</boolean>')
-                ->and($body)->toContain('<name>errorMessage</name>')
+                ->and(W4OS\Engine\Services\XmlRpc::answerOf($body))->toMatchArray(['faultCode' => 404])
+                ->and($body)->not->toContain('errorMessage')
                 ->and($body)->toContain('not provided here');
         }
+        // Asked again: logged once for each caller and path
+        $post('/helpers/query.php');
+        $lines = file($log, FILE_IGNORE_NEW_LINES) ?: [];
+        ini_set('error_log', (string) $previous);
+        unlink($log);
+
+        expect(count(array_filter($lines, static fn(string $line): bool => str_contains($line, '/query.php is not provided here'))))->toBe(1)
+            ->and(count(array_filter($lines, static fn(string $line): bool => str_contains($line, 'not provided here'))))->toBe(3);
     });
 
     test('is a 404 that says so, never an empty answer', function () {
