@@ -23,6 +23,20 @@ describe('language', function () {
             ->and(I18n::plural('%s destination', '%s destinations', 0))->toBe('%s destinations');
     });
 
+    test('a time told relatively where Carbon can run, as a short date beside the translation contracts of Grav 1.7', function () {
+        I18n::use('fr');
+        $time = time() - 2 * 3600;
+        // The interface of symfony/contracts 1, declared first as Grav 1.7's autoloader gives it, in a PHP of its own
+        $code = 'namespace Symfony\\Contracts\\Translation; interface TranslatorInterface { public function trans($id, array $parameters = [], $domain = null, $locale = null); }'
+            . ' require ' . var_export(dirname(__DIR__, 2) . '/vendor/autoload.php', true) . '; \\W4OS\\Helpers\\I18n::use("fr");'
+            . ' echo \\W4OS\\Helpers\\I18n::ago(' . $time . '), "|", \\W4OS\\Helpers\\I18n::date(' . $time . ', "list");';
+        exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code) . ' 2>&1', $output);
+        [$ago, $date] = explode('|', implode("\n", $output) . '|');
+
+        expect(I18n::ago($time))->toBe('il y a 2 heures')
+            ->and($ago)->toBe($date)->not->toContain('il y a')->not->toBe('');
+    });
+
     test('are read without the gettext extension and without the locales of the system', function () {
         // Another PHP, without its configuration (no extension loaded as a module: gettext where it is one), in the C locale
         $code = 'require "' . dirname(__DIR__, 2) . '/vendor/autoload.php"; W4OS\\Helpers\\I18n::use("de"); '

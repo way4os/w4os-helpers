@@ -108,9 +108,16 @@ final class I18n
         return (string) (new \IntlDateFormatter(self::$current, $day, $hour, $date->getTimezone()))->format($date);
     }
 
-    /** A time told relatively in the language in use, as Carbon says it in each language (`2 hours ago`, `il y a 2 heures`). */
+    /**
+     * A time told relatively in the language in use, as Carbon says it in each language (`2 hours ago`, `il y a 2 heures`), where
+     * the host lets Carbon run (w4os-views' Dates::canTellRelative()); the short date with its time else (a site of Grav 1.7).
+     */
     public static function ago(int $time, ?int $now = null): string
     {
+        if (!\W4OS\Views\Dates::canTellRelative()) {
+            return self::date($time, 'list');
+        }
+
         return \Carbon\Carbon::createFromTimestamp($time)->locale(self::$current)
             ->diffForHumans(\Carbon\Carbon::createFromTimestamp($now ?? time()), \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW);
     }
