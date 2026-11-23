@@ -17,7 +17,10 @@ describe('A picture of the grid', function () {
     });
 
     test('of a place has no initials: its picture is always one, the image of its title when it has none of its own', function () {
-        $templates = implode('', array_map('file_get_contents', glob(dirname(__DIR__, 2) . '/templates/components/{destination_guide-block,popular_places-block,profile-items}.twig', GLOB_BRACE)));
+        $templates = implode('', array_map(
+            static fn(string $name): string => (string) file_get_contents(dirname(__DIR__, 2) . "/templates/components/$name.twig"),
+            ['destination_guide-block', 'popular_places-block', 'profile-items'],
+        ));
 
         expect(Picture::tag('/assets/title-50.jpg', null, 'thumbnail'))
             ->toBe('<span class="picture thumbnail"><img src="/assets/title-50.jpg" alt="" loading="lazy" onerror="this.hidden=true"></span>')
