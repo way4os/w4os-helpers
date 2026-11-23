@@ -1,0 +1,14 @@
+{
+    "description": "Twig 1.44, the one of Grav 1.7 (it has advisories: compiled here only, never run on a site), for tests/Environment/TwigTest.php: composer install -d tests/twig1",
+    "require": {
+        "twig/twig": "~1.44.8"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        },
+        "audit": {
+            "block-insecure": false
+        }
+    }
+}

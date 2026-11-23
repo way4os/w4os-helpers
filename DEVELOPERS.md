@@ -18,6 +18,8 @@ The engine ([w4os-engine](https://github.com/way4os/w4os-engine)) owns what is k
 
 Tests are Pest: `tests/Feature` sends PSR-7 requests to the application without a web server, `tests/Unit` and `tests/Environment` check the rest, `tests/Packaging` the packages in a container.
 
+The templates work on Twig 1.44 as on Twig 3: a Grav 1.7 site renders the blocks with its own Twig (1.44). `tests/Environment/TwigTest.php` refuses what Twig 3 alone reads (an arrow in `sort` or `column`, `?.`, the spread, the `types` and `guard` tags, `is sequence` or `mapping`, `has some` or `every`, `??` after a call), and compiles every template with Twig 1.44, a Twig of its own in `tests/twig1`, run in a process of its own: the test installs it when it is missing (`composer install -d tests/twig1`, once per run), and is skipped, saying why, only when composer cannot install it.
+
 ## Translations
 
 - A text is a key with its English default (its `msgctxt` in the `.po` files), never raw English: one English word can take two translations.

@@ -90,3 +90,6 @@ wp-load.php
 /dist/
 AGENTS.md
 boost.json
+
+# The Twig 1.44 of tests/Environment/TwigTest.php
+tests/twig1/composer.lock
