@@ -2,6 +2,11 @@
 
 ### Unreleased
 
+- fix (pages): a page the grid gives no address of is served at its default path (the guide at <base>/guide)
+- fix (pages): what is not provided is a plain 404 Not found in the visitor's language; the log names the address asked
+- fix (guide): its categories open from the home page too (the blocks of a page get the request)
+- new (home): HomeBlocks of [Helpers], the blocks of the home page in their order; the search first by default
+- fix (host): without a grid database, no grid info, status nor message of the day; no people nor groups in the search
 - fix (packaging): w4os-helpers needs w4os-engine 3.0.0~beta.13+514 or later (Grid::helperPaths(), path => service)
 - change (routes): a service may have several addresses (Grid::helperPaths() is path => service)
 - new (routes): the helpers answer the addresses the grid names on its site wherever they are (Grid::helperPaths() of the engine)

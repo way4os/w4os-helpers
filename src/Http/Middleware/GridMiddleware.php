@@ -37,9 +37,11 @@ final class GridMiddleware implements MiddlewareInterface
             if (!$grid->servedByHelpers(self::origin($base) . $uri->getPath())) {
                 return new Response(404);
             }
-            // Under the base, as the routes have it; an address of the grid elsewhere on its site, as it is (Grid::helperPaths())
+            // Under the base, as the routes have it; an address of the grid elsewhere on its site, as it is (Grid::helperPaths()).
+            // The address asked stays known, for what is said of it
             $prefix = rtrim((string) parse_url($base, PHP_URL_PATH), '/');
             $path = $uri->getPath();
+            $request = $request->withAttribute('asked', $path);
             ($prefix === '' || $path === $prefix || str_starts_with($path, "$prefix/")) &&
                 ($request = $request->withUri($uri->withPath(substr($path, strlen($prefix)) ?: '/')));
         }

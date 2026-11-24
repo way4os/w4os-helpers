@@ -63,9 +63,10 @@ final class GridStatusBlock implements Block
      * The rows of the block, as w4os-wp shows them: the status, the numbers of the users, the regions online, the total area.
      *
      * @param array<string,mixed> $monitor what GridMonitor::of() says
+     * @param bool $regions whether the regions are said: a host without the database of the grid knows none
      * @return list<array{label:string,value:string}>
      */
-    public static function rows(array $monitor, string $locale = 'en'): array
+    public static function rows(array $monitor, string $locale = 'en', bool $regions = true): array
     {
         $rows = [];
         $label = self::label($monitor, $locale);
@@ -74,7 +75,7 @@ final class GridStatusBlock implements Block
         foreach (self::labels() as $key => $text) {
             isset($users[$key]) && ($rows[] = ['label' => $text, 'value' => self::number((float) $users[$key], $locale)]);
         }
-        $rows[] = ['label' => I18n::text('Regions'), 'value' => self::number((float) ($monitor['regions']['online'] ?? 0), $locale)];
+        $regions && ($rows[] = ['label' => I18n::text('Regions'), 'value' => self::number((float) ($monitor['regions']['online'] ?? 0), $locale)]);
         isset($users['area']) && ($rows[] = ['label' => I18n::text('Total area'), 'value' => self::area((float) $users['area'], $locale)]);
 
         return $rows;
@@ -83,7 +84,7 @@ final class GridStatusBlock implements Block
     public function data(Grid $grid, array $args = []): array
     {
         $monitor = GridMonitor::of($grid);
-        $rows = self::rows($monitor, I18n::current());
+        $rows = self::rows($monitor, I18n::current(), $grid->hasDatabase());
 
         return ['title' => I18n::text('Grid Status'), 'rows' => $rows, 'monitor' => $monitor];
     }

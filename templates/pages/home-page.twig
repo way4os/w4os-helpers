@@ -1,6 +1,5 @@
-{# The main content of the home page. A grid replaces it with its own template-content-home.twig in its templates folder
-   (OPENSIM_TEMPLATES_DIR). Every block is a variable of its name, dashes as underscores: popular_places, grid_info... #}
+{# The main content of the home page: the blocks HomeBlocks of [Helpers] gives, in its order (the search, then what there is to
+   visit, by default). A grid replaces it with its own home-page.twig in its templates folder (OPENSIM_TEMPLATES_DIR), where every
+   block is also a variable of its name, dashes as underscores: popular_places, grid_info... #}
 <h1 class="grid-name">{{ grid_name }}</h1>
-{{ popular_places }}
-{{ search }}
-{{ destination_guide }}
+{% for block in blocks %}{{ block }}{% endfor %}

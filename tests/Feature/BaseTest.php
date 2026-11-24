@@ -133,7 +133,8 @@ describe('a service the grid does not provide here', function () {
                 ->and($answer->getHeaderLine('Content-Type'))->toContain('xml')
                 ->and(W4OS\Engine\Services\XmlRpc::answerOf($body))->toMatchArray(['faultCode' => 404])
                 ->and($body)->not->toContain('errorMessage')
-                ->and($body)->toContain('not provided here');
+                // Nothing about addresses for the caller: the log of the server says why
+                ->and($body)->toContain('Not found')->not->toContain('not provided here');
         }
         // Asked again: logged once for each caller and path
         $post('/helpers/query.php');
@@ -141,19 +142,63 @@ describe('a service the grid does not provide here', function () {
         ini_set('error_log', (string) $previous);
         unlink($log);
 
-        expect(count(array_filter($lines, static fn(string $line): bool => str_contains($line, '/query.php is not provided here'))))->toBe(1)
+        // The log names the address asked, its base with it
+        expect(count(array_filter($lines, static fn(string $line): bool => str_contains($line, '/helpers/query.php is not provided here'))))->toBe(1)
             ->and(count(array_filter($lines, static fn(string $line): bool => str_contains($line, 'not provided here'))))->toBe(3);
     });
 
-    test('is a 404 that says so, never an empty answer', function () {
+    test('is a plain 404 Not found in the language of the visitor, never about addresses, never an empty answer', function () {
         $app = elsewhere_app();
+        $french = (W4OS\Engine\I18n\Catalog::messages('fr_FR') + W4OS\Engine\I18n\Catalog::MESSAGES)['error_not_found'];
 
-        foreach (['/helpers/register.php', '/helpers/offline.php', '/helpers/guide', '/helpers/nothing'] as $path) {
+        foreach (['/helpers/register.php', '/helpers/offline.php', '/helpers/nothing', '/helpers/something/'] as $path) {
             $answer = base_get($app, $path);
             expect($answer->getStatusCode())->toBe(404)
                 ->and($answer->getHeaderLine('Content-Type'))->toContain('text/plain')
-                ->and((string) $answer->getBody())->toContain('not provided here');
+                ->and(trim((string) $answer->getBody()))->toBe('404 Not found');
         }
+        $answer = $app->handle((new ServerRequestFactory())->createServerRequest('GET', '/helpers/nothing')->withHeader('Accept-Language', 'fr'));
+        expect(trim((string) $answer->getBody()))->toBe("404 $french")->not->toBe('404 Not found');
+    });
+
+    test('a page the grid gives no address of is served at its default path under the base, where the menu links it', function () {
+        $dir = sys_get_temp_dir() . '/helpers-default-pages-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[Const]\nWebURL = \"https://example.com\"\n[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\neconomy = \"https://example.com/charm/\"\n");
+        file_put_contents("$dir/Helpers.ini", "[Helpers]\nHelpersURL = \"https://example.com/charm\"\nGuideSource = \"destinations.txt\"\n");
+        file_put_contents("$dir/destinations.txt", "Visit\nFar beach|far.example.net:8002:Far\nShop\nFar mall|far.example.net:8002:Mall\n");
+        $grid = Grid::at(helpers_environment(), $dir);
+        $app = App::create(static fn(string $nick) => $grid);
+        $back = 'Back to categories';
+
+        $guide = base_get($app, '/charm/guide');
+        expect($guide->getStatusCode())->toBe(200)
+            ->and((string) $guide->getBody())->toContain('Visit', 'Shop', '?category=Visit')
+            // A category, from the guide and from the home page that shows it: its destinations
+            ->and((string) base_get($app, '/charm/guide?category=Visit')->getBody())->toContain($back)
+            ->and((string) base_get($app, '/charm/?category=Visit')->getBody())->toContain($back)
+            ->and(base_get($app, '/charm/nothing')->getStatusCode())->toBe(404);
+    });
+
+    test('the home page shows the blocks Helpers.ini gives, in its order: the search first by default', function () {
+        $dir = sys_get_temp_dir() . '/helpers-home-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[Const]\nWebURL = \"https://example.com\"\n[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\neconomy = \"https://example.com/charm/\"\n");
+        file_put_contents("$dir/destinations.txt", "Visit\nFar beach|far.example.net:8002:Far\n");
+        $home = static function (string $helpers) use ($dir): string {
+            file_put_contents("$dir/Helpers.ini", "[Helpers]\nHelpersURL = \"https://example.com/charm\"\nGuideSource = \"destinations.txt\"\n$helpers");
+            $grid = Grid::at(helpers_environment(), $dir);
+
+            return (string) base_get(App::create(static fn(string $nick) => $grid), '/charm/')->getBody();
+        };
+        $default = $home('');
+        $chosen = $home("HomeBlocks = \"search, popular_places\"\n");
+
+        expect(strpos($default, 'data-helpers-block="search"'))->toBeLessThan((int) strpos($default, 'data-helpers-block="destination_guide"'))
+            ->and($chosen)->toContain('data-helpers-block="search"')->not->toContain('data-helpers-block="destination_guide"')
+            // No grid here (no database of a grid): no info, no status, no message of the day of one; the guide and the search stay
+            ->and($default)->not->toContain('data-helpers-block="grid-info"')->not->toContain('data-helpers-block="grid-status"')
+            ->not->toContain('data-helpers-block="motd"')->toContain('/charm/guide');
     });
 });
 

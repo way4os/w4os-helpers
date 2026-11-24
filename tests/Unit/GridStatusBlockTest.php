@@ -42,4 +42,22 @@ describe('grid status', function () {
             ->and(GridStatusBlock::rows(['level' => GridMonitor::DOWN, 'regions' => ['online' => 0, 'total' => 7]]))
             ->toBe([['label' => 'Status', 'value' => 'Offline'], ['label' => 'Regions', 'value' => '0']]);
     });
+
+    test('a host without the database of a grid shows no regions, no people, no groups: what it cannot serve', function () {
+        $grid = static function (string $robust): W4OS\Engine\Models\Grid {
+            $dir = sys_get_temp_dir() . '/helpers-gridless-' . bin2hex(random_bytes(4));
+            mkdir($dir, 0o755, true);
+            file_put_contents("$dir/Robust.ini", "[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\n$robust");
+
+            return W4OS\Engine\Models\Grid::at(helpers_environment(), $dir);
+        };
+        $without = $grid('');
+        $with = $grid("[DatabaseService]\nConnectionString = \"Data Source=localhost;Database=example;User ID=opensim;Password=x;\"\n");
+        $monitor = ['level' => GridMonitor::DOWN, 'regions' => ['online' => 0, 'total' => 0]];
+
+        expect(array_column(GridStatusBlock::rows($monitor, regions: false), 'label'))->not->toContain('Regions')
+            ->and(W4OS\Helpers\Block\SearchBlock::topics($without))->toBe(['places', 'land', 'events', 'classifieds'])
+            ->and(W4OS\Helpers\Block\SearchBlock::topics($with))->toBe(W4OS\Helpers\Block\SearchBlock::TOPICS);
+    });
 });
+

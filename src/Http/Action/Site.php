@@ -29,6 +29,15 @@ final class Site
         'web-profile' => 'profile',
     ];
 
+    /** The default path of a page under the base (Services::PAGES), where it is served when the grid gives it no address. */
+    private const DEFAULTS = [
+        'search' => 'search',
+        'welcome' => 'welcome',
+        'guide' => 'guide',
+        'grid-status' => 'grid_status',
+        'web-profile' => 'profile',
+    ];
+
     public function __construct(private View $view, private Engine $engine) {}
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -60,7 +69,7 @@ final class Site
         // would have under the helpers (an address the grid does not set is no address of the grid)
         $page = $this->page($grid, $path);
         if ($page === null) {
-            return self::notProvided($response, $path, $grid, (string) ($request->getServerParams()['REMOTE_ADDR'] ?? ''));
+            return self::notProvided($response, (string) ($request->getAttribute('asked') ?? $path), $grid, (string) ($request->getServerParams()['REMOTE_ADDR'] ?? ''));
         }
         if ($page === 'grid_status_rss') {
             return GridStatus::respondRss($response, $grid);
@@ -115,20 +124,21 @@ final class Site
     private const LOGGED = 86400;
 
     /**
-     * The answer to what the helpers do not provide here (the grid gives it another address, or none): a fault of XML-RPC for what a
-     * viewer or a simulator reads so (the currency, the land tool, the search), which the simulator logs and never says to the
-     * avatar, else a 404 that says so, never an empty one. Logged once a day for each caller and path.
+     * The answer to what the helpers do not provide here (the grid gives it another address, or none): a plain 404 Not found in the
+     * language of the visitor, a fault of XML-RPC for what a viewer or a simulator reads so (the currency, the land tool, the
+     * search), which the simulator logs and never says to the avatar. The log of the server says why, once a day for each caller and
+     * the address asked.
      */
     private static function notProvided(ResponseInterface $response, string $path, Grid $grid, string $caller): ResponseInterface
     {
-        $reason = sprintf(I18n::text('%s is not provided here: the grid gives it another address, or none.'), $path);
-        self::logOnce($grid, $caller, $path, $reason);
+        self::logOnce($grid, $caller, $path, "$path is not provided here: the grid gives it another address, or none.");
+        $text = '404 ' . (\W4OS\Engine\I18n\Catalog::messages(I18n::current()) + \W4OS\Engine\I18n\Catalog::MESSAGES)['error_not_found'];
         if (in_array(basename($path), self::XMLRPC, true)) {
-            $response->getBody()->write(\W4OS\Engine\Services\XmlRpc::fault(404, $reason));
+            $response->getBody()->write(\W4OS\Engine\Services\XmlRpc::fault(404, $text));
 
             return $response->withHeader('Content-Type', 'text/xml; charset=utf-8');
         }
-        $response->getBody()->write($reason . "\n");
+        $response->getBody()->write($text . "\n");
 
         return $response->withStatus(404)->withHeader('Content-Type', 'text/plain; charset=utf-8');
     }
@@ -165,7 +175,11 @@ final class Site
             return 'directory_info';
         }
         foreach (self::PAGES as $service => $page) {
+            // Its address under the base, else its default path when the grid gives it none (the menu links it there)
             $address = $this->local($grid, $service);
+            $address ??= isset(self::DEFAULTS[$service]) && trim((string) $grid->address($service)) === ''
+                ? \W4OS\Engine\Provisioning\Web\Services::PAGES[self::DEFAULTS[$service]]
+                : null;
             if ($address !== null && $address !== '/' && self::matches($path, $address, $page)) {
                 return $page;
             }

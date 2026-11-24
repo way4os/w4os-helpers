@@ -59,11 +59,23 @@ final class SearchBlock implements Block
     /** Whether a part of the search could not be done (a database of the grid that cannot be reached) */
     private bool $unavailable = false;
 
+    /**
+     * The kinds of search a grid can answer: all of them, but the people and the groups without the database of the grid (a host of
+     * the search alone).
+     *
+     * @return list<string>
+     */
+    public static function topics(Grid $grid): array
+    {
+        return $grid->hasDatabase() ? self::TOPICS : array_values(array_diff(self::TOPICS, ['people', 'groups']));
+    }
+
     public function data(Grid $grid, array $args = []): array
     {
         $this->unavailable = false;
         $texts = Catalog::messages(I18n::current()) + Catalog::MESSAGES;
-        $topic = in_array($args['topic'] ?? '', self::TOPICS, true) ? (string) $args['topic'] : 'places';
+        $topics = self::topics($grid);
+        $topic = in_array($args['topic'] ?? '', $topics, true) ? (string) $args['topic'] : 'places';
         $asked = self::criteria($topic, $args);
         // On a page of its own (a level, or a kind in its address) it shows results; embedded in another page it is the form alone,
         // until it is used
@@ -109,7 +121,7 @@ final class SearchBlock implements Block
             'topics' => array_map(
                 // The words go with the kind chosen: they are the same search, asked another way
                 fn(string $kind): array => ['topic' => $kind, 'title' => $texts["web_search_$kind"], 'url' => self::page($grid, $args) . "/$kind/" . ($asked['q'] === '' ? '' : '?q=' . rawurlencode($asked['q'])), 'current' => $kind === $topic],
-                self::TOPICS,
+                $topics,
             ),
             'fields' => self::fields($topic, $asked, $texts, (string) ($config?->find('LoginService', 'Currency') ?: 'L$')),
             'submit' => $texts['web_search_submit'],

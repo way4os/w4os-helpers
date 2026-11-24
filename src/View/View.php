@@ -205,11 +205,17 @@ final class View
             // The blocks the template uses are variables of its name
             $source = $this->loader->getSourceContext($template)->getCode();
             $context = ['grid_name' => $grid->name()];
+            // Each block with the arguments of the request: a category of the guide asked on the page that shows it
             foreach (array_keys(Blocks::BLOCKS) as $name) {
                 $variable = str_replace('-', '_', $name);
                 str_contains($source, "{{ $variable }}") &&
-                    ($context[$variable] = new Markup($this->block($name, $grid), 'UTF-8'));
+                    ($context[$variable] = new Markup($this->block($name, $grid, $args), 'UTF-8'));
             }
+            // The blocks of the home page, in the order Helpers.ini gives (HomeBlocks)
+            $page === 'home' && ($context['blocks'] = array_map(
+                fn(string $name): Markup => new Markup($this->block($name, $grid, $args), 'UTF-8'),
+                self::homeBlocks($grid),
+            ));
             $main = $this->twig->render($template, $context);
         } else {
             $main = $block === null ? '' : $this->block($block, $grid, $args + ['level' => 'h1']);
@@ -226,15 +232,17 @@ final class View
         }
         $stylesheet = $this->asset($grid, 'css/page.css');
 
+        // What the grid is and says (its info, its status, its message of the day): none on a host without the database of a grid
+        $sidebars = (!$viewer || $page === 'splash') && $grid->hasDatabase();
         $html = $this->twig->render('layouts/base-layout.twig', [
             'grid_name' => $grid->name(),
             'viewer' => $viewer,
             'slug' => $page,
             'main' => new Markup($main, 'UTF-8'),
-            'sidebars' => !$viewer || $page === 'splash',
-            'grid_info' => new Markup($this->block('grid-info', $grid), 'UTF-8'),
-            'grid_status' => new Markup($this->block('grid-status', $grid), 'UTF-8'),
-            'motd' => new Markup($this->block('motd', $grid), 'UTF-8'),
+            'sidebars' => $sidebars,
+            'grid_info' => new Markup($sidebars ? $this->block('grid-info', $grid) : '', 'UTF-8'),
+            'grid_status' => new Markup($sidebars ? $this->block('grid-status', $grid) : '', 'UTF-8'),
+            'motd' => new Markup($sidebars ? $this->block('motd', $grid) : '', 'UTF-8'),
             'news' => '',
             'menu' => $this->menu($grid, $prefix),
             'labels' => self::labels(),
@@ -250,6 +258,22 @@ final class View
         $this->found = $found;
 
         return $html;
+    }
+
+    /** The blocks of the home page when Helpers.ini says none (HomeBlocks): the search, then what is there to visit. */
+    public const HOME_BLOCKS = ['search', 'popular_places', 'destination_guide'];
+
+    /**
+     * The blocks of the home page of a grid: `HomeBlocks` of `[Helpers]`, their names separated by commas, in their order (a name
+     * that is no block left out); HOME_BLOCKS when it says none.
+     *
+     * @return list<string>
+     */
+    public static function homeBlocks(Grid $grid): array
+    {
+        $said = array_filter(array_map(static fn(string $name): ?string => Blocks::name(trim($name)), explode(',', trim((string) $grid->config()?->find('Helpers', 'HomeBlocks'), " \t\""))));
+
+        return $said === [] ? self::HOME_BLOCKS : array_values(array_unique($said));
     }
 
     /** The folder of the theme of the grid, where what it holds replaces the files of the helpers (`templates/`, `assets/`). */
