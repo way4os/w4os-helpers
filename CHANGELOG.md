@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (brand): the forms take the font of the page (font: inherit on buttons, inputs, selects and text areas)
 - fix (pages): a page nobody provides here is logged by the access log alone; a refused service still once a day
 - new (brand): the icon, accent color and font of the site in Helpers.ini (IconURL, AccentColor, Font, FontURL; engine +524)
 - fix (packaging): w4os-helpers needs w4os-engine 3.0.0~beta.13+523 or later (Grid::hasDatabase())

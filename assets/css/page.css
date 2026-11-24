@@ -5,6 +5,8 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 var(--font, system-ui, sans-serif); }
+/* The forms take the font of the page, not the browser's own */
+button, input, select, textarea { font: inherit; }
 a { color: var(--accent); }
 /* Left to right, 3-6-3, over the whole width: what the grid is, the main content, what is new. On a narrow window the main
    content comes first. */

@@ -21,3 +21,11 @@ describe('The style of the search', function () {
         expect($css)->not->toContain('var(--');
     });
 });
+
+describe('The style of the pages of the helpers', function () {
+    test('gives the font of the page to its forms too: the brand font, never the small one of the browser', function () {
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/page.css');
+
+        expect($css)->toContain('button, input, select, textarea { font: inherit; }');
+    });
+});
