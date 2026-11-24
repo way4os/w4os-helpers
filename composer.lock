@@ -3401,7 +3401,7 @@
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "2786f0d90bf34de817baf7c455ef1313d6562a39"
+                "reference": "22c0f2ed304f197285647f934c6381fa52e4e72a"
             },
             "require": {
                 "egulias/email-validator": "^4.0",
