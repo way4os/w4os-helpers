@@ -178,3 +178,18 @@ describe('The web search and the search of the viewers', function () {
         expect($compared)->toBeGreaterThan(10);
     });
 });
+
+describe('The results of the web search', function () {
+    test('each have a picture, as the cards: its own, the one of the parcel of its place, else the image of its title', function () {
+        [$grid] = parity_search();
+        foreach (['places' => ['q' => 'beach'], 'land' => [], 'events' => ['when' => 'u'], 'classifieds' => ['q' => 'shoes']] as $topic => $asked) {
+            $data = Blocks::data('search', $grid, ['topic' => $topic, 'go' => 1, 'level' => 'h1'] + $asked);
+            $pictures = array_column($data['results'], 'picture');
+
+            expect($pictures)->not->toBe([], $topic)
+                ->and(array_filter($pictures, static fn($p): bool => !is_string($p) || $p === ''))->toBe([], $topic)
+                ->and((string) ($data['selected']['picture'] ?? ''))->toStartWith('title-', $topic);
+        }
+    });
+});
+
