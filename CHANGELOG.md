@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (packaging): w4os-helpers needs w4os-engine 3.0.0~beta.13+531 or later (Grid::shownPicture())
 - new (search): each result with its picture as the cards (Grid::shownPicture()), in full in its detail; its description without a label
 - change (search): the teleport links left out of a description on the web are a transition for a search the engine does not keep
 - fix (search): a description on the web without the hop:// and secondlife:///app/teleport/ links a calendar adds for the viewers
