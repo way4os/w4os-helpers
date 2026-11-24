@@ -7,6 +7,10 @@
         {# The styles in the head, versioned by their date: the page is styled when it shows, and a browser keeps them #}
         <link rel="stylesheet" href="{{ stylesheet }}">
         {% for css in assets.css %}<link rel="stylesheet" href="{{ css }}">{% endfor %}
+        {# The brand of the site, over the variables of the stylesheets: its icon, its font, its accent color #}
+        {% if brand.icon %}<link rel="icon" href="{{ brand.icon }}"><link rel="apple-touch-icon" href="{{ brand.icon }}">{% endif %}
+        {% if brand.fontUrl %}<link rel="stylesheet" href="{{ brand.fontUrl }}">{% endif %}
+        {% if brand.accent or brand.font %}<style>:root {{ '{' }}{% if brand.accent %} --accent: {{ brand.accent }};{% endif %}{% if brand.font %} --font: {{ brand.font }};{% endif %} {{ '}' }}</style>{% endif %}
     </head>
     {# One layout for every page, left to right: what the grid is, the main content, what is new. A viewer shows the content
        alone, except on the splash page; a browser has the top bar and the footer too. #}

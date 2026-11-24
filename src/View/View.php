@@ -252,6 +252,8 @@ final class View
                 $this->files,
             ),
             'logo_url' => $logo,
+            // The brand of the site (IconURL, AccentColor, Font, FontURL of [Helpers]): what is not said keeps the look of the helpers
+            'brand' => $grid->brand(),
             // Last: what the blocks of the page said is in
             'notices' => self::notices(),
         ]);

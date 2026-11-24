@@ -4,7 +4,7 @@
     :root { --bg: #151514; --fg: #ececea; --muted: #9a9a92; --accent: #8fb0f0; --card: #1f1f1d; --line: #34342f; --warning: #f59e0b; --error: #f87171; }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 var(--font, system-ui, sans-serif); }
 a { color: var(--accent); }
 /* Left to right, 3-6-3, over the whole width: what the grid is, the main content, what is new. On a narrow window the main
    content comes first. */

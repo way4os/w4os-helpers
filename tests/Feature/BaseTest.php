@@ -221,3 +221,25 @@ describe('a block of the helpers', function () {
         }
     });
 });
+
+describe('the brand of the pages', function () {
+    test('is the one Helpers.ini gives: the icon of the site, its accent color, its font; nothing said keeps the look of the helpers', function () {
+        $dir = sys_get_temp_dir() . '/helpers-brand-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[Const]\nWebURL = \"https://example.com\"\n[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\neconomy = \"https://example.com/charm/\"\n");
+        $home = static function (string $helpers) use ($dir): string {
+            file_put_contents("$dir/Helpers.ini", "[Helpers]\nHelpersURL = \"https://example.com/charm\"\n$helpers");
+            $grid = Grid::at(helpers_environment(), $dir);
+
+            return (string) base_get(App::create(static fn(string $nick) => $grid), '/charm/')->getBody();
+        };
+        $icon = 'https://example.com/w/wp-content/uploads/2019/09/2do-logo-square-80x80-bordertransp.png';
+        $branded = $home("IconURL = \"$icon\"\nAccentColor = \"#7e3c68\"\nFont = \"Roboto\"\nFontURL = \"https://fonts.example.net/css?family=Roboto\"\n");
+        $plain = $home('');
+
+        expect($branded)->toContain('<link rel="icon" href="' . $icon . '">', '<link rel="apple-touch-icon" href="' . $icon . '">')
+            ->toContain('--accent: #7e3c68', '--font: Roboto', '<link rel="stylesheet" href="https://fonts.example.net/css?family=Roboto">')
+            ->and($plain)->not->toContain('rel="icon"')->not->toContain('--accent: #')->not->toContain('--font:');
+    });
+});
+
