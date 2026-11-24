@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (search): a description on the web without the hop:// and secondlife:///app/teleport/ links a calendar adds for the viewers
 - new (search): the first result shown with its detail from the start, as the search of the viewers
 - fix (brand): the forms take the font of the page (font: inherit on buttons, inputs, selects and text areas)
 - fix (pages): a page nobody provides here is logged by the access log alone; a refused service still once a day

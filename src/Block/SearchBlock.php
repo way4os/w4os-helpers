@@ -331,6 +331,8 @@ final class SearchBlock implements Block
     private static function row(object $model, array $args, array $texts): array
     {
         $row = self::sited($model->detail(), $args);
+        // Its description without the links a calendar adds for the viewers: the page has its own teleport link
+        is_string($row['description'] ?? null) && ($row['description'] = self::webText($row['description']));
         $model instanceof Reachable && ($row['tpLinks'] = Links::all($model));
         $row['searchActions'] = [];
         foreach ($model::itemForm()->fields as $field) {
@@ -338,6 +340,22 @@ final class SearchBlock implements Block
         }
 
         return $row;
+    }
+
+    /**
+     * A text of a result as a web page shows it: without the hop:// and secondlife:///app/teleport/ links a calendar adds for the
+     * viewers (the page has its own teleport link), never another address; the lines they leave empty go with them.
+     */
+    public static function webText(string $text): string
+    {
+        $lines = [];
+        foreach (preg_split('/\R/u', $text) ?: [] as $line) {
+            $kept = trim((string) preg_replace(['#(?<!\S)(hop://|secondlife:///app/teleport/)\S+#iu', '/[ \t]{2,}/'], ['', ' '], $line));
+            // A line of links only is gone; an empty line of the text stays
+            ($kept === '' && trim($line) !== '') || $lines[] = $kept;
+        }
+
+        return implode("\n", $lines);
     }
 
     /**

@@ -252,3 +252,14 @@ describe('The search of groups', function () {
             ->and($html)->toContain('<dt>Key</dt>', '<dt>Birthdate</dt>', '<dt>Account</dt>', '<dt>Groups</dt>', 'Open Profile');
     });
 })->skip(fn() => !extension_loaded('pdo_sqlite'), 'pdo_sqlite is missing');
+
+describe('The description of a result on the web', function () {
+    test('leaves out the hop:// and secondlife:///app/teleport/ links a calendar adds for the viewers, never another address', function () {
+        $text = "Come dance!\nhop://grid.example.org:8002/Club/128/128/25\nsecondlife:///app/teleport/grid.example.org:8002:Club/128/128/25\n" .
+            "Tickets: https://example.org/tickets secondlife://grid.example.org:8002/secondlife/Club and hop://x:8002/Y in a line\n\nSee you";
+
+        expect(W4OS\Helpers\Block\SearchBlock::webText($text))
+            ->toBe("Come dance!\nTickets: https://example.org/tickets secondlife://grid.example.org:8002/secondlife/Club and in a line\n\nSee you");
+    });
+});
+
