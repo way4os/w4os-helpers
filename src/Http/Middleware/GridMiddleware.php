@@ -29,15 +29,19 @@ final class GridMiddleware implements MiddlewareInterface
         }
 
         // The helpers are served under their base (/helpers by default): the routes do not know it. What is outside it is the
-        // site's, never the helpers' (Grid::servedByHelpers() decides, the path asked on the origin of the base)
+        // site's, never the helpers', but the addresses the grid names on its site (Grid::servedByHelpers() decides, the path asked on
+        // the origin of the base)
         $base = $grid->helpersUrl();
         $uri = $request->getUri();
         if ($base !== null) {
             if (!$grid->servedByHelpers(self::origin($base) . $uri->getPath())) {
                 return new Response(404);
             }
+            // Under the base, as the routes have it; an address of the grid elsewhere on its site, as it is (Grid::helperPaths())
             $prefix = rtrim((string) parse_url($base, PHP_URL_PATH), '/');
-            $request = $request->withUri($uri->withPath(substr($uri->getPath(), strlen($prefix)) ?: '/'));
+            $path = $uri->getPath();
+            ($prefix === '' || $path === $prefix || str_starts_with($path, "$prefix/")) &&
+                ($request = $request->withUri($uri->withPath(substr($path, strlen($prefix)) ?: '/')));
         }
 
         return $handler->handle($request->withAttribute('grid', $grid));

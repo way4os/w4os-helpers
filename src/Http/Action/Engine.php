@@ -124,26 +124,11 @@ final class Engine
      */
     public static function paths(Grid $grid): array
     {
-        $economy = $grid->economy();
-        $urls = [
-            'query' => $grid->searchApi(),
-            'register' => $grid->registerUrl(),
-            'offline' => $grid->offlineUrl(),
-            'motd' => $grid->motdUrl(),
-            'currency' => $economy === null ? null : "$economy/currency.php",
-            'landtool' => $economy === null ? null : "$economy/landtool.php",
-            // The web assets of the grid, when the helpers serve them (the pictures under it): the address it sets, else theirs
-            'assets' => $grid->assetsUrl() ?? ($grid->helperUrl('assets') ?: null),
-        ];
-        $prefix = (string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH);
+        // The addresses its config names on its site, wherever they are (Grid::helperPaths()): under the base, as the routes have them
+        $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         $paths = [];
-        foreach ($urls as $service => $url) {
-            // An address of another server (the service is provided elsewhere) is not routed here, whatever its path
-            $url !== null && $grid->helpersUrl() !== null && !$grid->servedByHelpers($url) && ($url = null);
-            $path = $url === null ? '' : (string) parse_url($url, PHP_URL_PATH);
-            if ($path !== '') {
-                $paths[$service] = $prefix !== '' && str_starts_with($path, "$prefix/") ? substr($path, strlen($prefix)) : $path;
-            }
+        foreach ($grid->helperPaths() as $service => $path) {
+            $paths[$service] = $prefix !== '' && str_starts_with($path, "$prefix/") ? substr($path, strlen($prefix)) : $path;
         }
 
         return $paths;

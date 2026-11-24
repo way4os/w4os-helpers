@@ -33,6 +33,23 @@ function base_get(Slim\App $app, string $path, string $agent = 'Mozilla/5.0'): P
     return $app->handle((new ServerRequestFactory())->createServerRequest('GET', $path)->withHeader('User-Agent', $agent));
 }
 
+describe('the helpers answer the addresses of the grid on its site', function () {
+    test('wherever its config names them (the paths an install of before kept), never a path nobody set', function () {
+        $dir = sys_get_temp_dir() . '/helpers-paths-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[Const]\nWebURL = \"https://example.com\"\n[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\neconomy = \"https://example.com/opensim/economy/\"\n");
+        file_put_contents("$dir/OpenSim.ini", "[Messaging]\nOfflineMessageModule = OfflineMessageModule\nOfflineMessageURL = \"https://example.com/helpers/helper/offline.php\"\n");
+        $grid = Grid::at(helpers_environment(), $dir);
+        $app = App::create(static fn(string $nick) => $grid);
+        $post = static fn(string $path) => $app->handle((new ServerRequestFactory())->createServerRequest('POST', $path));
+
+        // The module V1 at the address of before: the engine answers it (no database here: unavailable, never "not found")
+        expect($post('/helpers/helper/offline.php/SaveMessage/')->getStatusCode())->toBe(503)
+            ->and($post('/helpers/helper/other.php')->getStatusCode())->toBe(404)
+            ->and($post('/helpers/helper/offline.phpx')->getStatusCode())->toBe(404);
+    });
+});
+
 describe('the helpers serve only under their base', function () {
     test('their base: the pages the grid sets there, nothing at the address a page of the site would have there, nothing outside', function () {
         $app = base_app('/helpers', ['search' => 'https://example.com/helpers/search'], 'https://example.com/guide');
