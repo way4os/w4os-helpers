@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (search): its box on the web around its tabs, its form, its results and the detail, its title above it; none in a viewer
 - new (search): the day of the events in the date picker of the browser, never before the first event to come; its arrows kept
 - fix (packaging): w4os-helpers needs w4os-engine 3.0.0~beta.13+531 or later (Grid::shownPicture())
 - new (search): each result with its picture as the cards (Grid::shownPicture()), in full in its detail; its description without a label

@@ -28,6 +28,8 @@ body.viewer .layout { padding: .75rem; }
 footer { margin-top: 2rem; padding: 1rem; text-align: center; color: var(--muted); font-size: .875rem; border-top: 1px solid var(--line); }
 h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
 .block { background: var(--card); border: 1px solid var(--line); border-radius: .5rem; padding: 1rem 1.25rem; margin: 1rem 0; }
+/* The search has a box of its own, its title above it (search.css) */
+.block.block-search { background: none; border: 0; padding: 0; }
 .block-title { margin: 0 0 .5rem; }
 .block:first-child { margin-top: 0; }
 .block-table { width: 100%; border-collapse: collapse; }

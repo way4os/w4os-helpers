@@ -1,5 +1,7 @@
 /* The search wherever its block is shown (the pages of the helpers, a site in any theme), in the colors of the page: its kinds as
    tabs, a search bar for each, its list of results and the detail of the one chosen (w4os-views) */
+/* Its box on the web, as the boxes of the grid info and of its status; a viewer shows it as it is */
+.block-search.client-browser .search-box { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: .5rem; }
 .search-topics { display: flex; flex-wrap: wrap; gap: .25rem; margin: 0 0 1rem; border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent); }
 .search-topics a { padding: .4rem .8rem; border: 1px solid transparent; border-bottom: 0; border-radius: .4rem .4rem 0 0; text-decoration: none; color: inherit; opacity: .75; }
 .search-topics a:hover { opacity: 1; }

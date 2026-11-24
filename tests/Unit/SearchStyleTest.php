@@ -40,3 +40,15 @@ describe('The date of the events', function () {
     });
 });
 
+describe('The box of the search', function () {
+    test('holds its tabs, its form, its results and the detail, its title above it; on the web only, as the boxes of the grid info', function () {
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/search.css');
+        $twig = (string) file_get_contents(dirname(__DIR__, 2) . '/templates/components/search-block.twig');
+
+        expect($twig)->toMatch('#class="block block-search search-\{\{ topic \}\} client-\{\{ client[^"]*"#')
+            ->and(strpos($twig, 'class="block-title"'))->toBeLessThan((int) strpos($twig, '<div class="search-box">'))
+            ->and(strpos($twig, '<div class="search-box">'))->toBeLessThan((int) strpos($twig, 'class="search-topics"'))
+            ->and($css)->toContain('.block-search.client-browser .search-box { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: .5rem; }');
+    });
+});
+

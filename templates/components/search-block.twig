@@ -1,5 +1,7 @@
-<section class="block block-search search-{{ topic }}" data-helpers-block="{{ helpers_block }}">
+<section class="block block-search search-{{ topic }} client-{{ client ?? 'browser' }}" data-helpers-block="{{ helpers_block }}">
     {% if title %}<{{ level }} class="block-title">{{ title }}</{{ level }}>{% endif %}
+    {# Its box, on the web: its kinds, its form, its results and the detail, its title above it #}
+    <div class="search-box">
     {# The kinds of search, always offered: each its own form and its own results, as in the viewers #}
     <nav class="search-topics" role="tablist">
         {% for t in topics %}<a role="tab" href="{{ t.url }}"{% if t.current %} aria-current="page" aria-selected="true"{% endif %}>{{ t.title }}</a>{% endfor %}
@@ -46,4 +48,5 @@
             {{ list_detail(list, empty, assets) }}
         {% endif %}
     {% endif %}
+    </div>
 </section>
