@@ -361,9 +361,12 @@ final class SearchBlock implements Block
     private static function row(object $model, array $args, array $texts, Grid $grid): array
     {
         $row = self::sited($model->detail(), $args);
-        // Its picture as the cards have it: its own, else the one of the parcel of its place, else the image of its title
+        // Its picture: its own, else the one of the parcel of its place, when this host can show it; none without one (never the
+        // image of its title in a detail, the cards' alone)
         $model instanceof Reachable && ($url = (string) $model->tpUri()) !== ''
-            && ($row['picture'] = $grid->shownPicture($url, (string) ($row['name'] ?? ''), isset($row['picture']) && is_string($row['picture']) ? $row['picture'] : null));
+            && ($row['picture'] = $grid->shownPicture($url, (string) ($row['name'] ?? ''), isset($row['picture']) && is_string($row['picture']) ? $row['picture'] : null, title: false));
+        // An image of a title is no picture there (a result without a place)
+        is_string($row['picture'] ?? null) && !\W4OS\Engine\Text\Uuid::isValid($row['picture']) && ($row['picture'] = null);
         // Its description without the links a calendar adds for the viewers: the page has its own teleport link
         is_string($row['description'] ?? null) && ($row['description'] = self::webText($row['description']));
         $model instanceof Reachable && ($row['tpLinks'] = Links::all($model));

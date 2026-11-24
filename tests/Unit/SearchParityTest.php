@@ -182,15 +182,15 @@ describe('The web search and the search of the viewers', function () {
 });
 
 describe('The results of the web search', function () {
-    test('each have a picture, as the cards: its own, the one of the parcel of its place, else the image of its title', function () {
+    test('each have their picture: their own, the one of the parcel of their place, none without one (never the image of a title)', function () {
         [$grid] = parity_search();
         foreach (['places' => ['q' => 'beach'], 'land' => [], 'events' => ['when' => 'u'], 'classifieds' => ['q' => 'shoes']] as $topic => $asked) {
             $data = Blocks::data('search', $grid, ['topic' => $topic, 'go' => 1, 'level' => 'h1'] + $asked);
-            $pictures = array_column($data['results'], 'picture');
 
-            expect($pictures)->not->toBe([], $topic)
-                ->and(array_filter($pictures, static fn($p): bool => !is_string($p) || $p === ''))->toBe([], $topic)
-                ->and((string) ($data['selected']['picture'] ?? ''))->toStartWith('title-', $topic);
+            // No parcel of the fixture has a picture
+            expect($data['results'])->not->toBe([], $topic)
+                ->and(array_filter(array_column($data['results'], 'picture')))->toBe([], $topic)
+                ->and($data['selected']['picture'] ?? null)->toBeNull($topic);
         }
     });
 });
@@ -223,8 +223,9 @@ describe('The list of the results', function () {
             $html = $view->block('search', $grid, ['topic' => $topic, 'go' => 1, 'level' => 'h1', 'lang' => 'en'] + $asked);
             $list = substr($html, (int) strpos($html, 'w4os-ld-list'), (int) strpos($html, 'id="search-detail"') - (int) strpos($html, 'w4os-ld-list'));
 
+            // No picture in the rows; none in the detail of a result without one
             expect($list)->not->toContain('<img', $topic)
-                ->and($html)->toContain('w4os-detail-picture', $topic);
+                ->and($html)->not->toContain('w4os-detail-picture', $topic);
         }
     });
 });
