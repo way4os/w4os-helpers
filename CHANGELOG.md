@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (search): the teleport links left out of a description on the web are a transition for a search the engine does not keep
 - fix (search): a description on the web without the hop:// and secondlife:///app/teleport/ links a calendar adds for the viewers
 - new (search): the first result shown with its detail from the start, as the search of the viewers
 - fix (brand): the forms take the font of the page (font: inherit on buttons, inputs, selects and text areas)

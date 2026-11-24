@@ -345,6 +345,9 @@ final class SearchBlock implements Block
     /**
      * A text of a result as a web page shows it: without the hop:// and secondlife:///app/teleport/ links a calendar adds for the
      * viewers (the page has its own teleport link), never another address; the lines they leave empty go with them.
+     *
+     * Transitional: the engine stores the events without them and adds them to the answer of the viewers only
+     * (SearchQuery::viewerDescription()); this is for a search the engine does not keep (an aggregator of before, MaintainSearch = false).
      */
     public static function webText(string $text): string
     {

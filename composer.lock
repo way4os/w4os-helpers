@@ -3401,7 +3401,7 @@
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "93d43e1032d38b7b1189cd92b876f6f5de0fec82"
+                "reference": "bd64e5a4b178b7e809e761d9f767e7662921ec2f"
             },
             "require": {
                 "egulias/email-validator": "^4.0",
@@ -3491,7 +3491,7 @@
             "dist": {
                 "type": "path",
                 "url": "../w4os-views",
-                "reference": "c0cab517aaa820fe118cff452a10d0a93148a0eb"
+                "reference": "2e8d718eea86c9bd9fd4b4714fd8b2b48aef99ae"
             },
             "require": {
                 "ext-intl": "*",
