@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (packaging): w4os-helpers needs w4os-engine 3.0.0~beta.13+514 or later (Grid::helperPaths(), path => service)
 - change (routes): a service may have several addresses (Grid::helperPaths() is path => service)
 - new (routes): the helpers answer the addresses the grid names on its site wherever they are (Grid::helperPaths() of the engine)
 - fix (services): the answer sent and its client freed before the tasks, on any server (the engine's Server::release())

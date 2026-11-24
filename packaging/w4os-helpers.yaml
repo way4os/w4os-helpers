@@ -21,8 +21,8 @@ homepage: https://github.com/way4os/w4os-helpers
 license: AGPL-3.0-or-later
 
 depends:
-  # Every w4os-engine has what the helpers call (the namespace W4OS\Engine)
-  - w4os-engine
+  # The first w4os-engine with what the helpers call (Grid::helperPaths(), path => service)
+  - w4os-engine (>= 3.0.0~beta.13+514)
   - opensim-rest-php
   - php-curl
   - php-intl
