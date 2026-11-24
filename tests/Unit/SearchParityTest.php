@@ -181,6 +181,24 @@ describe('The web search and the search of the viewers', function () {
     });
 });
 
+describe('The text of the search', function () {
+    test('is UTF-8 from the table to the web page and the answer of the viewers: accents, emojis, full-width signs', function () {
+        [$grid, $viewer] = parity_search();
+        $pdo = Connections::pdo($grid->config(), \W4OS\Engine\Data\Database::Search);
+        $name = 'Soirée 🎉 DJ LaRissa＠The Night Owls';
+        $pdo->prepare("INSERT INTO events (owneruuid, name, creatoruuid, category, description, dateUTC, duration, covercharge, coveramount, simname, parcelUUID, globalPos, eventflags, gatekeeperURL, landingpoint) VALUES ('o', ?, 'c', 20, ?, ?, 60, 0, 0, 'Welcome', 'p', '128,128,25', 0, 'http://grid.example.org:8002', '128/128/25')")
+            ->execute([$name, 'Café 🌙 & dance', time() + 1800]);
+        $args = ['topic' => 'events', 'q' => 'soirée', 'when' => 'u', 'rating' => ['general'], 'go' => 1, 'level' => 'h1', 'lang' => 'en'];
+        $web = Blocks::data('search', $grid, $args)['results'];
+        $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('search', $grid, $args);
+        $asked = $viewer->events(['text' => 'u|0|soirée', 'flags' => 1 << 24])['data'];
+
+        expect(array_column($web, 'name'))->toBe([$name])
+            ->and($html)->toContain($name)->toContain('Café 🌙 &amp; dance')
+            ->and(array_column($asked, 'name'))->toBe([$name]);
+    });
+});
+
 describe('The results of the web search', function () {
     test('each have their picture: their own, the one of the parcel of their place, none without one (never the image of a title)', function () {
         [$grid] = parity_search();
