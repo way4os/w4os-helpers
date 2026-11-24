@@ -126,14 +126,15 @@ final class Site
     /**
      * The answer to what the helpers do not provide here (the grid gives it another address, or none): a plain 404 Not found in the
      * language of the visitor, a fault of XML-RPC for what a viewer or a simulator reads so (the currency, the land tool, the
-     * search), which the simulator logs and never says to the avatar. The log of the server says why, once a day for each caller and
-     * the address asked.
+     * search), which the simulator logs and never says to the avatar; for those the log of the server says why, once a day for each
+     * caller and the address asked. A page is the access log's alone.
      */
     private static function notProvided(ResponseInterface $response, string $path, Grid $grid, string $caller): ResponseInterface
     {
-        self::logOnce($grid, $caller, $path, "$path is not provided here: the grid gives it another address, or none.");
         $text = '404 ' . (\W4OS\Engine\I18n\Catalog::messages(I18n::current()) + \W4OS\Engine\I18n\Catalog::MESSAGES)['error_not_found'];
+        // A service a simulator or a viewer calls here is said in the log (a setting to fix); a page is the access log's alone
         if (in_array(basename($path), self::XMLRPC, true)) {
+            self::logOnce($grid, $caller, $path, "$path is not provided here: the grid gives it another address, or none.");
             $response->getBody()->write(\W4OS\Engine\Services\XmlRpc::fault(404, $text));
 
             return $response->withHeader('Content-Type', 'text/xml; charset=utf-8');

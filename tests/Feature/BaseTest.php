@@ -147,8 +147,10 @@ describe('a service the grid does not provide here', function () {
             ->and(count(array_filter($lines, static fn(string $line): bool => str_contains($line, 'not provided here'))))->toBe(3);
     });
 
-    test('is a plain 404 Not found in the language of the visitor, never about addresses, never an empty answer', function () {
+    test('is a plain 404 Not found in the language of the visitor, never about addresses, never an empty answer, never logged', function () {
         $app = elsewhere_app();
+        $log = tempnam(sys_get_temp_dir(), 'helpers-log-');
+        $previous = ini_set('error_log', $log);
         $french = (W4OS\Engine\I18n\Catalog::messages('fr_FR') + W4OS\Engine\I18n\Catalog::MESSAGES)['error_not_found'];
 
         foreach (['/helpers/register.php', '/helpers/offline.php', '/helpers/nothing', '/helpers/something/'] as $path) {
@@ -158,7 +160,12 @@ describe('a service the grid does not provide here', function () {
                 ->and(trim((string) $answer->getBody()))->toBe('404 Not found');
         }
         $answer = $app->handle((new ServerRequestFactory())->createServerRequest('GET', '/helpers/nothing')->withHeader('Accept-Language', 'fr'));
-        expect(trim((string) $answer->getBody()))->toBe("404 $french")->not->toBe('404 Not found');
+        $logged = (string) file_get_contents($log);
+        ini_set('error_log', (string) $previous);
+        unlink($log);
+        expect(trim((string) $answer->getBody()))->toBe("404 $french")->not->toBe('404 Not found')
+            // A page nobody provides here is the access log's alone
+            ->and($logged)->toBe('');
     });
 
     test('a page the grid gives no address of is served at its default path under the base, where the menu links it', function () {
