@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (search): the picture of a result through its model on its grid (SearchResult::realPicture())
 - fix (search): a result without a real picture shows none in its detail (never the image of its title)
 - fix (search): no picture in the rows of its results, in any kind; the picture in the detail only, 280 px high at most
 - change (search): its box on the web around its tabs, its form, its results and the detail, its title above it; none in a viewer

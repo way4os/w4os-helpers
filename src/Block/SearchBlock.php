@@ -100,15 +100,15 @@ final class SearchBlock implements Block
                     'sort' => $sort . ($descending ? ' desc' : ' asc'),
                     'page' => $page,
                     'perPage' => self::LIMIT,
-                ]);
-                $rows = array_map(fn($model): array => self::row($model, $args, $texts, $grid), $found->items());
+                ], $grid);
+                $rows = array_map(fn($model): array => self::row($model, $args, $texts), $found->items());
                 $list = ListView::of($list, $rows, ['total' => $found->total(), 'page' => $page, 'perPage' => self::LIMIT], $query);
                 // The result asked, shown beside the list: read again by its id, with all its page shows (the members of a group); the
                 // first one when none is, as the search of the viewers shows it from the start
                 $id = (string) ($args['id'] ?? '');
                 $id === '' && $rows !== [] && ($id = (string) ($rows[0]['id'] ?? ''));
-                $model = $id === '' ? null : self::MODELS[$topic]::find($config, $id);
-                $view = ListDetailView::of($list, $model === null ? null : self::row($model, $args, $texts, $grid), self::groups($type), param: 'id', region: 'search-detail');
+                $model = $id === '' ? null : self::MODELS[$topic]::find($config, $id, $grid);
+                $view = ListDetailView::of($list, $model === null ? null : self::row($model, $args, $texts), self::groups($type), param: 'id', region: 'search-detail');
             } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
                 Blocks::unreachable($e);
                 $this->unavailable = true;
@@ -358,15 +358,11 @@ final class SearchBlock implements Block
      *
      * @return array<string,mixed>
      */
-    private static function row(object $model, array $args, array $texts, Grid $grid): array
+    private static function row(object $model, array $args, array $texts): array
     {
         $row = self::sited($model->detail(), $args);
-        // Its picture: its own, else the one of the parcel of its place, when this host can show it; none without one (never the
-        // image of its title in a detail, the cards' alone)
-        $model instanceof Reachable && ($url = (string) $model->tpUri()) !== ''
-            && ($row['picture'] = $grid->shownPicture($url, (string) ($row['name'] ?? ''), isset($row['picture']) && is_string($row['picture']) ? $row['picture'] : null, title: false));
-        // An image of a title is no picture there (a result without a place)
-        is_string($row['picture'] ?? null) && !\W4OS\Engine\Text\Uuid::isValid($row['picture']) && ($row['picture'] = null);
+        // Its picture, as its model on its grid gives it (realPicture()): none without one, never the image of its title in a detail
+        $model instanceof \W4OS\Engine\Models\SearchResult && ($row['picture'] = $model->realPicture());
         // Its description without the links a calendar adds for the viewers: the page has its own teleport link
         is_string($row['description'] ?? null) && ($row['description'] = self::webText($row['description']));
         $model instanceof Reachable && ($row['tpLinks'] = Links::all($model));
