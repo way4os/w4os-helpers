@@ -17,9 +17,9 @@
                     <span class="search-when" role="group" aria-label="{{ field.label }}">
                         {% for option in field.options %}<label><input type="radio" name="when" value="{{ option.value }}"{% if option.selected %} checked{% endif %}> {{ option.label }}</label>{% endfor %}
                         <span class="search-day">
-                            <a href="{{ field.previous_url }}" aria-label="{{ field.previous }}" title="{{ field.previous }}">&larr;</a>
-                            <input type="hidden" name="day" value="{{ field.day }}">
-                            <span class="search-date">{{ field.date }}</span>
+                            {% if not field.at_min %}<a href="{{ field.previous_url }}" aria-label="{{ field.previous }}" title="{{ field.previous }}">&larr;</a>{% endif %}
+                            {# The date picker of the browser, in its language; its value ISO; never before the first event to come #}
+                            <input class="search-date" type="date" name="date" value="{{ field.iso }}" min="{{ field.min }}" aria-label="{{ field.label }}" data-search-day>
                             <a href="{{ field.next_url }}" aria-label="{{ field.next }}" title="{{ field.next }}">&rarr;</a>
                         </span>
                     </span>

@@ -29,3 +29,14 @@ describe('The style of the pages of the helpers', function () {
         expect($css)->toContain('button, input, select, textarea { font: inherit; }');
     });
 });
+
+describe('The date of the events', function () {
+    test('chosen in the picker of the browser selects the search of a day', function () {
+        $files = View::blockFiles('search');
+        $js = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/' . ($files['js'][0] ?? 'none'));
+
+        expect($files['js'])->toBe(['js/search.js'])
+            ->and($js)->toContain('[data-search-day]', 'input[name="when"][value="day"]', '.checked = true');
+    });
+});
+

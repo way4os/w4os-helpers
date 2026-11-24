@@ -47,7 +47,7 @@ final class SearchBlock implements Block
     ];
 
     /** What a search asks, in the address of its page: a site gives each of them to the block (rating is a list). */
-    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'go', 'sort', 'page', 'id'];
+    public const PARAMETERS = ['q', 'category', 'rating', 'type', 'price', 'area', 'when', 'day', 'date', 'go', 'sort', 'page', 'id'];
 
     /** The ratings, and the ones asked when a form has not been sent yet (as the viewers: general and moderate). */
     public const RATINGS = ['general', 'moderate', 'adult'];
@@ -77,6 +77,9 @@ final class SearchBlock implements Block
         $topics = self::topics($grid);
         $topic = in_array($args['topic'] ?? '', $topics, true) ? (string) $args['topic'] : 'places';
         $asked = self::criteria($topic, $args);
+        // The events of a day: never before the first one to come (a date before it is that one)
+        $asked['first'] = $topic === 'events' ? self::firstDay($grid) : 0;
+        $asked['day'] = max($asked['day'], $asked['first']);
         // On a page of its own (a level, or a kind in its address) it shows results; embedded in another page it is the form alone,
         // until it is used
         $embedded = !isset($args['level']) && !isset($args['topic']) && !$asked['sent'];
@@ -165,7 +168,8 @@ final class SearchBlock implements Block
             'price' => $number($args['price'] ?? null),
             'area' => $number($args['area'] ?? null),
             'when' => ($args['when'] ?? 'u') === 'day' ? 'day' : 'u',
-            'day' => max(-30, min(30, (int) ($args['day'] ?? 0))),
+            // A day from today: a date (YYYY-MM-DD, the date picker), else a number of days (its arrows)
+            'day' => self::dayOf($args),
             'sent' => $sent,
         ];
     }
@@ -225,7 +229,9 @@ final class SearchBlock implements Block
         }
         if ($topic === 'events') {
             $date = I18n::date(time() + $asked['day'] * 86400, 'date');
-            $fields[] = ['name' => 'when', 'type' => 'when', 'label' => $texts['web_search_when'], 'value' => $asked['when'], 'day' => $asked['day'], 'date' => $date, 'options' => [
+            $fields[] = ['name' => 'when', 'type' => 'when', 'label' => $texts['web_search_when'], 'value' => $asked['when'], 'day' => $asked['day'], 'date' => $date,
+                // The date picker: its day, never before the first event to come (its min)
+                'iso' => date('Y-m-d', time() + $asked['day'] * 86400), 'min' => date('Y-m-d', time() + $asked['first'] * 86400), 'at_min' => $asked['day'] <= $asked['first'], 'options' => [
                 ['value' => 'u', 'label' => $texts['web_search_upcoming'], 'selected' => $asked['when'] === 'u'],
                 ['value' => 'day', 'label' => $texts['web_search_day'], 'selected' => $asked['when'] === 'day'],
             ], 'previous' => $texts['web_search_previous_day'], 'next' => $texts['web_search_next_day'],
@@ -266,6 +272,30 @@ final class SearchBlock implements Block
             'day' => $asked['day'] ?: null,
             'go' => 1,
         ], static fn($value): bool => $value !== null && $value !== '' && $value !== []);
+    }
+
+    /** The day asked, in days from today: its date (YYYY-MM-DD) when it gives one, else its number of days; a year at most each way. */
+    private static function dayOf(array $args): int
+    {
+        $date = (string) ($args['date'] ?? '');
+        $at = preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) === 1 ? strtotime("$date 12:00") : false;
+        $day = $at !== false ? (int) round(($at - strtotime('today 12:00')) / 86400) : (int) ($args['day'] ?? 0);
+
+        return max(-366, min(366, $day));
+    }
+
+    /** The day of the first event to come, in days from today (-1 when it began yesterday), 0 without one. */
+    private static function firstDay(Grid $grid): int
+    {
+        $config = $grid->config();
+        try {
+            $first = $config === null ? null : (\W4OS\Engine\Models\Event::all($config, ['filters' => ['day' => 'u'], 'sort' => 'date asc', 'perPage' => 1])->items()[0] ?? null);
+        } catch (\W4OS\Engine\Exceptions\ChannelUnavailable) {
+            $first = null;
+        }
+        $at = $first === null ? null : (int) ($first->detail()['date'] ?? 0);
+
+        return $at === null || $at <= 0 ? 0 : (int) round((strtotime(date('Y-m-d', $at) . ' 12:00') - strtotime('today 12:00')) / 86400);
     }
 
     /** The query of the search of events on another day, what else it asks kept. */

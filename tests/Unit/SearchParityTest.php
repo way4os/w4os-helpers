@@ -121,7 +121,9 @@ describe('The web search and the search of the viewers', function () {
     test('find the same events, to come or of a day, by category, ratings and words', function () {
         [$grid, $viewer] = parity_search();
         $compared = 0;
-        foreach (['u', 0, 1, -1] as $day) {
+        // The days a visitor can ask: from the one of the first event to come (a day before it is that one)
+        $first = (int) round((strtotime(date('Y-m-d', time() + 3600) . ' 12:00') - strtotime('today 12:00')) / 86400);
+        foreach (['u', $first, $first + 1] as $day) {
             foreach ([0, 20, 23] as $category) {
                 foreach (['', 'jazz', 'late'] as $words) {
                     foreach (parity_ratings() as $ratings) {
@@ -190,6 +192,26 @@ describe('The results of the web search', function () {
                 ->and(array_filter($pictures, static fn($p): bool => !is_string($p) || $p === ''))->toBe([], $topic)
                 ->and((string) ($data['selected']['picture'] ?? ''))->toStartWith('title-', $topic);
         }
+    });
+});
+
+describe('The day of the events', function () {
+    test('is chosen with a date, never before the first event to come: a date before it is that one, never an error', function () {
+        [$grid] = parity_search();
+        $first = date('Y-m-d', time() + 3600);
+        $when = static fn(array $args): array => array_values(array_filter(Blocks::data('search', $grid, ['topic' => 'events', 'go' => 1, 'level' => 'h1'] + $args)['fields'], static fn(array $f): bool => $f['type'] === 'when'))[0];
+        // The day of the talk to come (25 hours from now)
+        $tomorrow = date('Y-m-d', time() + 90000);
+
+        $asked = $when(['when' => 'day', 'date' => $tomorrow]);
+        $past = $when(['when' => 'day', 'date' => '2001-01-01']);
+        $data = Blocks::data('search', $grid, ['topic' => 'events', 'go' => 1, 'level' => 'h1', 'when' => 'day', 'date' => $tomorrow]);
+
+        expect([$asked['iso'], $asked['min'], $asked['value']])->toBe([$tomorrow, $first, 'day'])
+            ->and($past['iso'])->toBe($first)
+            // The same events as the day of its arrows
+            ->and(array_column($data['results'], 'name'))->toBe(array_column(Blocks::data('search', $grid, ['topic' => 'events', 'go' => 1, 'level' => 'h1', 'when' => 'day', 'day' => $asked['day']])['results'], 'name'))
+            ->and(array_column($data['results'], 'name'))->toContain('Tomorrow talk');
     });
 });
 

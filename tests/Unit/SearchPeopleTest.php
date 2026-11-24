@@ -176,7 +176,7 @@ describe('The kinds of search', function () {
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('search', $grid, ['topic' => 'events', 'level' => 'h1', 'id' => '1', 'lang' => 'en']);
 
         expect(array_column($events['results'], 'name'))->toBe(['Jazz night'])
-            ->and($html)->toContain('<dt>Type</dt><dd>Live Music</dd>')
+            ->and($html)->toContain('<dt>Category</dt><dd>Live Music</dd>')
             ->and($sports['results'])->toBe([])
             ->and($classifieds['selected']['category'])->toBe('1');
     });
