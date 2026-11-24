@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- change (routes): a service may have several addresses (Grid::helperPaths() is path => service)
 - new (routes): the helpers answer the addresses the grid names on its site wherever they are (Grid::helperPaths() of the engine)
 - fix (services): the answer sent and its client freed before the tasks, on any server (the engine's Server::release())
 - change (pictures): a place shows the engine's picture, the image of its title without one; no address on its card, no initials

@@ -52,7 +52,7 @@ test('the pictures of the grid are served at /pictures, by the engine', function
 });
 
 test('the pictures of the grid are served at the address of its web assets too, the helpers\' own files left theirs', function () {
-    $paths = ['assets' => '/assets'];
+    $paths = ['/assets' => 'assets'];
 
     expect(Engine::target($paths, '/assets/c14a1985-c549-4485-8779-7103d74ef5e0.jpg'))->toBe('/assets/c14a1985-c549-4485-8779-7103d74ef5e0.jpg');
     expect(Engine::target($paths, '/assets/css/guide.css'))->toBeNull();
@@ -60,9 +60,11 @@ test('the pictures of the grid are served at the address of its web assets too, 
 });
 
 test('a service is found at the address the grid has for it', function () {
-    $paths = ['query' => '/q.php', 'offline' => '/helpers/off', 'currency' => '/eco/currency.php'];
+    // A service may have several addresses (the search of the viewers and of the simulators)
+    $paths = ['/q.php' => 'query', '/helper/query.php' => 'query', '/helpers/off' => 'offline', '/eco/currency.php' => 'currency'];
 
     expect(Engine::target($paths, '/q.php'))->toBe('/search/query');
+    expect(Engine::target($paths, '/helper/query.php'))->toBe('/search/query');
     expect(Engine::target($paths, '/helpers/off/SaveMessage/'))->toBe('/offline-messages/SaveMessage');
     expect(Engine::target($paths, '/eco/currency.php'))->toBe('/currency.php');
     expect(Engine::target($paths, '/query.php'))->toBeNull();

@@ -118,17 +118,17 @@ final class Engine
     }
 
     /**
-     * The addresses of the services of a grid, as paths of the site.
+     * The addresses of the services of a grid, as paths of the site, each with its service (a service may have several).
      *
-     * @return array<string,string> service => path
+     * @return array<string,string> path => service
      */
     public static function paths(Grid $grid): array
     {
         // The addresses its config names on its site, wherever they are (Grid::helperPaths()): under the base, as the routes have them
         $prefix = rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/');
         $paths = [];
-        foreach ($grid->helperPaths() as $service => $path) {
-            $paths[$service] = $prefix !== '' && str_starts_with($path, "$prefix/") ? substr($path, strlen($prefix)) : $path;
+        foreach ($grid->helperPaths() as $path => $service) {
+            $paths[$prefix !== '' && str_starts_with($path, "$prefix/") ? substr($path, strlen($prefix)) : $path] = $service;
         }
 
         return $paths;
@@ -137,7 +137,7 @@ final class Engine
     /**
      * The address in the engine of what a path asks, null when it is not a service of the grid.
      *
-     * @param array<string,string> $paths see paths()
+     * @param array<string,string> $paths see paths(): path => service
      */
     public static function target(array $paths, string $path): ?string
     {
@@ -145,16 +145,16 @@ final class Engine
         // The pictures of the grid (a texture, a profile picture, a map tile, the image of a title), at /pictures and at the address
         // of its web assets: the asset of the engine (a picture only, by its id: the files of the helpers' own /assets are theirs)
         $formats = implode('|', array_keys(\W4OS\Engine\Models\Image::FORMATS));
-        foreach (array_unique(['pictures', trim($paths['assets'] ?? '', '/')]) as $base) {
+        foreach (array_unique(['pictures', ...array_map(static fn($known): string => trim((string) $known, '/'), array_keys($paths, 'assets', true))]) as $base) {
             if ($base !== '' && preg_match('#^/' . preg_quote($base, '#') . '/((?:' . \W4OS\Engine\Assets\TitleImage::ID_PATTERN . ')\.(?:' . $formats . '))$#', $path, $m) === 1) {
                 return "/assets/{$m[1]}";
             }
         }
-        foreach ($paths as $service => $known) {
+        foreach ($paths as $known => $service) {
             if ($service === 'assets') {
                 continue;
             }
-            $known = '/' . trim($known, '/');
+            $known = '/' . trim((string) $known, '/');
             if ($path === $known) {
                 return self::TARGETS[$service];
             }
