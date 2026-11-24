@@ -181,6 +181,8 @@ final class View
             // Its dates as dates, never relative (an event is weeks ahead)
             'dates' => 'long',
             'empty' => $empty,
+            // The rows the name and the time, as the viewers list them: the picture in the detail only
+            'rowPictures' => false,
             // A place, a group: its picture or the image of its title, from the engine; a person: its initials without a picture
             'picture' => static fn(?string $picture, ?string $default, string $name): string => Picture::tag(rtrim($assets, '/') . '/' . ($picture ?? '00000000-0000-0000-0000-000000000000') . '.jpg', $default === 'person' ? $name : null, 'search-picture'),
             'actions' => static fn(ItemView $item): string => implode('', array_map(

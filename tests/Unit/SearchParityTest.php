@@ -215,3 +215,17 @@ describe('The day of the events', function () {
     });
 });
 
+describe('The list of the results', function () {
+    test('shows no picture in its rows, in any kind: the name and the time; the picture is in the detail', function () {
+        [$grid] = parity_search();
+        $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');
+        foreach (['places' => ['q' => 'beach'], 'land' => [], 'events' => ['when' => 'u'], 'classifieds' => ['q' => 'shoes']] as $topic => $asked) {
+            $html = $view->block('search', $grid, ['topic' => $topic, 'go' => 1, 'level' => 'h1', 'lang' => 'en'] + $asked);
+            $list = substr($html, (int) strpos($html, 'w4os-ld-list'), (int) strpos($html, 'id="search-detail"') - (int) strpos($html, 'w4os-ld-list'));
+
+            expect($list)->not->toContain('<img', $topic)
+                ->and($html)->toContain('w4os-detail-picture', $topic);
+        }
+    });
+});
+
