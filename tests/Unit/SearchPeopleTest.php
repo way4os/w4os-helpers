@@ -38,6 +38,15 @@ describe('The search of people', function () {
         expect($people)->toBe(['Ada Lovelace']);
     });
 
+    test('shows the first result with its detail from the start, as the search of the viewers: its list a list of tabs', function () {
+        $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1']);
+        $asked = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1', 'id' => '11111111-1111-4111-8111-111111111111']);
+
+        expect($data['selected']['name'] ?? null)->toBe('Ada Lovelace')
+            ->and($data['list']?->selected)->toBe('11111111-1111-4111-8111-111111111111')
+            ->and($asked['selected']['name'] ?? null)->toBe('Ada Lovelace');
+    });
+
     test('links each one to their profile, at the address the grid gives', function () {
         $data = Blocks::data('search', people_grid(), ['q' => 'la', 'topic' => 'people', 'level' => 'h1']);
 
@@ -202,12 +211,12 @@ describe('The search of groups', function () {
             ->and(array_map(static fn($column): string => $column->label, $data['list']->list->columns))->toBe(['web_search_name', 'web_search_members']);
     });
 
-    test('lists the results with their columns, the one chosen (?id=) showing its detail beside them, its search kept', function () {
+    test('lists the results with their columns, the one chosen (?id=, else the first) showing its detail beside them, its search kept', function () {
         $grid = groups_grid();
         $list = Blocks::data('search', $grid, ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1', 'sort' => '-members']);
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('search', $grid, ['q' => 'lace', 'topic' => 'groups', 'level' => 'h1', 'id' => 'g1', 'lang' => 'en']);
 
-        expect($list['selected'])->toBeNull()
+        expect($list['selected']['id'] ?? null)->toBe($list['results'][0]['id'])
             ->and($list['list']->select['g1'])->toBe(['q' => 'lace', 'rating' => ['general', 'moderate'], 'go' => 1, 'sort' => '-members', 'id' => 'g1'])
             ->and($list['results'][0])->not->toHaveKey('roster')
             ->and($list['list']->list->columns[1]->next)->toBe('members')

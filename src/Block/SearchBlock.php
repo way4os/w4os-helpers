@@ -100,8 +100,10 @@ final class SearchBlock implements Block
                 ]);
                 $rows = array_map(fn($model): array => self::row($model, $args, $texts), $found->items());
                 $list = ListView::of($list, $rows, ['total' => $found->total(), 'page' => $page, 'perPage' => self::LIMIT], $query);
-                // The result asked, shown beside the list: read again by its id, with all its page shows (the members of a group)
+                // The result asked, shown beside the list: read again by its id, with all its page shows (the members of a group); the
+                // first one when none is, as the search of the viewers shows it from the start
                 $id = (string) ($args['id'] ?? '');
+                $id === '' && $rows !== [] && ($id = (string) ($rows[0]['id'] ?? ''));
                 $model = $id === '' ? null : self::MODELS[$topic]::find($config, $id);
                 $view = ListDetailView::of($list, $model === null ? null : self::row($model, $args, $texts), self::groups($type), param: 'id', region: 'search-detail');
             } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {

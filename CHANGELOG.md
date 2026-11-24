@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (search): the first result shown with its detail from the start, as the search of the viewers
 - fix (brand): the forms take the font of the page (font: inherit on buttons, inputs, selects and text areas)
 - fix (pages): a page nobody provides here is logged by the access log alone; a refused service still once a day
 - new (brand): the icon, accent color and font of the site in Helpers.ini (IconURL, AccentColor, Font, FontURL; engine +524)
