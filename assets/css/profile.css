@@ -16,6 +16,10 @@
 /* The details (its groups, its interests...), label left and value right */
 .profile-details { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .25rem 1rem; margin: 0 0 1rem; }
 .profile-details dt, .profile-details dd { margin: 0; }
+/* Its groups one under the other, eight rows at most then a scroll; the grid of a group of another grid muted */
+.profile-group-list { max-height: 12em; overflow-y: auto; margin: 0; padding: 0; list-style: none; line-height: 1.5; }
+.profile-group-list li { margin: 0; padding: 0; }
+.profile-group-grid { opacity: .65; }
 
 /* The stream as a timeline: the date in a margin on the left, small and muted, the message on the right, its actions (a site's)
    at its end; spacing alone between the posts. Where the block is narrow (a viewer's panel, a phone), the date above its message */

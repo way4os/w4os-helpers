@@ -47,8 +47,12 @@ final class ProfileBlock implements Block
             // What the in-world tab shows, as the viewer's: the key, the age of the account in days, the account (its role)
             'key' => (string) ($d['uuid'] ?? ''),
             'age' => (int) ($d['created'] ?? 0) > 0 ? self::age(intdiv(max(0, time() - (int) $d['created']), 86400)) : null,
-            // The groups it shows in its profile (ListInProfile), by name
-            'groups' => $published ? array_column($avatar->groups(), 'name') : [],
+            // The groups it shows in its profile (ListInProfile): the name, and the grid of one of another grid (never its address),
+            // as the grids said their names (what was kept of their grid info, in the store of this grid)
+            'groups' => $published ? array_map(static fn(array $group): array => [
+                'name' => (string) ($group['name'] ?? ''),
+                'grid' => ($group['local'] ?? true) ? '' : trim((string) ($group['grid'] ?? '')),
+            ], $avatar->groups(new \W4OS\Engine\Network\GridInfoCache($grid->environment(), cache: \W4OS\Engine\Data\Cache::for($grid->environment(), $config)))) : [],
             'role' => (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)[Catalog::roleKey((string) ($d['role'] ?? ''))] ?? ''),
             // The picture of the real life, the silhouette of a person of the engine when there is none
             'first_picture' => trim((string) ($d['firstImage'] ?? ''), '0-') !== '' ? (string) $d['firstImage'] : WebAssets::PERSON,

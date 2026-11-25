@@ -89,6 +89,16 @@ describe('The block of a profile', function () {
         )->not->toContain('Member since');
     });
 
+    test('lists its groups one under the other, a few rows then a scroll, the grid of a group of another grid beside it, muted', function () {
+        $code = (string) file_get_contents(dirname(__DIR__, 2) . '/src/Block/ProfileBlock.php');
+        $twig = (string) file_get_contents(dirname(__DIR__, 2) . '/templates/components/profile-block.twig');
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/profile.css');
+
+        expect($code)->toContain("'grid' => (\$group['local'] ?? true) ? '' : trim((string) (\$group['grid'] ?? '')),", '$avatar->groups(new \\W4OS\\Engine\\Network\\GridInfoCache($grid->environment()')
+            ->and($twig)->toContain('<ul class="profile-group-list">{% for group in groups %}<li>{{ group.name }}{% if group.grid %} <small class="profile-group-grid">{{ group.grid }}</small>{% endif %}</li>{% endfor %}</ul>')
+            ->and($css)->toContain('.profile-group-list { max-height: 12em; overflow-y: auto;', '.profile-group-grid { opacity: .65; }');
+    });
+
     test('shows the picks as the viewer: the list, then each one with its picture, description, place and teleport link', function () {
         $html = (new View(dirname(__DIR__, 2) . '/templates'))->block('profile', profile_grid(), ['name' => 'Ada.Love', 'lang' => 'en']);
 

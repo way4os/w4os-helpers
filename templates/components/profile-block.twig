@@ -54,7 +54,8 @@
                         </dl>
                     {% endif %}
                     {% if about %}<div class="profile-about">{{ about|nl2br }}</div>{% endif %}
-                    {% if groups %}<dl class="profile-details profile-groups"><dt>{{ labels.groups }}</dt><dd>{{ groups|join(', ') }}</dd></dl>{% endif %}
+                    {# Its groups one under the other, a few rows then a scroll; one of another grid with the name of that grid, in small #}
+                    {% if groups %}<dl class="profile-details profile-groups"><dt>{{ labels.groups }}</dt><dd><ul class="profile-group-list">{% for group in groups %}<li>{{ group.name }}{% if group.grid %} <small class="profile-group-grid">{{ group.grid }}</small>{% endif %}</li>{% endfor %}</ul></dd></dl>{% endif %}
                 </section>
             {% endif %}
             {% if 'web' in sections %}
