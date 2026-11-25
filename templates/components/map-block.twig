@@ -8,7 +8,7 @@
         <div class="map-view" hidden></div>
         <ul class="map-regions">
             {% for region in regions %}
-                <li class="map-region{{ region.online ? '' : ' is-offline' }}" data-name="{{ region.name }}" data-x="{{ region.x }}" data-y="{{ region.y }}" data-width="{{ region.width }}" data-height="{{ region.height }}">{{ tp_link(region.links, region.name) }}</li>
+                <li class="map-region{{ region.online ? '' : ' is-offline' }}" data-name="{{ region.name }}" data-x="{{ region.x }}" data-y="{{ region.y }}" data-width="{{ region.width }}" data-height="{{ region.height }}"{% for key in ['type', 'estate', 'owner'] %}{% if region[key] ?? false %} data-{{ key }}="{{ region[key] }}"{% endif %}{% endfor %}>{{ tp_link(region.links, region.name) }}</li>
             {% endfor %}
         </ul>
     </div>

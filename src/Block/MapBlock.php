@@ -41,6 +41,10 @@ final class MapBlock implements Block
             'height' => max(1, intdiv((int) ($region['sizeY'] ?? self::REGION), self::REGION)),
             'online' => (bool) ($region['online'] ?? true),
             'links' => self::links((array) ($region['tpLinks'] ?? []), $texts),
+            // What the engine knows of it, each only when set: its type (RegionType), its estate, its owner
+            'type' => trim((string) ($region['type'] ?? '')),
+            'estate' => trim((string) ($region['estate'] ?? '')),
+            'owner' => trim((string) ($region['owner'] ?? '')),
         ], array_values(array_filter((array) ($map['regions'] ?? []), 'is_array')));
         // A map without a region shows nothing either
         if ($regions === []) {
@@ -56,7 +60,7 @@ final class MapBlock implements Block
             'tiles' => rtrim($base, '/') . '/{z}/{x}/{y}.jpg',
             'bounds' => (array) ($map['bounds'] ?? []),
             'center' => (array) ($map['center'] ?? []),
-            'texts' => ['zoom_in' => I18n::text('Zoom in'), 'zoom_out' => I18n::text('Zoom out'), 'find_region' => I18n::text('Find a region'), 'no_region' => I18n::text('No region found'), 'location' => I18n::text('Location', 'map'), 'free_location' => I18n::text('Free location', 'map')],
+            'texts' => ['zoom_in' => I18n::text('Zoom in'), 'zoom_out' => I18n::text('Zoom out'), 'find_region' => I18n::text('Find a region'), 'no_region' => I18n::text('No region found'), 'location' => I18n::text('Location', 'map'), 'type' => I18n::text('Type', 'map'), 'estate' => I18n::text('Estate', 'map'), 'owner' => I18n::text('Owner', 'map'), 'free_location' => I18n::text('Free location', 'map')],
             // The whole height left in the window, when the map is the page (`fill`)
             'fill' => in_array(strtolower(trim((string) ($args['fill'] ?? ''))), ['true', '1', 'yes', 'on'], true),
         ];

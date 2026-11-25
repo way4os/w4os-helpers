@@ -137,14 +137,23 @@
 			line.append(label + " ", code);
 			return line;
 		};
-		// The popup of a region: its name and its teleport link (the ones of the list), its location on the grid; on the water, the
-		// location there, free for a new region
+		// The popup of a region: its name and its teleport link (the ones of the list), its location on the grid, then its type, its
+		// estate and its owner when the grid gives them; on the water, the location there, free for a new region
 		const popup = (region, latlng) => {
 			const content = document.createElement("div");
 			content.className = "map-popup";
 			if (region) {
 				content.append(...[...region.item.childNodes].map((node) => node.cloneNode(true)));
 				content.append(coords(texts.location || "Location", region.x + "," + region.y));
+				["type", "estate", "owner"].forEach((key) => {
+					const value = region.item.dataset[key];
+					if (value) {
+						const line = document.createElement("p");
+						line.className = "map-coords";
+						line.textContent = (texts[key] || key) + " " + value;
+						content.append(line);
+					}
+				});
 			} else {
 				content.append(coords(texts.free_location || "Free location", Math.floor(latlng.lng) + "," + Math.floor(latlng.lat)));
 			}

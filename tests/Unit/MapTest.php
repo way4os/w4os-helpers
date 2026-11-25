@@ -80,6 +80,8 @@ describe('The map of the grid', function () {
             // A click gives its location as OpenSim writes it: the region's, the free one on the water
             ->toContain("coords(texts.location || \"Location\", region.x + \",\" + region.y)", 'coords(texts.free_location || "Free location"')
             ->not->toContain('texts.position')
+            // Then its type, its estate and its owner, each when set
+            ->toContain('["type", "estate", "owner"].forEach((key) => {', 'region.item.dataset[key]')
             // A click gives the teleport link of the list, its menu with it
             ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)')
             // Its layers (Leaflet's panes, z-index 400 and up) in a stacking context of their own, never over the menus of the site
@@ -95,11 +97,12 @@ describe('The map of the grid', function () {
             'name' => 'map', 'helpers_block' => 'map', 'title' => 'Map', 'level' => 'h2', 'labels' => [],
             'tiles' => '/grid-map/{z}/{x}/{y}.jpg', 'bounds' => ['minX' => 1000, 'minY' => 1000, 'maxX' => 1001, 'maxY' => 1000], 'center' => ['x' => 1000, 'y' => 1000],
             'texts' => ['zoom_in' => 'Zoom in', 'zoom_out' => 'Zoom out', 'find_region' => 'Find a region', 'no_region' => 'No region found', 'location' => 'Location', 'free_location' => 'Free location'],
-            'regions' => [['name' => 'Welcome', 'x' => 1000, 'y' => 1000, 'width' => 1, 'height' => 1, 'online' => true, 'links' => []], ['name' => 'Sea', 'x' => 1001, 'y' => 1000, 'width' => 2, 'height' => 2, 'online' => false, 'links' => []]],
+            'regions' => [['name' => 'Welcome', 'x' => 1000, 'y' => 1000, 'width' => 1, 'height' => 1, 'online' => true, 'links' => [], 'type' => '', 'estate' => 'Demo Estate', 'owner' => 'Way Forest'], ['name' => 'Sea', 'x' => 1001, 'y' => 1000, 'width' => 2, 'height' => 2, 'online' => false, 'links' => []]],
         ]);
 
         expect($html)->toContain('<section class="block block-map" data-helpers-block="map">', '<h2 class="block-title">Map</h2>', 'data-map-tiles="/grid-map/{z}/{x}/{y}.jpg"', '<div class="map-view" hidden></div>')
-            ->toContain('<li class="map-region" data-name="Welcome" data-x="1000" data-y="1000" data-width="1" data-height="1"><span data-w4os-tp>Welcome</span></li>')
+            // Its estate and its owner when the grid gives them, never an empty type
+            ->toContain('<li class="map-region" data-name="Welcome" data-x="1000" data-y="1000" data-width="1" data-height="1" data-estate="Demo Estate" data-owner="Way Forest"><span data-w4os-tp>Welcome</span></li>')
             ->toContain('<li class="map-region is-offline" data-name="Sea" data-x="1001" data-y="1000" data-width="2" data-height="2">')
             ->not->toContain('data-map-fill');
     });
