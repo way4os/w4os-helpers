@@ -38,14 +38,14 @@
 .block-map .leaflet-container {
 	font-family: inherit;
 }
-/* The name of a region at the middle of its south edge, as the page's own small cards (its surface, text and corners: Pico's tokens,
-   light and dark), cut to the width of the region (js/map.js); none from too far (map-labels-hidden) */
+/* The name of a region at the middle of its south edge, as the page's own small cards, solid (its surface, text and corners: Pico's
+   tokens, light and dark), cut to the width of the region (js/map.js); none from too far (map-labels-hidden) */
 .block-map .leaflet-tooltip.map-label {
 	margin: 0;
 	padding: 0.1rem 0.45rem;
 	border: 0;
 	border-radius: var(--pico-border-radius, 0.25rem);
-	background: color-mix(in srgb, var(--pico-card-background-color, Canvas) 85%, transparent);
+	background: var(--pico-card-background-color, Canvas);
 	box-shadow: none;
 	color: var(--pico-color, CanvasText);
 	font-weight: 600;
