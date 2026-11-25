@@ -15,7 +15,7 @@
 	if (typeof L === "undefined") {
 		return;
 	}
-	// Leaflet's zooms: a region 2^zoom pixels wide; 8 the tiles' own zoom 1 (256 px), 10 enlarged four times
+	// Leaflet's zooms: a region 2^zoom pixels wide; 8 the tiles' own zoom 1 (256 px), 10 enlarged four times (the closest at least)
 	const ZOOM = { min: 1, native: 8, max: 10 };
 	// The view a map opens on: a region about 128 px wide, never smaller than 32 px (a large grid, regions far apart)
 	const VIEW = { closest: 7, farthest: 5 };
@@ -71,13 +71,15 @@
 			const top = view.getBoundingClientRect().top + window.scrollY;
 			view.style.height = Math.max(288, window.innerHeight - top) + "px";
 		};
+		// The closest zoom: a region filling the smaller side of the map, its tile enlarged (a finer tile keeps its own pixels)
+		const closest = () => Math.max(ZOOM.max, Math.ceil(Math.log2(Math.max(1, Math.min(view.clientWidth, view.clientHeight)))));
 		view.hidden = false;
 		block.classList.add("is-drawn");
 		block.dataset.mapFill && fill();
 		const map = L.map(view, {
 			crs: L.CRS.Simple,
 			minZoom: ZOOM.min,
-			maxZoom: ZOOM.max,
+			maxZoom: closest(),
 			maxBounds: around,
 			zoomControl: false,
 			attributionControl: false,
@@ -85,7 +87,7 @@
 		L.control.zoom({ zoomInTitle: texts.zoom_in || "Zoom in", zoomOutTitle: texts.zoom_out || "Zoom out" }).addTo(map);
 		new GridTiles(block.dataset.mapTiles, {
 			minZoom: ZOOM.min,
-			maxZoom: ZOOM.max,
+			maxZoom: Infinity,
 			maxNativeZoom: ZOOM.native,
 			tileSize: 256,
 			bounds: around,
@@ -94,12 +96,11 @@
 		const zoom = Math.max(VIEW.farthest, Math.min(VIEW.closest, map.getBoundsZoom(grid)));
 		const middle = center.x !== undefined && center.y !== undefined ? [Number(center.y), Number(center.x)] : grid.getCenter();
 		map.setView(middle, zoom);
-		if (block.dataset.mapFill) {
-			window.addEventListener("resize", () => {
-				fill();
-				map.invalidateSize();
-			});
-		}
+		window.addEventListener("resize", () => {
+			block.dataset.mapFill && fill();
+			map.invalidateSize();
+			map.setMaxZoom(closest());
+		});
 
 		// The name of each region above it, from close enough
 		regions.forEach((region) => {

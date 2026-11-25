@@ -64,6 +64,8 @@ describe('The map of the grid', function () {
         $js = (string) file_get_contents($assets . 'js/map.js');
 
         expect($js)->toContain('crs: L.CRS.Simple', 'const ZOOM = { min: 1, native: 8, max: 10 };', 'ZOOM.native + 1 - Math.min(this._tileZoom, ZOOM.native)', 'Math.pow(2, zoom - 1)', '(Math.abs(coords.y) - 1) * regions', 'maxNativeZoom: ZOOM.native', 'maxBounds')
+            // Closer until a region fills the smaller side of the map, whatever its size, its tile enlarged
+            ->toContain('Math.max(ZOOM.max, Math.ceil(Math.log2(Math.max(1, Math.min(view.clientWidth, view.clientHeight)))))', 'maxZoom: closest()', 'map.setMaxZoom(closest())')
             // It opens on its whole, a region about 128 px wide at most, 32 px at least, on the center the engine gives
             ->toContain('const VIEW = { closest: 7, farthest: 5 };', 'Math.max(VIEW.farthest, Math.min(VIEW.closest, map.getBoundsZoom(grid)))', '[Number(center.y), Number(center.x)]')
             // The name of each region above it, from 64 px a region
