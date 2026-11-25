@@ -66,8 +66,8 @@ describe('The map of the grid', function () {
         expect($js)->toContain('crs: L.CRS.Simple', 'const ZOOM = { min: 1, native: 8, max: 10 };', 'ZOOM.native + 1 - Math.min(this._tileZoom, ZOOM.native)', 'Math.pow(2, zoom - 1)', '(Math.abs(coords.y) - 1) * regions', 'maxNativeZoom: ZOOM.native', 'maxBounds')
             // Closer until a region fills the smaller side of the map, whatever its size, its tile enlarged
             ->toContain('Math.max(ZOOM.max, Math.ceil(Math.log2(Math.max(1, Math.min(view.clientWidth, view.clientHeight)))))', 'maxZoom: closest()', 'map.setMaxZoom(closest())')
-            // It opens on its whole, a region about 128 px wide at most, 32 px at least, on the center the engine gives
-            ->toContain('const VIEW = { closest: 7, farthest: 5 };', 'Math.max(VIEW.farthest, Math.min(VIEW.closest, map.getBoundsZoom(grid)))', '[Number(center.y), Number(center.x)]')
+            // It opens on its regions fitting it, never smaller than 128 px a region, on the center the engine gives then
+            ->toContain('const VIEW = { farthest: 7, margin: 16 };', 'map.getBoundsZoom(grid, false, L.point(2 * VIEW.margin, 2 * VIEW.margin))', 'fitted >= VIEW.farthest ? map.setView(grid.getCenter(), fitted) : map.setView(middle, VIEW.farthest)', '[Number(center.y), Number(center.x)]', 'zoomSnap: 0.25')
             // The name of each region above it, from 64 px a region
             ->toContain('const LABELS = 6;', 'direction: "top", className: "map-label"', 'map.getZoom() < LABELS')
             // The whole height left in the window when the page asks it
