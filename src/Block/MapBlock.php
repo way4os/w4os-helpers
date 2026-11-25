@@ -26,7 +26,7 @@ final class MapBlock implements Block
         } catch (\W4OS\Engine\Exceptions\ChannelUnavailable $e) {
             Blocks::unreachable($e);
 
-            return ['title' => I18n::text('Map'), 'regions' => [], 'unavailable' => true];
+            return ['title' => self::title(), 'regions' => [], 'unavailable' => true];
         }
         if ($map === null) {
             return [];
@@ -51,13 +51,19 @@ final class MapBlock implements Block
         $base = $base !== '' ? $base : rtrim((string) parse_url((string) $grid->helpersUrl(), PHP_URL_PATH), '/') . '/map';
 
         return [
-            'title' => I18n::text('Map'),
+            'title' => self::title(),
             'regions' => $regions,
             'tiles' => rtrim($base, '/') . '/{z}/{x}/{y}.jpg',
             'bounds' => (array) ($map['bounds'] ?? []),
             'center' => (array) ($map['center'] ?? []),
             'texts' => ['zoom_in' => I18n::text('Zoom in'), 'zoom_out' => I18n::text('Zoom out')],
         ];
+    }
+
+    /** Its title, the engine's (the title of the map of the sites too), in the language of the page. */
+    private static function title(): string
+    {
+        return (string) ((Catalog::messages(I18n::current()) + Catalog::MESSAGES)['map_title'] ?? 'Map');
     }
 
     /**

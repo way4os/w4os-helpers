@@ -93,7 +93,16 @@ describe('The map of the grid', function () {
             ->and(array_column($regions['Welcome']['links']['browser'], 'link'))->toContain('hop://grid.example.org:8002/Welcome')
             ->and($data['tiles'])->toBe('/grid-map/{z}/{x}/{y}.jpg')
             ->and($data['bounds'])->toBe(['minX' => 1000, 'minY' => 1000, 'maxX' => 1004, 'maxY' => 1002])
-            ->and($data['center'])->toBe(['x' => 1000.5, 'y' => 1000.5]);
+            ->and($data['center'])->toBe(['x' => 1000.5, 'y' => 1000.5])
+            // Its title the engine's, in the language of the page
+            ->and($data['title'])->toBe('Map')
+            ->and((function () {
+                W4OS\Helpers\I18n::use('fr');
+                $title = Blocks::data('map', helpers_map_grid())['title'];
+                W4OS\Helpers\I18n::use('en');
+
+                return $title;
+            })())->toBe('Carte');
     });
 
     test('shows nothing on a grid without a map, its title neither', function () {
