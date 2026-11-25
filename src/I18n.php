@@ -53,10 +53,17 @@ final class I18n
         return self::$current = 'en';
     }
 
-    /** A text in the language in use, the English one when it has no translation. */
-    public static function text(string $message): string
+    /**
+     * A text in the language in use, the English one when it has no translation. A context (gettext's msgctxt) keeps a text apart
+     * from the same English words elsewhere, its translation its own (the map's "Location": grid coordinates, not a place).
+     */
+    public static function text(string $message, ?string $context = null): string
     {
-        return self::$translator?->gettext($message) ?? $message;
+        if (self::$translator === null) {
+            return $message;
+        }
+
+        return $context === null ? self::$translator->gettext($message) : self::$translator->pgettext($context, $message);
     }
 
     /** A text that depends on a number, in the language in use (its plural forms), the English one when it has no translation. */
