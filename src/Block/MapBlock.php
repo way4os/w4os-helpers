@@ -56,7 +56,7 @@ final class MapBlock implements Block
             'tiles' => rtrim($base, '/') . '/{z}/{x}/{y}.jpg',
             'bounds' => (array) ($map['bounds'] ?? []),
             'center' => (array) ($map['center'] ?? []),
-            'texts' => ['zoom_in' => I18n::text('Zoom in'), 'zoom_out' => I18n::text('Zoom out')],
+            'texts' => ['zoom_in' => I18n::text('Zoom in'), 'zoom_out' => I18n::text('Zoom out'), 'find_region' => I18n::text('Find a region'), 'no_region' => I18n::text('No region found')],
             // The whole height left in the window, when the map is the page (`fill`)
             'fill' => in_array(strtolower(trim((string) ($args['fill'] ?? ''))), ['true', '1', 'yes', 'on'], true),
         ];

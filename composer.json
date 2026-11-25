@@ -31,7 +31,8 @@
         "gettext/gettext": "^5.7",
         "gettext/translator": "^1.2",
         "w4os/w4os-views": "@dev",
-        "npm-asset/leaflet": "1.9.4"
+        "npm-asset/leaflet": "1.9.4",
+        "npm-asset/tom-select": "2.7.0"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
@@ -76,6 +77,18 @@
                     "type": "tar",
                     "url": "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz",
                     "shasum": "23fae724e282fa25745aff82ca4d394748db7d8d"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/tom-select",
+                "version": "2.7.0",
+                "dist": {
+                    "type": "tar",
+                    "url": "https://registry.npmjs.org/tom-select/-/tom-select-2.7.0.tgz",
+                    "shasum": "87325ad8f308c1bdba3d1b8941171c3a485e4a94"
                 }
             }
         }

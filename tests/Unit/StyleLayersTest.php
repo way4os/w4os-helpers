@@ -22,7 +22,7 @@ describe('The styles of the helpers', function () {
                 ->and(View::blockFiles($block)['css'])->toBe($web);
             // A library's from its package (View::LIBRARIES, MapTest), the others among the assets
             foreach (array_merge($web, $viewer) as $file) {
-                expect(is_file($assets . $file) || str_starts_with($file, View::LEAFLET))->toBeTrue($file);
+                expect(is_file($assets . $file) || array_filter(array_keys(View::LIBRARIES), fn(string $prefix) => str_starts_with($file, $prefix)) !== [])->toBeTrue($file);
             }
         }
 

@@ -46,17 +46,23 @@ final class View
         'profile' => ['css' => ['css/profile.css'], 'js' => []],
         'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'web' => ['css' => ['css/search.web.css']], 'js' => ['js/search.js']],
         // The map in a browser (Leaflet); a viewer has its own world map: the list of the regions there
-        'map' => ['css' => ['css/map.css'], 'web' => ['css' => [self::LEAFLET . 'leaflet.css', 'css/map.web.css'], 'js' => [self::LEAFLET . 'leaflet.js', 'js/map.js']], 'viewer' => ['css' => ['css/map.viewer.css']], 'js' => []],
+        'map' => ['css' => ['css/map.css'], 'web' => ['css' => [self::LEAFLET . 'leaflet.css', self::TOM_SELECT . 'css/tom-select.min.css', 'css/map.web.css'], 'js' => [self::LEAFLET . 'leaflet.js', self::TOM_SELECT . 'js/tom-select.popular.min.js', 'js/map.js']], 'viewer' => ['css' => ['css/map.viewer.css']], 'js' => []],
     ];
 
     /** The prefix of the files of Leaflet among the assets the helpers serve (`lib/leaflet/leaflet.js`): the ones of LIBRARIES. */
     public const LEAFLET = 'lib/leaflet/';
 
+    /** The prefix of the files of Tom Select (the region picker of the map): the ones of LIBRARIES. */
+    public const TOM_SELECT = 'lib/tom-select/';
+
     /**
      * The libraries of the browser the helpers serve, by the prefix of their files among the assets: the package (npm releases pinned
      * in composer.json) and its folder of the files served. A site that installs the helpers serves them from its own vendor.
      */
-    public const LIBRARIES = [self::LEAFLET => ['package' => 'npm-asset/leaflet', 'folder' => 'dist/']];
+    public const LIBRARIES = [
+        self::LEAFLET => ['package' => 'npm-asset/leaflet', 'folder' => 'dist/'],
+        self::TOM_SELECT => ['package' => 'npm-asset/tom-select', 'folder' => 'dist/'],
+    ];
 
     /** The layer of the styles of each client (Destination::CLIENTS): a browser has the web's, a viewer the viewer's, never both. */
     public const LAYERS = ['browser' => 'web', 'viewer' => 'viewer'];

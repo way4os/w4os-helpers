@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "276c66750e117ef3c9314660c09535f6",
+    "content-hash": "ad9537a961921b46c0d6491efeb42488",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -1288,6 +1288,16 @@
                 "type": "tar",
                 "url": "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz",
                 "shasum": "23fae724e282fa25745aff82ca4d394748db7d8d"
+            },
+            "type": "library"
+        },
+        {
+            "name": "npm-asset/tom-select",
+            "version": "2.7.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/tom-select/-/tom-select-2.7.0.tgz",
+                "shasum": "87325ad8f308c1bdba3d1b8941171c3a485e4a94"
             },
             "type": "library"
         },
@@ -3411,7 +3421,7 @@
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "7c9556bc9757e382d64a5aa0290156782845dae8"
+                "reference": "754ff6c014941e0a1a0c5d8b031e6b7ff5ef8964"
             },
             "require": {
                 "egulias/email-validator": "^4.0",

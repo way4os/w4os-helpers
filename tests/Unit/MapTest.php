@@ -43,7 +43,7 @@ describe('The map of the grid', function () {
 
     test('is a block of the helpers, its tiles and its script for a browser alone: a viewer has the list of its regions', function () {
         expect(W4OS\Helpers\Block\Blocks::BLOCKS['map'])->toBe(W4OS\Helpers\Block\MapBlock::class)
-            ->and(View::blockFiles('map', 'browser'))->toBe(['css' => ['css/map.css', 'lib/leaflet/leaflet.css', 'css/map.web.css'], 'js' => ['lib/leaflet/leaflet.js', 'js/map.js']])
+            ->and(View::blockFiles('map', 'browser'))->toBe(['css' => ['css/map.css', 'lib/leaflet/leaflet.css', 'lib/tom-select/css/tom-select.min.css', 'css/map.web.css'], 'js' => ['lib/leaflet/leaflet.js', 'lib/tom-select/js/tom-select.popular.min.js', 'js/map.js']])
             ->and(View::blockFiles('map', 'viewer'))->toBe(['css' => ['css/map.css', 'css/map.viewer.css'], 'js' => []]);
     });
 
@@ -56,6 +56,9 @@ describe('The map of the grid', function () {
             ->and($view->asset($grid, 'lib/leaflet/leaflet.js'))->toEndWith('npm-asset/leaflet/dist/leaflet.js')
             ->and($view->asset($grid, 'lib/leaflet/leaflet.css'))->toEndWith('npm-asset/leaflet/dist/leaflet.css')
             ->and($view->asset($grid, 'lib/leaflet/images/layers.png'))->toBeString()
+            // Tom Select, the region picker, from its package as well
+            ->and($view->asset($grid, 'lib/tom-select/js/tom-select.popular.min.js'))->toEndWith('npm-asset/tom-select/dist/js/tom-select.popular.min.js')
+            ->and($view->asset($grid, 'lib/tom-select/css/tom-select.min.css'))->toEndWith('npm-asset/tom-select/dist/css/tom-select.min.css')
             ->and($view->asset($grid, 'lib/leaflet/../package.json'))->toBeNull()
             ->and((string) file_get_contents($assets . 'js/map.js'))->not->toMatch('#https?://#');
     });
@@ -72,6 +75,8 @@ describe('The map of the grid', function () {
             ->toContain('const LABELS = 6;', 'direction: "top", className: "map-label"', 'map.getZoom() < LABELS')
             // The whole height left in the window when the page asks it
             ->toContain('block.dataset.mapFill && fill();', 'window.innerHeight - top)')
+            // A picker of the regions by their names, top right (Tom Select): the one picked fills the map, its popup open
+            ->toContain('new TomSelect(', 'view.after(box)', 'map.flyToBounds(area', 'map.once("moveend", () => popup(region, area.getCenter()))', 'texts.find_region', 'texts.no_region')
             // A click gives the teleport link of the list, its menu with it
             ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)')
             // Its layers (Leaflet's panes, z-index 400 and up) in a stacking context of their own, never over the menus of the site
@@ -86,7 +91,7 @@ describe('The map of the grid', function () {
         $html = $twig->render('components/map-block.twig', [
             'name' => 'map', 'helpers_block' => 'map', 'title' => 'Map', 'level' => 'h2', 'labels' => [],
             'tiles' => '/grid-map/{z}/{x}/{y}.jpg', 'bounds' => ['minX' => 1000, 'minY' => 1000, 'maxX' => 1001, 'maxY' => 1000], 'center' => ['x' => 1000, 'y' => 1000],
-            'texts' => ['zoom_in' => 'Zoom in', 'zoom_out' => 'Zoom out'],
+            'texts' => ['zoom_in' => 'Zoom in', 'zoom_out' => 'Zoom out', 'find_region' => 'Find a region', 'no_region' => 'No region found'],
             'regions' => [['name' => 'Welcome', 'x' => 1000, 'y' => 1000, 'width' => 1, 'height' => 1, 'online' => true, 'links' => []], ['name' => 'Sea', 'x' => 1001, 'y' => 1000, 'width' => 2, 'height' => 2, 'online' => false, 'links' => []]],
         ]);
 

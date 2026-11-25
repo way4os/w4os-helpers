@@ -1,7 +1,7 @@
 /**
  * js/map.js: the map of the grid in a browser (the block map, MapBlock), on Leaflet: its tiles as the grid serves them, the name of
  * each region above it from close enough, a click on a region giving its name and its teleport link (the one of the list of the
- * block, w4os-views' teleport link, its menu included).
+ * block, w4os-views' teleport link, its menu included); a picker of the regions by their names (Tom Select) taking the map to one.
  *
  * The method of the Second Life maps (maps.secondlife.com) for the tiles of OpenSimulator, as GwynethLlewelyn/goswi applies it
  * (leaflet-gridmap.js, BSD-3): a simple projection (L.CRS.Simple) whose unit is a region, x east and y north from the origin of the
@@ -115,19 +115,49 @@
 		map.on("zoomend", labels);
 		labels();
 
-		// A click on a region: its name and its teleport link, the ones of the list
+		// The popup of a region: its name and its teleport link, the ones of the list
+		const popup = (region, latlng) => {
+			const content = document.createElement("div");
+			content.className = "map-popup";
+			content.append(...[...region.item.childNodes].map((node) => node.cloneNode(true)));
+			L.popup({ maxWidth: 280 }).setLatLng(latlng).setContent(content).openOn(map);
+			window.W4OSTeleportLinks?.setup(content);
+		};
 		map.on("click", (event) => {
 			const x = Math.floor(event.latlng.lng);
 			const y = Math.floor(event.latlng.lat);
 			const region = regions.find((r) => x >= r.x && x < r.x + r.width && y >= r.y && y < r.y + r.height);
-			if (!region) {
-				return;
-			}
-			const content = document.createElement("div");
-			content.className = "map-popup";
-			content.append(...[...region.item.childNodes].map((node) => node.cloneNode(true)));
-			L.popup({ maxWidth: 280 }).setLatLng(event.latlng).setContent(content).openOn(map);
-			window.W4OSTeleportLinks?.setup(content);
+			region && popup(region, event.latlng);
 		});
+
+		// The region picker over the map, top right (Tom Select, beside Leaflet's controls: they keep the events of the mouse from the
+		// page, it needs them): the regions matching what is typed; the one picked fills the map, its popup open
+		if (typeof TomSelect !== "undefined") {
+			const label = texts.find_region || "Find a region";
+			const box = document.createElement("div");
+			const select = document.createElement("select");
+			box.className = "map-picker";
+			select.setAttribute("aria-label", label);
+			box.append(select);
+			view.after(box);
+			new TomSelect(select, {
+				options: regions.map((region, index) => ({ value: String(index), text: region.name })),
+				sortField: { field: "text" },
+				placeholder: label,
+				maxOptions: 50,
+				render: { no_results: (data, escape) => `<div class="no-results">${escape(texts.no_region || "No region found")}</div>` },
+				onChange(value) {
+					const region = regions[Number(value)];
+					if (!region) {
+						return;
+					}
+					const area = L.latLngBounds([region.y, region.x], [region.y + region.height, region.x + region.width]);
+					map.once("moveend", () => popup(region, area.getCenter()));
+					map.flyToBounds(area, { padding: [VIEW.margin, VIEW.margin] });
+					this.clear(true);
+					this.blur();
+				},
+			});
+		}
 	});
 })();
