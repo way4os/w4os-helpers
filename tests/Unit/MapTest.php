@@ -65,7 +65,9 @@ describe('The map of the grid', function () {
 
         expect($js)->toContain('crs: L.CRS.Simple', 'zoomOffset: 1', 'zoomReverse: true', 'Math.pow(2, zoom - 1)', '(Math.abs(coords.y) - 1) * regions', 'maxBounds')
             // A click gives the teleport link of the list, its menu with it
-            ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)');
+            ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)')
+            // Its buttons Leaflet's, whatever a theme does with [role=button]
+            ->and((string) file_get_contents($assets . 'css/map.web.css'))->toContain(".block-map .leaflet-bar a {\n\tmargin: 0;\n\tpadding: 0;\n}");
     });
 
     test('lists its regions with their teleport links, the list the map takes its popups from, readable without a script', function () {

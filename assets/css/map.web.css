@@ -16,6 +16,11 @@
 .block-map .map.is-drawn .map-regions {
 	display: none;
 }
+/* The buttons of the map as Leaflet draws them, never the buttons of a theme (its padding on [role=button]: Pico's, Quark2's) */
+.block-map .leaflet-bar a {
+	margin: 0;
+	padding: 0;
+}
 /* The popup of a region: its teleport link, its menu over the map */
 .block-map .leaflet-popup-content {
 	margin: 0.6rem 0.9rem;
