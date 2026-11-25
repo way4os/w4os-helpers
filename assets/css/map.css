@@ -20,3 +20,7 @@
 .block-map .map-region.is-offline {
 	opacity: 0.6;
 }
+/* The layers of the map (Leaflet's panes, z-index 400 and up) in a stacking context of their own: never over the menus of the site */
+.block-map .map-view {
+	isolation: isolate;
+}

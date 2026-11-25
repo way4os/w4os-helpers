@@ -72,6 +72,8 @@ describe('The map of the grid', function () {
             ->toContain('block.dataset.mapFill && fill();', 'window.innerHeight - top)')
             // A click gives the teleport link of the list, its menu with it
             ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)')
+            // Its layers (Leaflet's panes, z-index 400 and up) in a stacking context of their own, never over the menus of the site
+            ->and((string) file_get_contents($assets . 'css/map.css'))->toContain(".block-map .map-view {\n\tisolation: isolate;\n}")
             // Its buttons Leaflet's, whatever a theme does with [role=button]
             ->and((string) file_get_contents($assets . 'css/map.web.css'))->toContain(".block-map .leaflet-bar a {\n\tmargin: 0;\n\tpadding: 0;\n}");
     });
