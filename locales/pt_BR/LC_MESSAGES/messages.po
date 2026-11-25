@@ -2,221 +2,254 @@ msgid ""
 msgstr ""
 "Project-Id-Version: w4os-helpers\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-19 11:16-0400\n"
+"POT-Creation-Date: 2026-11-25 14:31-0400\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: src/Block/Blocks.php:33
 #, php-format
 msgid "The database of the grid cannot be reached: %s"
 msgstr "O banco de dados do grid não pode ser acessado: %s"
 
+#. The sections of the guide with their pictures, the engine's to find (Grid::guide())
+#: src/Block/DestinationGuideBlock.php:23
 msgid "Destinations Guide"
 msgstr "Guia de Destinos"
 
+#: src/Block/DestinationGuideBlock.php:46
 #, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"
 msgstr[0] "%s destino"
 msgstr[1] "%s destinos"
 
+#: src/Block/DestinationGuideBlock.php:66
 msgid "Back to categories"
 msgstr "Voltar para categorias"
 
+#: src/Block/DirectoryInfoBlock.php:24 src/Block/DirectoryInfoBlock.php:47
 msgid "Directory Info"
 msgstr "Informações do diretório"
 
+#: src/Block/DirectoryInfoBlock.php:37 src/Block/DirectoryInfoBlock.php:52
 #, php-format
 msgid "%d region"
 msgid_plural "%d regions"
 msgstr[0] "%d região"
 msgstr[1] "%d regiões"
 
+#: src/Block/DirectoryInfoBlock.php:38 src/Block/DirectoryInfoBlock.php:53
 #, php-format
 msgid "%d parcel"
 msgid_plural "%d parcels"
 msgstr[0] "%d lote"
 msgstr[1] "%d lotes"
 
+#: src/Block/DirectoryInfoBlock.php:51
 #, php-format
 msgid "%d grid"
 msgid_plural "%d grids"
 msgstr[0] "%d grid"
 msgstr[1] "%d grids"
 
-msgid "Grid Name"
-msgstr "Nome do Grid"
-
-msgid "Login URI"
-msgstr "URI de login"
-
+#: src/Block/GridInfoBlock.php:32
 msgid "Grid Information"
 msgstr "Informações do Grid"
 
+#: src/Block/GridStatusBlock.php:54
 msgid "Members"
 msgstr "Membros"
 
+#: src/Block/GridStatusBlock.php:55
 msgid "Active members (30 days)"
 msgstr "Membros ativos (30 dias)"
 
+#: src/Block/GridStatusBlock.php:56
 msgid "Members in world"
 msgstr "Membros no mundo"
 
+#: src/Block/GridStatusBlock.php:57
 msgid "Active users (30 days)"
 msgstr "Usuários ativos (30 dias)"
 
+#: src/Block/GridStatusBlock.php:58
 msgid "Total users in world"
 msgstr "Total de usuários no mundo"
 
+#: src/Block/GridStatusBlock.php:73
 msgid "Status"
 msgstr "Status"
 
+#: src/Block/GridStatusBlock.php:78
 msgid "Regions"
 msgstr "Regiões"
 
+#: src/Block/GridStatusBlock.php:79
 msgid "Total area"
 msgstr "Área total"
 
+#: src/Block/GridStatusBlock.php:89
 msgid "Grid Status"
 msgstr "Status do Grid"
 
+#: src/Block/HealthBlock.php:43
 msgid "Health"
 msgstr "Saúde"
 
+#: src/Block/HealthBlock.php:46
 msgid "Certificate"
 msgstr "Certificado"
 
-msgid "Message of the day"
-msgstr "Mensagem do dia"
+#: src/Block/MapBlock.php:63
+msgid "Zoom in"
+msgstr "Aumentar o zoom"
 
-msgid "traveler"
-msgstr "viajante"
+#: src/Block/MapBlock.php:63
+msgid "Zoom out"
+msgstr "Diminuir o zoom"
 
+#: src/Block/MapBlock.php:63
+msgid "Find a region"
+msgstr "Encontrar uma região"
+
+#: src/Block/MapBlock.php:63
+msgid "No region found"
+msgstr "Nenhuma região encontrada"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Location"
+msgstr "Coordenadas"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Type"
+msgstr "Tipo"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Estate"
+msgstr "Propriedade"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Owner"
+msgstr "Proprietário"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Free location"
+msgstr "Coordenadas livres"
+
+#: src/Block/NewUsersBlock.php:48
 msgid "Recent users"
 msgstr "Usuários recentes"
 
+#: src/Block/PopularPlacesBlock.php:46
 msgid "Popular places"
 msgstr "Lugares populares"
 
+#: src/Block/ProfileBlock.php:29
 msgid "Profile"
 msgstr "Perfil"
 
+#: src/Block/ProfileBlock.php:33
 msgid "Profile not found"
 msgstr "Perfil não encontrado"
 
-msgid "Search"
-msgstr "Buscar"
-
-msgid "Places"
-msgstr "Lugares"
-
-msgid "Land for sale"
-msgstr "Terrenos à venda"
-
-msgid "Events"
-msgstr "Eventos"
-
-msgid "Classifieds"
-msgstr "Classificados"
-
-msgid "People"
-msgstr "Pessoas"
-
-#, php-format
-msgid "%d min"
-msgstr "%d min"
-
-#, php-format
-msgid "%s is not provided here: the grid gives it another address, or none."
-msgstr "%s não é fornecido aqui: o grid lhe dá outro endereço, ou nenhum."
-
+#: src/View/View.php:368
 msgid "Home"
 msgstr "Início"
 
+#: src/View/View.php:369
 msgid "Guide"
 msgstr "Guia"
 
+#: src/View/View.php:370
 msgid "Directory"
 msgstr "Diretório"
 
+#: src/View/View.php:416
 msgid "Skip to content"
 msgstr "Ir para o conteúdo"
 
-msgid "Search for"
-msgstr "Buscar"
-
-msgid "All"
-msgstr "Tudo"
-
-msgid "Nothing found."
-msgstr "Nada encontrado."
-
-msgid "Type something to look for."
-msgstr "Digite algo para buscar."
-
+#: src/View/View.php:418
 msgid "This profile does not exist."
 msgstr "Este perfil não existe."
 
+#: src/View/View.php:419
 msgid "This is temporarily unavailable. Please try again later."
 msgstr "Isto está temporariamente indisponível. Tente novamente mais tarde."
 
+#: src/View/View.php:420
 msgid "Member since"
 msgstr "Membro desde"
 
+#: src/View/View.php:421
 msgid "This profile is not public."
 msgstr "Este perfil não é público."
 
+#: src/View/View.php:422
 msgid "Partner"
 msgstr "Parceiro"
 
+#: src/View/View.php:423
 msgid "Languages"
 msgstr "Idiomas"
 
+#: src/View/View.php:424
 msgid "Wants to"
 msgstr "Quer"
 
+#: src/View/View.php:425
 msgid "Skills"
 msgstr "Habilidades"
 
+#: src/View/View.php:431
 msgid "About"
 msgstr "Sobre"
 
 #. The in-world tab of a profile, as the viewer shows it
+#: src/View/View.php:437
 msgid "Name"
 msgstr "Nome"
 
+#: src/View/View.php:438
 msgid "Key"
 msgstr "Chave"
 
+#: src/View/View.php:439
 msgid "Born"
 msgstr "Nascido"
 
+#: src/View/View.php:440
 msgid "Account"
 msgstr "Conta"
 
+#: src/View/View.php:441
 msgid "Groups"
 msgstr "Grupos"
 
 #. A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
+#: src/View/View.php:443
 msgid "None."
 msgstr "Nenhum."
 
+#: src/View/View.php:444
 msgid "No description given."
 msgstr "Nenhuma descrição informada."
 
+#: src/View/View.php:445
 msgid "Location"
 msgstr "Local"
 
+#: src/View/View.php:446
 msgid "Teleport"
 msgstr "Teleportar"
 
+#: src/View/View.php:447
 msgid "Until"
 msgstr "Até"
-
-#~ msgid "Users in world"
-#~ msgstr "Usuários no mundo"
-
-#~ msgid "Area"
-#~ msgstr "Área"

@@ -2,221 +2,254 @@ msgid ""
 msgstr ""
 "Project-Id-Version: w4os-helpers\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-19 11:16-0400\n"
+"POT-Creation-Date: 2026-11-25 14:31-0400\n"
 "Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: src/Block/Blocks.php:33
 #, php-format
 msgid "The database of the grid cannot be reached: %s"
 msgstr "De database van het grid is niet bereikbaar: %s"
 
+#. The sections of the guide with their pictures, the engine's to find (Grid::guide())
+#: src/Block/DestinationGuideBlock.php:23
 msgid "Destinations Guide"
 msgstr "Gids voor bestemmingen"
 
+#: src/Block/DestinationGuideBlock.php:46
 #, php-format
 msgid "%s destination"
 msgid_plural "%s destinations"
 msgstr[0] "%s bestemming"
 msgstr[1] "%s bestemmingen"
 
+#: src/Block/DestinationGuideBlock.php:66
 msgid "Back to categories"
 msgstr "Terug naar categorieën"
 
+#: src/Block/DirectoryInfoBlock.php:24 src/Block/DirectoryInfoBlock.php:47
 msgid "Directory Info"
 msgstr "Gidsinformatie"
 
+#: src/Block/DirectoryInfoBlock.php:37 src/Block/DirectoryInfoBlock.php:52
 #, php-format
 msgid "%d region"
 msgid_plural "%d regions"
 msgstr[0] "%d regio"
 msgstr[1] "%d regio’s"
 
+#: src/Block/DirectoryInfoBlock.php:38 src/Block/DirectoryInfoBlock.php:53
 #, php-format
 msgid "%d parcel"
 msgid_plural "%d parcels"
 msgstr[0] "%d perceel"
 msgstr[1] "%d percelen"
 
+#: src/Block/DirectoryInfoBlock.php:51
 #, php-format
 msgid "%d grid"
 msgid_plural "%d grids"
 msgstr[0] "%d grid"
 msgstr[1] "%d grids"
 
-msgid "Grid Name"
-msgstr "Grid Naam"
-
-msgid "Login URI"
-msgstr "Login-URI"
-
+#: src/Block/GridInfoBlock.php:32
 msgid "Grid Information"
 msgstr "Gridinformatie"
 
+#: src/Block/GridStatusBlock.php:54
 msgid "Members"
 msgstr "Leden"
 
+#: src/Block/GridStatusBlock.php:55
 msgid "Active members (30 days)"
 msgstr "Actieve leden (30 dagen)"
 
+#: src/Block/GridStatusBlock.php:56
 msgid "Members in world"
 msgstr "Leden op grid"
 
+#: src/Block/GridStatusBlock.php:57
 msgid "Active users (30 days)"
 msgstr "Actieve gebruikers (30 dagen)"
 
+#: src/Block/GridStatusBlock.php:58
 msgid "Total users in world"
 msgstr "Gebruikers op grid"
 
+#: src/Block/GridStatusBlock.php:73
 msgid "Status"
 msgstr "Status"
 
+#: src/Block/GridStatusBlock.php:78
 msgid "Regions"
 msgstr "Regio's"
 
+#: src/Block/GridStatusBlock.php:79
 msgid "Total area"
 msgstr "Totale oppervlakte"
 
+#: src/Block/GridStatusBlock.php:89
 msgid "Grid Status"
 msgstr "Gridstatus"
 
+#: src/Block/HealthBlock.php:43
 msgid "Health"
 msgstr "Gezondheid"
 
+#: src/Block/HealthBlock.php:46
 msgid "Certificate"
 msgstr "Certificaat"
 
-msgid "Message of the day"
-msgstr "Bericht van de dag"
+#: src/Block/MapBlock.php:63
+msgid "Zoom in"
+msgstr "Inzoomen"
 
-msgid "traveler"
-msgstr "reiziger"
+#: src/Block/MapBlock.php:63
+msgid "Zoom out"
+msgstr "Uitzoomen"
 
+#: src/Block/MapBlock.php:63
+msgid "Find a region"
+msgstr "Regio zoeken"
+
+#: src/Block/MapBlock.php:63
+msgid "No region found"
+msgstr "Geen regio gevonden"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Location"
+msgstr "Coördinaten"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Type"
+msgstr "Soort"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Estate"
+msgstr "Landgoed"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Owner"
+msgstr "Eigenaar"
+
+#: src/Block/MapBlock.php:63
+msgctxt "map"
+msgid "Free location"
+msgstr "Vrije coördinaten"
+
+#: src/Block/NewUsersBlock.php:48
 msgid "Recent users"
 msgstr "Recente gebruikers"
 
+#: src/Block/PopularPlacesBlock.php:46
 msgid "Popular places"
 msgstr "Populaire plaatsen"
 
+#: src/Block/ProfileBlock.php:29
 msgid "Profile"
 msgstr "Profiel"
 
+#: src/Block/ProfileBlock.php:33
 msgid "Profile not found"
 msgstr "Profiel niet gevonden"
 
-msgid "Search"
-msgstr "Zoeken"
-
-msgid "Places"
-msgstr "Plaatsen"
-
-msgid "Land for sale"
-msgstr "Land te koop"
-
-msgid "Events"
-msgstr "Evenementen"
-
-msgid "Classifieds"
-msgstr "Advertenties"
-
-msgid "People"
-msgstr "Personen"
-
-#, php-format
-msgid "%d min"
-msgstr "%d min"
-
-#, php-format
-msgid "%s is not provided here: the grid gives it another address, or none."
-msgstr "%s wordt hier niet aangeboden: het grid geeft het een ander adres, of geen."
-
+#: src/View/View.php:368
 msgid "Home"
 msgstr "Home"
 
+#: src/View/View.php:369
 msgid "Guide"
 msgstr "Gids"
 
+#: src/View/View.php:370
 msgid "Directory"
 msgstr "Gids"
 
+#: src/View/View.php:416
 msgid "Skip to content"
 msgstr "Naar de inhoud"
 
-msgid "Search for"
-msgstr "Zoeken naar"
-
-msgid "All"
-msgstr "Alles"
-
-msgid "Nothing found."
-msgstr "Niets gevonden."
-
-msgid "Type something to look for."
-msgstr "Typ iets om te zoeken."
-
+#: src/View/View.php:418
 msgid "This profile does not exist."
 msgstr "Dit profiel bestaat niet."
 
+#: src/View/View.php:419
 msgid "This is temporarily unavailable. Please try again later."
 msgstr "Dit is tijdelijk niet beschikbaar. Probeer het later opnieuw."
 
+#: src/View/View.php:420
 msgid "Member since"
 msgstr "Lid sinds"
 
+#: src/View/View.php:421
 msgid "This profile is not public."
 msgstr "Dit profiel is niet openbaar."
 
+#: src/View/View.php:422
 msgid "Partner"
 msgstr "Partner"
 
+#: src/View/View.php:423
 msgid "Languages"
 msgstr "Talen"
 
+#: src/View/View.php:424
 msgid "Wants to"
 msgstr "Wil graag"
 
+#: src/View/View.php:425
 msgid "Skills"
 msgstr "Vaardigheden"
 
+#: src/View/View.php:431
 msgid "About"
 msgstr "Over"
 
 #. The in-world tab of a profile, as the viewer shows it
+#: src/View/View.php:437
 msgid "Name"
 msgstr "Naam"
 
+#: src/View/View.php:438
 msgid "Key"
 msgstr "Sleutel"
 
+#: src/View/View.php:439
 msgid "Born"
 msgstr "Geboren"
 
+#: src/View/View.php:440
 msgid "Account"
 msgstr "Account"
 
+#: src/View/View.php:441
 msgid "Groups"
 msgstr "Groepen"
 
 #. A section of a profile with nothing, and the details of a pick or a classified, as the viewer shows them
+#: src/View/View.php:443
 msgid "None."
 msgstr "Geen."
 
+#: src/View/View.php:444
 msgid "No description given."
 msgstr "Geen beschrijving opgegeven."
 
+#: src/View/View.php:445
 msgid "Location"
 msgstr "Locatie"
 
+#: src/View/View.php:446
 msgid "Teleport"
 msgstr "Teleporteren"
 
+#: src/View/View.php:447
 msgid "Until"
 msgstr "Tot"
-
-#~ msgid "Users in world"
-#~ msgstr "Gebruikers in de wereld"
-
-#~ msgid "Area"
-#~ msgstr "Oppervlakte"

@@ -20,7 +20,7 @@ describe('language', function () {
             ->and(I18n::text('A text the helpers do not have'))->toBe('A text the helpers do not have')
             // A text of its own context: its own translation, not the one of the same English words elsewhere
             ->and(I18n::text('Location'))->toBe('Lieu')
-            ->and(I18n::text('Location', 'map'))->toBe('Location')
+            ->and(I18n::text('Location', 'map'))->toBe('Coordonnées')
             ->and(I18n::use('ja'))->toBe('en')
             ->and(I18n::text('Grid Information'))->toBe('Grid Information')
             ->and(I18n::plural('%s destination', '%s destinations', 0))->toBe('%s destinations');

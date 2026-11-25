@@ -34,7 +34,7 @@ final class ProfileBlock implements Block
         }
         $d = $avatar->detail();
         $published = $avatar->isPublished();
-        $text = static fn(string $key): string => $published ? trim((string) ($d[$key] ?? '')) : '';
+        $said = static fn(string $key): string => $published ? trim((string) ($d[$key] ?? '')) : '';
         $partner = null;
         if ($published && $d['partner'] !== null) {
             $other = Avatar::find($config, $d['partner']);
@@ -56,12 +56,12 @@ final class ProfileBlock implements Block
             // The picture of the profile, seen by anyone in the world: the silhouette of a person of the engine when there is none
             'picture' => trim((string) ($d['profileImage'] ?? ''), '0-') !== '' ? (string) $d['profileImage'] : WebAssets::PERSON,
             'published' => $published,
-            'about' => $text('about'),
-            'real_life' => $text('firstLife'),
-            'wants' => $text('wants'),
-            'skills' => $text('skills'),
-            'languages' => $text('languages'),
-            'web' => preg_match('#^https?://#i', $text('profileUrl')) ? $text('profileUrl') : '',
+            'about' => $said('about'),
+            'real_life' => $said('firstLife'),
+            'wants' => $said('wants'),
+            'skills' => $said('skills'),
+            'languages' => $said('languages'),
+            'web' => preg_match('#^https?://#i', $said('profileUrl')) ? $said('profileUrl') : '',
             'partner' => $partner,
             // The boxes checked in the viewer, by their texts in the language of the page
             'wants_list' => $published ? self::flags($d['wantsList'] ?? [], 'want_') : [],
