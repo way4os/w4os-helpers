@@ -30,7 +30,8 @@
         "nesbot/carbon": "3.15.1",
         "gettext/gettext": "^5.7",
         "gettext/translator": "^1.2",
-        "w4os/w4os-views": "@dev"
+        "w4os/w4os-views": "@dev",
+        "npm-asset/leaflet": "1.9.4"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
@@ -64,6 +65,18 @@
             "type": "path",
             "options": {
                 "symlink": true
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "npm-asset/leaflet",
+                "version": "1.9.4",
+                "dist": {
+                    "type": "tar",
+                    "url": "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz",
+                    "shasum": "23fae724e282fa25745aff82ca4d394748db7d8d"
+                }
             }
         }
     ],

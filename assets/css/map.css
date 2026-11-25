@@ -1,0 +1,22 @@
+/**
+ * css/map.css: the map of the grid, what it is made of wherever it is shown: the list of its regions, each a teleport link (the
+ * map itself in a browser: map.web.css, js/map.js; the list alone in a viewer: map.viewer.css).
+ *
+ * @package    w4os/w4os-helpers
+ * @license    AGPLv3
+ */
+.block-map .map-regions {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr));
+	gap: 0.25rem 1rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.block-map .map-region {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+.block-map .map-region.is-offline {
+	opacity: 0.6;
+}

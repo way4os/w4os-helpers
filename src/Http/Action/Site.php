@@ -57,6 +57,10 @@ final class Site
         if (preg_match('#^/assets/(.+)$#', $path, $m) === 1) {
             return $this->asset($response, $grid, $m[1]);
         }
+        // A tile of the map of the grid (the block map), as the engine gives it (Grid::mapTile())
+        if (preg_match('#^/map/(\d+)/(-?\d+)/(-?\d+)\.jpg$#', $path, $m) === 1) {
+            return $this->tile($response, $grid, (int) $m[1], (int) $m[2], (int) $m[3]);
+        }
         if (preg_match('#^/blocks/([\w-]+)$#', $path, $m) === 1) {
             // Where the block is shown: a site gives the class of its visitor (`client`) or its user agent (`agent`), else the one of
             // the request
@@ -249,6 +253,18 @@ final class Site
     ];
 
     /** A file of the assets: the theme of the grid first, then the helpers'. */
+    /** A tile of the map of the grid (zoom 1 to 8, the region of its bottom left corner), a 404 when the grid has no map. */
+    private function tile(ResponseInterface $response, Grid $grid, int $zoom, int $x, int $y): ResponseInterface
+    {
+        $jpeg = $zoom >= 1 && $zoom <= 8 ? $grid->mapTile($zoom, $x, $y) : null;
+        if ($jpeg === null) {
+            return $response->withStatus(404);
+        }
+        $response->getBody()->write($jpeg);
+
+        return $response->withHeader('Content-Type', 'image/jpeg')->withHeader('Cache-Control', 'public, max-age=86400');
+    }
+
     private function asset(ResponseInterface $response, Grid $grid, string $file): ResponseInterface
     {
         $path = $this->view->asset($grid, $file);

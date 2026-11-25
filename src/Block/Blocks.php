@@ -20,6 +20,7 @@ final class Blocks
         'new_users' => NewUsersBlock::class,
         'search' => SearchBlock::class,
         'profile' => ProfileBlock::class,
+        'map' => MapBlock::class,
     ];
 
     /**

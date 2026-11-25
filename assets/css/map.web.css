@@ -1,0 +1,26 @@
+/**
+ * css/map.web.css: the map of the grid in a browser, over map.css: its tiles (Leaflet, js/map.js) as wide as the block, as high as
+ * a good part of the window; the list of the regions once the map is drawn left to the map.
+ *
+ * @package    w4os/w4os-helpers
+ * @license    AGPLv3
+ */
+.block-map .map-view {
+	width: 100%;
+	height: min(70vh, 40rem);
+	min-height: 18rem;
+	border-radius: 0.5rem;
+	/* The water of the grid, under the tiles while they load */
+	background: #1d475f;
+}
+.block-map .map.is-drawn .map-regions {
+	display: none;
+}
+/* The popup of a region: its teleport link, its menu over the map */
+.block-map .leaflet-popup-content {
+	margin: 0.6rem 0.9rem;
+	font: inherit;
+}
+.block-map .leaflet-popup-content .w4os-tp-menu {
+	z-index: 1000;
+}

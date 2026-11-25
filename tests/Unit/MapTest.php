@@ -1,0 +1,116 @@
+<?php
+
+declare(strict_types=1);
+
+use W4OS\Engine\Data\Connections;
+use W4OS\Engine\Data\OSPDO;
+use W4OS\Engine\Models\Grid;
+use W4OS\Engine\Models\Region;
+use W4OS\Engine\Testing\Machine;
+use W4OS\Helpers\Block\Blocks;
+use W4OS\Helpers\View\View;
+
+/**
+ * A grid whose Robust serves the map (the engine's WebMapTest): three regions side by side (a varregion of 512 m), a link to another
+ * grid far away; or a grid without a map.
+ */
+function helpers_map_grid(bool $map = true): Grid
+{
+    $machine = new Machine();
+    $robust = $machine->grid . '/Robust.HG.ini';
+    $ini = (string) file_get_contents($robust);
+    $map && ($ini = str_replace("[ServiceList]\n", "[ServiceList]\n    MapGetServiceConnector = \"\${Const|PublicPort}/OpenSim.Server.Handlers.dll:MapGetServiceConnector\"\n", $ini)
+        . "\n[MapImageService]\n    LocalServiceModule = \"OpenSim.Services.MapImageService.dll:MapImageService\"\n    TilesStoragePath = \"\${Const|DataDirectory}/maptiles\"\n");
+    $machine->write($robust, $ini . "\n[Hypergrid]\n    GatekeeperURI = \"http://grid.example.org:8002\"\n");
+    $pdo = new OSPDO(['driver' => 'sqlite', 'name' => ':memory:']);
+    $pdo->exec('CREATE TABLE regions (uuid VARCHAR(36) PRIMARY KEY, regionHandle BIGINT, regionName VARCHAR(128), locX INT, locY INT, sizeX INT DEFAULT 0, sizeY INT DEFAULT 0, serverIP VARCHAR(64), serverPort INT, serverURI VARCHAR(255), flags INT DEFAULT 0, last_seen INT DEFAULT 0, owner_uuid CHAR(36), access INT DEFAULT 21, ScopeID CHAR(36), regionMapTexture VARCHAR(36))');
+    $insert = $pdo->prepare('INSERT INTO regions (uuid, regionName, locX, locY, sizeX, sizeY, flags) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    foreach ([
+        ['11111111-0000-0000-0000-000000000001', 'Welcome', 1000, 1000, 256, 256, Region::DEFAULT_REGION | Region::REGION_ONLINE],
+        ['11111111-0000-0000-0000-000000000002', 'Plaza', 1001, 1000, 0, 0, Region::REGION_ONLINE],
+        ['11111111-0000-0000-0000-000000000003', 'Big Island', 1002, 1000, 512, 512, 0],
+        ['11111111-0000-0000-0000-000000000004', 'Elsewhere', 5000, 5000, 256, 256, Region::HYPERLINK],
+    ] as [$uuid, $name, $x, $y, $sizeX, $sizeY, $flags]) {
+        $insert->execute([$uuid, $name, $x * 256, $y * 256, $sizeX, $sizeY, $flags]);
+    }
+    Connections::using(static fn() => $pdo);
+
+    return Grid::find($machine->environment, 'demo');
+}
+
+describe('The map of the grid', function () {
+    $assets = dirname(__DIR__, 2) . '/assets/';
+
+    test('is a block of the helpers, its tiles and its script for a browser alone: a viewer has the list of its regions', function () {
+        expect(W4OS\Helpers\Block\Blocks::BLOCKS['map'])->toBe(W4OS\Helpers\Block\MapBlock::class)
+            ->and(View::blockFiles('map', 'browser'))->toBe(['css' => ['css/map.css', 'lib/leaflet/leaflet.css', 'css/map.web.css'], 'js' => ['lib/leaflet/leaflet.js', 'js/map.js']])
+            ->and(View::blockFiles('map', 'viewer'))->toBe(['css' => ['css/map.css', 'css/map.viewer.css'], 'js' => []]);
+    });
+
+    test('draws on Leaflet, served by the helpers from its pinned release, never from a CDN', function () use ($assets) {
+        $view = new View(dirname(__DIR__, 2) . '/templates');
+        $grid = W4OS\Engine\Models\Grid::at(helpers_environment(), sys_get_temp_dir() . '/demo');
+        $composer = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/composer.json'), true);
+
+        expect($composer['require']['npm-asset/leaflet'])->toBe('1.9.4')
+            ->and($view->asset($grid, 'lib/leaflet/leaflet.js'))->toEndWith('npm-asset/leaflet/dist/leaflet.js')
+            ->and($view->asset($grid, 'lib/leaflet/leaflet.css'))->toEndWith('npm-asset/leaflet/dist/leaflet.css')
+            ->and($view->asset($grid, 'lib/leaflet/images/layers.png'))->toBeString()
+            ->and($view->asset($grid, 'lib/leaflet/../package.json'))->toBeNull()
+            ->and((string) file_get_contents($assets . 'js/map.js'))->not->toMatch('#https?://#');
+    });
+
+    test('places its tiles as the maps of Second Life do: a region a unit, the zoom of the tiles reversed', function () use ($assets) {
+        $js = (string) file_get_contents($assets . 'js/map.js');
+
+        expect($js)->toContain('crs: L.CRS.Simple', 'zoomOffset: 1', 'zoomReverse: true', 'Math.pow(2, zoom - 1)', '(Math.abs(coords.y) - 1) * regions', 'maxBounds')
+            // A click gives the teleport link of the list, its menu with it
+            ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)');
+    });
+
+    test('lists its regions with their teleport links, the list the map takes its popups from, readable without a script', function () {
+        $twig = new Twig\Environment(new Twig\Loader\FilesystemLoader(dirname(__DIR__, 2) . '/templates'), ['autoescape' => 'html']);
+        $twig->addFunction(new Twig\TwigFunction('tp_link', fn(array $links, string $label) => '<span data-w4os-tp>' . htmlspecialchars($label) . '</span>', ['is_safe' => ['html']]));
+        $html = $twig->render('components/map-block.twig', [
+            'name' => 'map', 'helpers_block' => 'map', 'title' => 'Map', 'level' => 'h2', 'labels' => [],
+            'tiles' => '/grid-map/{z}/{x}/{y}.jpg', 'bounds' => ['minX' => 1000, 'minY' => 1000, 'maxX' => 1001, 'maxY' => 1000], 'center' => ['x' => 1000, 'y' => 1000],
+            'texts' => ['zoom_in' => 'Zoom in', 'zoom_out' => 'Zoom out'],
+            'regions' => [['name' => 'Welcome', 'x' => 1000, 'y' => 1000, 'width' => 1, 'height' => 1, 'online' => true, 'links' => []], ['name' => 'Sea', 'x' => 1001, 'y' => 1000, 'width' => 2, 'height' => 2, 'online' => false, 'links' => []]],
+        ]);
+
+        expect($html)->toContain('<section class="block block-map" data-helpers-block="map">', '<h2 class="block-title">Map</h2>', 'data-map-tiles="/grid-map/{z}/{x}/{y}.jpg"', '<div class="map-view" hidden></div>')
+            ->toContain('<li class="map-region" data-x="1000" data-y="1000" data-width="1" data-height="1"><span data-w4os-tp>Welcome</span></li>')
+            ->toContain('<li class="map-region is-offline" data-x="1001" data-y="1000" data-width="2" data-height="2">');
+    });
+
+    test('shows the regions of the engine, their size in regions and their teleport links, at the address of the tiles the site gives', function () {
+        $data = Blocks::data('map', helpers_map_grid(), ['map_tiles' => '/grid-map', 'lang' => 'en']);
+        $regions = array_column($data['regions'], null, 'name');
+
+        expect(array_keys($regions))->toBe(['Big Island', 'Plaza', 'Welcome'])
+            ->and($regions['Big Island'])->toMatchArray(['x' => 1002, 'y' => 1000, 'width' => 2, 'height' => 2, 'online' => false])
+            ->and($regions['Plaza'])->toMatchArray(['width' => 1, 'height' => 1, 'online' => true])
+            ->and(array_column($regions['Welcome']['links']['browser'], 'link'))->toContain('hop://grid.example.org:8002/Welcome')
+            ->and($data['tiles'])->toBe('/grid-map/{z}/{x}/{y}.jpg')
+            ->and($data['bounds'])->toBe(['minX' => 1000, 'minY' => 1000, 'maxX' => 1004, 'maxY' => 1002])
+            ->and($data['center'])->toBe(['x' => 1000.5, 'y' => 1000.5]);
+    });
+
+    test('shows nothing on a grid without a map, its title neither', function () {
+        expect(Blocks::data('map', helpers_map_grid(false), ['lang' => 'en']))->toBe([])
+            ->and((new View(dirname(__DIR__, 2) . '/templates'))->block('map', helpers_map_grid(false), ['lang' => 'en']))->toBe('');
+    });
+
+    test('gives its tiles under the helpers, as the engine has them; none on a grid without a map', function () {
+        $app = W4OS\Helpers\App::create(static fn(string $nick) => helpers_map_grid());
+        $tile = $app->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', '/map/1/1000/1000.jpg'));
+        $none = W4OS\Helpers\App::create(static fn(string $nick) => helpers_map_grid(false))
+            ->handle((new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', '/map/1/1000/1000.jpg'));
+
+        expect([$tile->getStatusCode(), $tile->getHeaderLine('Content-Type')])->toBe([200, 'image/jpeg'])
+            ->and((string) $tile->getBody())->toStartWith("\xFF\xD8")
+            ->and($none->getStatusCode())->toBe(404);
+    });
+});
+
+afterEach(fn() => Connections::using(null));

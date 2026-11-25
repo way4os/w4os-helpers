@@ -37,15 +37,26 @@ final class View
     private string $client = 'browser';
 
     /**
-     * The files each block needs, under the assets of the helpers: its styles in layers, the common ones (`css`: what it is made of),
-     * then the ones of the client it is shown to alone (`web` for a browser, `viewer` for a viewer: their own choices).
+     * The files each block needs, under the assets of the helpers: the common ones (`css`, `js`: what it is made of), then the ones of
+     * the client it is shown to alone (`web` for a browser, `viewer` for a viewer: their own choices, styles and scripts).
      */
     private const BLOCK_FILES = [
-        'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'web' => ['css/guide.web.css'], 'viewer' => ['css/guide.viewer.css'], 'js' => ['js/guide.js']],
+        'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'web' => ['css' => ['css/guide.web.css']], 'viewer' => ['css' => ['css/guide.viewer.css']], 'js' => ['js/guide.js']],
         'popular_places' => ['css' => ['css/blocks.css', 'css/places.css'], 'js' => []],
         'profile' => ['css' => ['css/profile.css'], 'js' => []],
-        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'web' => ['css/search.web.css'], 'js' => ['js/search.js']],
+        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'web' => ['css' => ['css/search.web.css']], 'js' => ['js/search.js']],
+        // The map in a browser (Leaflet); a viewer has its own world map: the list of the regions there
+        'map' => ['css' => ['css/map.css'], 'web' => ['css' => [self::LEAFLET . 'leaflet.css', 'css/map.web.css'], 'js' => [self::LEAFLET . 'leaflet.js', 'js/map.js']], 'viewer' => ['css' => ['css/map.viewer.css']], 'js' => []],
     ];
+
+    /** The prefix of the files of Leaflet among the assets the helpers serve (`lib/leaflet/leaflet.js`): the ones of LIBRARIES. */
+    public const LEAFLET = 'lib/leaflet/';
+
+    /**
+     * The libraries of the browser the helpers serve, by the prefix of their files among the assets: the package (npm releases pinned
+     * in composer.json) and its folder of the files served. A site that installs the helpers serves them from its own vendor.
+     */
+    public const LIBRARIES = [self::LEAFLET => ['package' => 'npm-asset/leaflet', 'folder' => 'dist/']];
 
     /** The layer of the styles of each client (Destination::CLIENTS): a browser has the web's, a viewer the viewer's, never both. */
     public const LAYERS = ['browser' => 'web', 'viewer' => 'viewer'];
@@ -59,8 +70,9 @@ final class View
     public static function blockFiles(string $name, string $client = 'browser'): array
     {
         $files = self::BLOCK_FILES[str_replace('-', '_', $name)] ?? [];
+        $layer = $files[self::LAYERS[$client] ?? 'web'] ?? [];
 
-        return ['css' => array_merge($files['css'] ?? [], $files[self::LAYERS[$client] ?? 'web'] ?? []), 'js' => $files['js'] ?? []];
+        return ['css' => array_merge($files['css'] ?? [], $layer['css'] ?? []), 'js' => array_merge($files['js'] ?? [], $layer['js'] ?? [])];
     }
 
     /**
@@ -317,6 +329,15 @@ final class View
     {
         if (str_contains($file, '..')) {
             return null;
+        }
+        // The files of a library (Leaflet), from its package
+        foreach (self::LIBRARIES as $prefix => $library) {
+            if (str_starts_with($file, $prefix)) {
+                $root = \Composer\InstalledVersions::isInstalled($library['package']) ? \Composer\InstalledVersions::getInstallPath($library['package']) : null;
+                $path = $root === null ? '' : rtrim($root, '/') . '/' . $library['folder'] . substr($file, strlen($prefix));
+
+                return $path !== '' && is_file($path) ? $path : null;
+            }
         }
         // The files of w4os-views (its teleport links), from its package
         if (str_starts_with($file, self::VIEWS)) {

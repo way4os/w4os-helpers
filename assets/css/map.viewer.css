@@ -1,0 +1,10 @@
+/**
+ * css/map.viewer.css: the map of the grid in a viewer, over map.css: the list of its regions alone, the viewer having its own world
+ * map (no script, no tiles).
+ *
+ * @package    w4os/w4os-helpers
+ * @license    AGPLv3
+ */
+.block-map .map-view {
+	display: none;
+}

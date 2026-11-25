@@ -14,14 +14,15 @@ describe('The styles of the helpers', function () {
     $assets = dirname(__DIR__, 2) . '/assets/';
 
     test('of a block are its common ones, then the ones of its client alone: the web for a browser, the viewer for a viewer', function () use ($assets) {
-        foreach (['destination_guide', 'popular_places', 'profile', 'search', 'grid_info'] as $block) {
+        foreach (['destination_guide', 'popular_places', 'profile', 'search', 'grid_info', 'map'] as $block) {
             $web = View::blockFiles($block, 'browser')['css'];
             $viewer = View::blockFiles($block, 'viewer')['css'];
             expect(array_map(style_layer(...), $web))->not->toContain('viewer')
                 ->and(array_map(style_layer(...), $viewer))->not->toContain('web')
                 ->and(View::blockFiles($block)['css'])->toBe($web);
+            // A library's from its package (View::LIBRARIES, MapTest), the others among the assets
             foreach (array_merge($web, $viewer) as $file) {
-                expect(is_file($assets . $file))->toBeTrue($file);
+                expect(is_file($assets . $file) || str_starts_with($file, View::LEAFLET))->toBeTrue($file);
             }
         }
 
