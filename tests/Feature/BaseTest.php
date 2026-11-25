@@ -97,6 +97,18 @@ describe('the helpers serve only under their base', function () {
             ->and($viewer)->not->toContain('class="topbar"')
             ->and($browser)->toContain('class="topbar"');
     });
+
+    test('a viewer gets the styles of the viewer alone, a browser the ones of the web alone', function () {
+        $app = base_app('/helpers', ['search' => 'https://example.com/helpers/search']);
+        $styles = fn(string $html) => preg_match_all('#<link rel="stylesheet" href="/helpers/assets/(css/[^"?]+)#', $html, $m) ? $m[1] : [];
+        $viewer = $styles((string) base_get($app, '/helpers/search', 'Mozilla/5.0 SecondLife/7.1 (Firestorm)')->getBody());
+        $browser = $styles((string) base_get($app, '/helpers/search')->getBody());
+
+        expect($viewer)->toContain('css/page.css', 'css/page.viewer.css', 'css/search.css')
+            ->and(preg_grep('/\.web\.css$/', $viewer))->toBe([])
+            ->and($browser)->toContain('css/page.css', 'css/page.web.css', 'css/search.css', 'css/search.web.css')
+            ->and(preg_grep('/\.viewer\.css$/', $browser))->toBe([]);
+    });
 });
 
 describe('a service the grid does not provide here', function () {
