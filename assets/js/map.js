@@ -1,6 +1,6 @@
 /**
  * js/map.js: the map of the grid in a browser (the block map, MapBlock), on Leaflet: its tiles as the grid serves them, the name of
- * each region inside it from close enough, a click on a region giving its name and its teleport link (the one of the list of the
+ * each region in its lower left corner from close enough, a click on a region giving its name and its teleport link (the one of the list of the
  * block, w4os-views' teleport link, its menu included); a picker of the regions by their names (Tom Select) taking the map to one.
  *
  * The method of the Second Life maps (maps.secondlife.com) for the tiles of OpenSimulator, as GwynethLlewelyn/goswi applies it
@@ -19,7 +19,7 @@
 	const ZOOM = { min: 1, native: 8, max: 10 };
 	// The view a map opens on: its regions fitting it with a margin, never smaller than 128 px a region (then on the default region)
 	const VIEW = { farthest: 7, margin: 16 };
-	// The names of the regions from 64 px a region, inside each, this far under its north edge and from its sides (px)
+	// The names of the regions from 64 px a region, inside each, this far from its south and west edges (px)
 	const LABELS = 6;
 	const LABEL_INSET = 4;
 	const read = (element, name) => {
@@ -105,10 +105,11 @@
 			map.setMaxZoom(closest());
 		});
 
-		// The name of each region inside it, under its north edge, never wider than the region (never over a neighbour); from close enough
+		// The name of each region in its lower left corner, as the world map of the viewers draws it (llworldmapview.cpp), never wider
+		// than the region (never over a neighbour); from close enough
 		const labels = regions.map((region) =>
-			L.tooltip({ permanent: true, direction: "bottom", className: "map-label", offset: [0, LABEL_INSET], interactive: false })
-				.setLatLng([region.y + region.height, region.x + region.width / 2])
+			L.tooltip({ permanent: true, direction: "right", className: "map-label", interactive: false })
+				.setLatLng([region.y, region.x])
 				.setContent(region.name)
 				.addTo(map),
 		);
@@ -119,6 +120,8 @@
 				const element = label.getElement();
 				if (element) {
 					element.style.maxWidth = Math.max(0, scale * regions[index].width - 2 * LABEL_INSET) + "px";
+					// Its bottom this far above the south edge (the tooltip is centered on its anchor, the corner)
+					label.options.offset = L.point(LABEL_INSET, -(element.offsetHeight / 2 + LABEL_INSET));
 					label.update();
 				}
 			});
