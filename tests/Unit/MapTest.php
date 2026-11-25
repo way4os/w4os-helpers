@@ -77,7 +77,7 @@ describe('The map of the grid', function () {
             // Its layers (Leaflet's panes, z-index 400 and up) in a stacking context of their own, never over the menus of the site
             ->and((string) file_get_contents($assets . 'css/map.css'))->toContain(".block-map .map-view {\n\tisolation: isolate;\n}")
             // Its buttons Leaflet's, whatever a theme does with [role=button]
-            ->and((string) file_get_contents($assets . 'css/map.web.css'))->toContain(".block-map .leaflet-bar a {\n\tmargin: 0;\n\tpadding: 0;\n}");
+            ->and((string) file_get_contents($assets . 'css/map.web.css'))->toContain(".block-map .leaflet-bar a {\n\tmargin: 0;\n\tpadding: 0;\n\tborder-radius: 0;\n}", ".block-map .leaflet-bar a:first-child {\n\tborder-top-left-radius: 2px;", ".block-map .leaflet-bar a:last-child {\n\tborder-bottom-left-radius: 2px;");
     });
 
     test('lists its regions with their teleport links, the list the map takes its popups from, readable without a script', function () {

@@ -20,10 +20,19 @@
 .block-map .map[data-map-fill] .map-view {
 	border-radius: 0;
 }
-/* The buttons of the map as Leaflet draws them, never the buttons of a theme (its padding on [role=button]: Pico's, Quark2's) */
+/* The buttons of the map as Leaflet draws them, never the buttons of a theme (its padding and its corners on [role=button]: Pico's, Quark2's) */
 .block-map .leaflet-bar a {
 	margin: 0;
 	padding: 0;
+	border-radius: 0;
+}
+.block-map .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+}
+.block-map .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
 }
 /* The name of a region above it: on the water, never a box; none from too far (map-labels-hidden, js/map.js) */
 .block-map .leaflet-tooltip.map-label {
