@@ -68,7 +68,9 @@ describe('The block of a profile', function () {
             '<dt>Born</dt><dd>' . W4OS\Helpers\I18n::date(1700000000) . ' (',
             ' days)</dd>',
             '<p class="profile-banner-bare">Resident</p>',
-        )->not->toContain('<dt>Role</dt>')->and(strpos($html, '<header class="profile-banner">'))->toBeLessThan(strpos($html, 'profile-tabs'));
+        )->not->toContain('<dt>Role</dt>')->and(strpos($html, '<header class="profile-banner">'))->toBeLessThan(strpos($html, 'profile-tabs'))
+            // The tabs and their sections together, the banner out of them (a site frames them)
+            ->and($html)->toMatch('~</header>.*<div class="profile-box">\s*(\{#.*?#\}\s*)?<nav class="profile-tabs form-tabs".*id="profile-real-life".*</section>\s*</div>~s');
     });
 
     test('shows the rest of the in-world tab in About: the partner, the about text, the groups; never the key, the viewer has it', function () {

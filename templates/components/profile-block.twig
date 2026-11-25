@@ -24,6 +24,8 @@
             {# The sections of the viewer's profile, in the order of its tabs: links to each, made tabs by the script below; without
                it, every section shows, one after the other #}
             {% set titles = {'about': labels.about, 'feed': labels.feed, 'web': labels.web, 'interests': labels.interests, 'picks': labels.picks, 'classifieds': labels.classifieds, 'real-life': labels.real_life} %}
+            {# The tabs and their sections together (profile-box: a site may frame them, the banner above left as it is) #}
+            <div class="profile-box">
             {% if sections|length > 1 %}
                 {# The classes of the tabs of Grav's Form plugin (form-tabs, tabs-nav, tab__link, active): a site's theme draws them as its forms' tabs #}
                 <nav class="profile-tabs form-tabs" aria-label="{{ labels.profile_sections }}" data-open="profile-{{ open|default(sections|first) }}">
@@ -93,6 +95,7 @@
                     </div>
                 </section>
             {% endif %}
+            </div>
             {% if sections|length > 1 %}
             <script>
             // The links to the sections as tabs: one section shown at a time, the arrow keys move between the tabs
