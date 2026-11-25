@@ -71,8 +71,8 @@ describe('The map of the grid', function () {
             ->toContain('Math.max(ZOOM.max, Math.ceil(Math.log2(Math.max(1, Math.min(view.clientWidth, view.clientHeight)))))', 'maxZoom: closest()', 'map.setMaxZoom(closest())')
             // It opens on its regions fitting it, never smaller than 128 px a region, on the center the engine gives then
             ->toContain('const VIEW = { farthest: 7, margin: 16 };', 'map.getBoundsZoom(grid, false, L.point(2 * VIEW.margin, 2 * VIEW.margin))', 'fitted >= VIEW.farthest ? map.setView(grid.getCenter(), fitted) : map.setView(middle, VIEW.farthest)', '[Number(center.y), Number(center.x)]', 'zoomSnap: 0.25')
-            // The name of each region above it, from 64 px a region
-            ->toContain('const LABELS = 6;', 'direction: "top", className: "map-label"', 'map.getZoom() < LABELS')
+            // The name of each region inside it under its north edge, never wider than it, from 64 px a region
+            ->toContain('const LABELS = 6;', 'direction: "bottom", className: "map-label", offset: [0, LABEL_INSET]', 'element.style.maxWidth = Math.max(0, scale * regions[index].width - 2 * LABEL_INSET)', 'map.getZoom() < LABELS')
             // The whole height left in the window when the page asks it
             ->toContain('block.dataset.mapFill && fill();', 'window.innerHeight - top)')
             // A picker of the regions by their names, top right (Tom Select): the one picked fills the map, its popup open

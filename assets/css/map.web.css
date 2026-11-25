@@ -34,7 +34,8 @@
 	border-bottom-left-radius: 2px;
 	border-bottom-right-radius: 2px;
 }
-/* The name of a region above it: on the water, never a box; none from too far (map-labels-hidden, js/map.js) */
+/* The name of a region inside it, under its north edge, never a box; cut to the width of the region (js/map.js); none from too far
+   (map-labels-hidden) */
 .block-map .leaflet-tooltip.map-label {
 	padding: 0 0.25rem;
 	border: 0;
@@ -44,6 +45,9 @@
 	font-weight: 600;
 	font-size: 0.8rem;
 	white-space: nowrap;
+	box-sizing: border-box;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	text-shadow: 0 0 3px #000, 0 0 6px #000;
 }
 .block-map .leaflet-tooltip.map-label::before {

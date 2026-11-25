@@ -1,6 +1,6 @@
 /**
  * js/map.js: the map of the grid in a browser (the block map, MapBlock), on Leaflet: its tiles as the grid serves them, the name of
- * each region above it from close enough, a click on a region giving its name and its teleport link (the one of the list of the
+ * each region inside it from close enough, a click on a region giving its name and its teleport link (the one of the list of the
  * block, w4os-views' teleport link, its menu included); a picker of the regions by their names (Tom Select) taking the map to one.
  *
  * The method of the Second Life maps (maps.secondlife.com) for the tiles of OpenSimulator, as GwynethLlewelyn/goswi applies it
@@ -19,8 +19,9 @@
 	const ZOOM = { min: 1, native: 8, max: 10 };
 	// The view a map opens on: its regions fitting it with a margin, never smaller than 128 px a region (then on the default region)
 	const VIEW = { farthest: 7, margin: 16 };
-	// The names of the regions from 64 px a region
+	// The names of the regions from 64 px a region, inside each, this far under its north edge and from its sides (px)
 	const LABELS = 6;
+	const LABEL_INSET = 4;
 	const read = (element, name) => {
 		try {
 			return JSON.parse(element.dataset[name] || "{}") || {};
@@ -104,16 +105,26 @@
 			map.setMaxZoom(closest());
 		});
 
-		// The name of each region above it, from close enough
-		regions.forEach((region) => {
-			L.tooltip({ permanent: true, direction: "top", className: "map-label", offset: [0, 0], interactive: false })
+		// The name of each region inside it, under its north edge, never wider than the region (never over a neighbour); from close enough
+		const labels = regions.map((region) =>
+			L.tooltip({ permanent: true, direction: "bottom", className: "map-label", offset: [0, LABEL_INSET], interactive: false })
 				.setLatLng([region.y + region.height, region.x + region.width / 2])
 				.setContent(region.name)
-				.addTo(map);
-		});
-		const labels = () => view.classList.toggle("map-labels-hidden", map.getZoom() < LABELS);
-		map.on("zoomend", labels);
-		labels();
+				.addTo(map),
+		);
+		const fitLabels = () => {
+			const scale = Math.pow(2, map.getZoom());
+			view.classList.toggle("map-labels-hidden", map.getZoom() < LABELS);
+			labels.forEach((label, index) => {
+				const element = label.getElement();
+				if (element) {
+					element.style.maxWidth = Math.max(0, scale * regions[index].width - 2 * LABEL_INSET) + "px";
+					label.update();
+				}
+			});
+		};
+		map.on("zoomend", fitLabels);
+		fitLabels();
 
 		// The popup of a region: its name and its teleport link, the ones of the list
 		const popup = (region, latlng) => {
