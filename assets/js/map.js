@@ -1,7 +1,7 @@
 /**
  * js/map.js: the map of the grid in a browser (the block map, MapBlock), on Leaflet: its tiles as the grid serves them, the name of
  * each region at its bottom from close enough, a click on a region giving its name and its teleport link (the one of the list of the
- * block, w4os-views' teleport link, its menu included) and its coordinates, a click on the water the free location there; a picker of the regions by their names (Tom Select) taking the map to one.
+ * block, w4os-views' teleport link, its menu included) and its location on the grid, a click on the water the free location there; a picker of the regions by their names (Tom Select) taking the map to one.
  *
  * The method of the Second Life maps (maps.secondlife.com) for the tiles of OpenSimulator, as GwynethLlewelyn/goswi applies it
  * (leaflet-gridmap.js, BSD-3): a simple projection (L.CRS.Simple) whose unit is a region, x east and y north from the origin of the
@@ -137,15 +137,14 @@
 			line.append(label + " ", code);
 			return line;
 		};
-		// The popup of a region: its name and its teleport link (the ones of the list), its location on the grid and the position
-		// clicked in it (m); on the water, the location there, free for a new region
+		// The popup of a region: its name and its teleport link (the ones of the list), its location on the grid; on the water, the
+		// location there, free for a new region
 		const popup = (region, latlng) => {
 			const content = document.createElement("div");
 			content.className = "map-popup";
 			if (region) {
-				const position = [(latlng.lng - region.x) * 256, (latlng.lat - region.y) * 256].map(Math.floor).join(",");
 				content.append(...[...region.item.childNodes].map((node) => node.cloneNode(true)));
-				content.append(coords(texts.location || "Location", region.x + "," + region.y), coords(texts.position || "Position", position));
+				content.append(coords(texts.location || "Location", region.x + "," + region.y));
 			} else {
 				content.append(coords(texts.free_location || "Free location", Math.floor(latlng.lng) + "," + Math.floor(latlng.lat)));
 			}
