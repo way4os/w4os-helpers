@@ -43,6 +43,8 @@
             <p class="block-unavailable">{{ labels.unavailable }}</p>
         {% elseif not asked %}
             {% if note %}<p class="search-none">{{ note }}</p>{% endif %}
+            {# Before a search of places: the popular places (their own block) #}
+            {% if popular ?? false %}{% include 'components/popular_places-block.twig' with popular|merge({helpers_block: 'popular_places'}) %}{% endif %}
         {% else %}
             {# The list as the viewers have it, its columns sorting it; the result chosen shows its detail beside it (w4os-views) #}
             {{ list_detail(list, empty, assets) }}

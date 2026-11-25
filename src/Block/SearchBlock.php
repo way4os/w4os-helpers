@@ -142,6 +142,10 @@ final class SearchBlock implements Block
             'sent' => $asked['sent'],
             // What could not be searched (a database of the grid that cannot be reached): unavailable for now, not nothing found
             'unavailable' => $this->unavailable,
+            // The places before a search of them: the block of the popular places under the form, gone with the first search
+            'popular' => $topic === 'places' && !$asked['sent'] && !$embedded
+                ? (Blocks::data('popular_places', $grid, array_intersect_key($args, array_flip(['client', 'agent'])) + ['level' => 'h3']) ?: null)
+                : null,
         ];
     }
 

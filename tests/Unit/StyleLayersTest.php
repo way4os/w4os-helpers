@@ -28,7 +28,7 @@ describe('The styles of the helpers', function () {
 
         expect(View::blockFiles('destination_guide', 'viewer')['css'])->toBe(['css/blocks.css', 'css/guide.css', 'css/guide.viewer.css'])
             ->and(View::blockFiles('destination_guide', 'browser')['css'])->toBe(['css/blocks.css', 'css/guide.css', 'css/guide.web.css'])
-            ->and(View::blockFiles('search', 'browser')['css'])->toBe(['css/blocks.css', 'css/search.css', 'css/search.web.css']);
+            ->and(View::blockFiles('search', 'browser')['css'])->toBe(['css/blocks.css', 'css/search.css', 'css/places.css', 'css/search.web.css']);
     });
 
     test('of a page are its common ones, then the ones of its client', function () use ($assets) {

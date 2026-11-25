@@ -44,7 +44,7 @@ final class View
         'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'web' => ['css' => ['css/guide.web.css']], 'viewer' => ['css' => ['css/guide.viewer.css']], 'js' => ['js/guide.js']],
         'popular_places' => ['css' => ['css/blocks.css', 'css/places.css'], 'js' => []],
         'profile' => ['css' => ['css/profile.css'], 'js' => []],
-        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'web' => ['css' => ['css/search.web.css']], 'js' => ['js/search.js']],
+        'search' => ['css' => ['css/blocks.css', 'css/search.css', 'css/places.css'], 'web' => ['css' => ['css/search.web.css']], 'js' => ['js/search.js']],
         // The map in a browser (Leaflet); a viewer has its own world map: the list of the regions there
         'map' => ['css' => ['css/map.css'], 'web' => ['css' => [self::LEAFLET . 'leaflet.css', self::TOM_SELECT . 'css/tom-select.min.css', 'css/map.web.css'], 'js' => [self::LEAFLET . 'leaflet.js', self::TOM_SELECT . 'js/tom-select.popular.min.js', 'js/map.js']], 'viewer' => ['css' => ['css/map.viewer.css']], 'js' => []],
     ];

@@ -10,7 +10,7 @@ describe('The style of the search', function () {
         $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/search.css');
 
         // The style of its pictures too (blocks.css), the ones of the places and of the classifieds
-        expect($files['css'])->toBe(['css/blocks.css', 'css/search.css', 'css/search.web.css'])
+        expect($files['css'])->toBe(['css/blocks.css', 'css/search.css', 'css/places.css', 'css/search.web.css'])
             ->and($css)->toContain('.search-topics')
             ->and($css)->toContain('.visually-hidden');
     });
@@ -51,5 +51,12 @@ describe('The box of the search', function () {
             ->and($css)->not->toContain('.search-box {')
             ->and((string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/search.web.css'))->toContain('.block-search .search-box { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: .5rem; }');
     });
-});
 
+    test('shows the popular places under the form of places before a search, their own block, gone with the first search', function () {
+        $code = (string) file_get_contents(dirname(__DIR__, 2) . '/src/Block/SearchBlock.php');
+        $twig = (string) file_get_contents(dirname(__DIR__, 2) . '/templates/components/search-block.twig');
+
+        expect($code)->toContain('\'popular\' => $topic === \'places\' && !$asked[\'sent\'] && !$embedded', 'Blocks::data(\'popular_places\', $grid,')
+            ->and($twig)->toContain("{% include 'components/popular_places-block.twig' with popular|merge({helpers_block: 'popular_places'}) %}");
+    });
+});
