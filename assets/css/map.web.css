@@ -34,22 +34,27 @@
 	border-bottom-left-radius: 2px;
 	border-bottom-right-radius: 2px;
 }
-/* The name of a region in its lower left corner, never a box; cut to the width of the region (js/map.js); none from too far
-   (map-labels-hidden) */
+/* The texts of the map in the font of the page (Leaflet's own otherwise) */
+.block-map .leaflet-container {
+	font-family: inherit;
+}
+/* The name of a region at the middle of its south edge, as the page's own small cards (its surface, text and corners: Pico's tokens,
+   light and dark), cut to the width of the region (js/map.js); none from too far (map-labels-hidden) */
 .block-map .leaflet-tooltip.map-label {
 	margin: 0;
-	padding: 0 0.25rem;
+	padding: 0.1rem 0.45rem;
 	border: 0;
-	background: none;
+	border-radius: var(--pico-border-radius, 0.25rem);
+	background: color-mix(in srgb, var(--pico-card-background-color, Canvas) 85%, transparent);
 	box-shadow: none;
-	color: #fff;
+	color: var(--pico-color, CanvasText);
 	font-weight: 600;
 	font-size: 0.8rem;
+	line-height: 1.4;
 	white-space: nowrap;
 	box-sizing: border-box;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	text-shadow: 0 0 3px #000, 0 0 6px #000;
 }
 .block-map .leaflet-tooltip.map-label::before {
 	display: none;
