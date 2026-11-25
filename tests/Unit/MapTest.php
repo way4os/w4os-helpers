@@ -69,7 +69,7 @@ describe('The map of the grid', function () {
             // The name of each region above it, from 64 px a region
             ->toContain('const LABELS = 6;', 'direction: "top", className: "map-label"', 'map.getZoom() < LABELS')
             // The whole height left in the window when the page asks it
-            ->toContain('block.dataset.mapFill && fill();', 'window.innerHeight - top - 16')
+            ->toContain('block.dataset.mapFill && fill();', 'window.innerHeight - top)')
             // A click gives the teleport link of the list, its menu with it
             ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)')
             // Its buttons Leaflet's, whatever a theme does with [role=button]

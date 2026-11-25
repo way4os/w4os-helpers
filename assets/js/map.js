@@ -66,10 +66,10 @@
 		// A little water around the grid, to move it about
 		const around = grid.pad(0.5);
 
-		// The whole height left in the window, when the page asks it (the map is the page)
+		// The whole height left in the window, down to its bottom, when the page asks it (the map is the page)
 		const fill = () => {
 			const top = view.getBoundingClientRect().top + window.scrollY;
-			view.style.height = Math.max(288, window.innerHeight - top - 16) + "px";
+			view.style.height = Math.max(288, window.innerHeight - top) + "px";
 		};
 		view.hidden = false;
 		block.classList.add("is-drawn");

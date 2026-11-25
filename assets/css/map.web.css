@@ -16,6 +16,10 @@
 .block-map .map.is-drawn .map-regions {
 	display: none;
 }
+/* The map that is the page (fill): no frame of its own, down to the bottom of the window */
+.block-map .map[data-map-fill] .map-view {
+	border-radius: 0;
+}
 /* The buttons of the map as Leaflet draws them, never the buttons of a theme (its padding on [role=button]: Pico's, Quark2's) */
 .block-map .leaflet-bar a {
 	margin: 0;
