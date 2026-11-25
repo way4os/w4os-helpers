@@ -273,6 +273,13 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->toContain('body.viewer #guide');
     });
 
+    test('in a viewer it is the whole panel, never a box framed in it (the frame of the blocks of a page)', function () {
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/guide.css');
+        preg_match('/#guide\.client-viewer,\s*body\.viewer #guide \{[^}]*\}/', $css, $panel);
+
+        expect($panel[0] ?? '')->toContain('border: 0;')->toContain('border-radius: 0;');
+    });
+
     test('a site that shows the blocks in its pages knows the files they need', function () {
         expect(W4OS\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']])
             ->and(W4OS\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/blocks.css', 'css/places.css'], 'js' => []])

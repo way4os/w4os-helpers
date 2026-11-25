@@ -142,6 +142,8 @@ body.viewer #guide {
 	background: var(--guide-background);
 	color: var(--guide-text);
 	padding: 0 10px 10px;
+	border: 0;
+	border-radius: 0;
 	overflow: hidden;
 }
 body.viewer #guide {
