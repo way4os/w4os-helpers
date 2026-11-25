@@ -17,8 +17,9 @@
 	}
 	// Leaflet's zooms: a region 2^zoom pixels wide; 8 the tiles' own zoom 1 (256 px), 10 enlarged four times (the closest at least)
 	const ZOOM = { min: 1, native: 8, max: 10 };
-	// The view a map opens on: its regions fitting it with a margin, never smaller than 128 px a region (then on the default region)
-	const VIEW = { farthest: 7, margin: 16 };
+	// The view a map opens on: its regions fitting it with a margin, never smaller than 128 px a region (a sparse grid: 256 px a
+	// region on the default region)
+	const VIEW = { farthest: 7, sparse: 8, margin: 16 };
 	// The names of the regions from 64 px a region, inside each, this far above its south edge and from its sides (px)
 	const LABELS = 6;
 	const LABEL_INSET = 4;
@@ -94,11 +95,11 @@
 			tileSize: 256,
 			bounds: around,
 		}).addTo(map);
-		// Its regions fitting it, up to the closest zoom; a grid too large for 128 px a region on its center (the default region's
-		// middle, the engine's)
+		// Its regions fitting it, up to the closest zoom; a grid too large for 128 px a region at 256 px a region on its center (the
+		// default region's middle, the engine's)
 		const fitted = map.getBoundsZoom(grid, false, L.point(2 * VIEW.margin, 2 * VIEW.margin));
 		const middle = center.x !== undefined && center.y !== undefined ? [Number(center.y), Number(center.x)] : grid.getCenter();
-		fitted >= VIEW.farthest ? map.setView(grid.getCenter(), fitted) : map.setView(middle, VIEW.farthest);
+		fitted >= VIEW.farthest ? map.setView(grid.getCenter(), fitted) : map.setView(middle, VIEW.sparse);
 		window.addEventListener("resize", () => {
 			block.dataset.mapFill && fill();
 			map.invalidateSize();
