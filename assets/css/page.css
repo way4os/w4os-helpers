@@ -1,35 +1,21 @@
-/* The pages of the helpers: the same for a viewer (content alone) and a browser (top bar and footer too) */
-:root { --bg: #f7f7f5; --fg: #1c1c1a; --muted: #66665f; --accent: #3a5ea8; --card: #fff; --line: #deded8; --warning: #b45309; --error: #b91c1c; }
-@media (prefers-color-scheme: dark) {
-    :root { --bg: #151514; --fg: #ececea; --muted: #9a9a92; --accent: #8fb0f0; --card: #1f1f1d; --line: #34342f; --warning: #f59e0b; --error: #f87171; }
-}
+/* The pages of the helpers, for a viewer (content alone) and a browser (top bar and footer too): what they are made of, the same
+   for both. The look of each is its own: page.web.css for a browser, page.viewer.css for a viewer (View::pageStyles()); their
+   colours are the variables each one gives */
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 var(--font, system-ui, sans-serif); }
+body { margin: 0; font: 16px/1.5 var(--font, system-ui, sans-serif); }
 /* The forms take the font of the page, not the browser's own */
 button, input, select, textarea { font: inherit; }
-a { color: var(--accent); }
 /* Left to right, 3-6-3, over the whole width: what the grid is, the main content, what is new. On a narrow window the main
    content comes first. */
-.layout { display: grid; gap: 1.25rem; padding: 1.25rem 1rem; }
+.layout { display: grid; gap: 1.25rem; }
 .layout.with-sidebars { grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); }
 main { min-width: 0; }
-body.viewer .layout { padding: .75rem; }
 @media (max-width: 52rem) {
     .layout.with-sidebars { grid-template-columns: minmax(0, 1fr); }
     .layout.with-sidebars main { order: -1; }
 }
-.skip { position: absolute; left: -999px; }
-.skip:focus { left: .5rem; top: .5rem; background: var(--card); padding: .25rem .5rem; }
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem 1rem; background: var(--card); border-bottom: 1px solid var(--line); }
-.topbar .brand { display: flex; align-items: center; gap: .6rem; font-weight: 600; text-decoration: none; color: var(--fg); }
-.topbar .logo { max-height: 2.5rem; max-width: 8rem; }
-.topbar nav a { margin-left: 1rem; text-decoration: none; }
-.topbar nav a[aria-current] { font-weight: bold; }
-footer { margin-top: 2rem; padding: 1rem; text-align: center; color: var(--muted); font-size: .875rem; border-top: 1px solid var(--line); }
 h1.grid-name { font-size: 2rem; margin: .5rem 0 1rem; }
-.block { background: var(--card); border: 1px solid var(--line); border-radius: .5rem; padding: 1rem 1.25rem; margin: 1rem 0; }
-/* The search has a box of its own, its title above it (search.css) */
-.block.block-search { background: none; border: 0; padding: 0; }
+.block { margin: 1rem 0; }
 .block-title { margin: 0 0 .5rem; }
 .block:first-child { margin-top: 0; }
 .block-table { width: 100%; border-collapse: collapse; }

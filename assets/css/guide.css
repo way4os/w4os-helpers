@@ -1,21 +1,14 @@
 /**
  * css/guide.css: the destination guide, a card for each category or destination (its picture, its name; a category how many
- * destinations it has). In a browser it is a block of the page as the popular places are: on the column of the content, without
- * a background, in the colours of the theme (light or dark), its title the one of the blocks, its pictures smaller than theirs. In
- * a viewer (#guide.client-viewer, or a page of the helpers for a viewer, body.viewer) it is the viewers' Destinations panel: dark,
- * one row scrolling sideways. The colours are variables a site may set.
+ * destinations it has), what it is made of wherever it is shown. Its look is the one of its client (View::blockFiles()): in a
+ * browser (guide.web.css) a block of the page as the popular places are, in the colours of the theme; in a viewer
+ * (guide.viewer.css) the viewers' Destinations panel, dark, one row scrolling sideways. The colours are variables a site may set.
  *
  * @package    w4os/w4os-helpers
  * @license    AGPLv3
  */
 
 #guide {
-	--guide-text: inherit;
-	--guide-muted: color-mix(in srgb, currentColor 65%, transparent);
-	--guide-line: color-mix(in srgb, currentColor 20%, transparent);
-	--guide-highlight: inherit;
-	--guide-picture: color-mix(in srgb, currentColor 10%, transparent);
-	color: inherit;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
@@ -27,15 +20,11 @@
 	align-items: baseline;
 	gap: 0 1rem;
 }
-/* In a browser its title is the one of the blocks, a line of its own as theirs */
-#guide .header > .block-title {
-	flex-basis: 100%;
-}
 #guide .header > .category {
 	font-weight: bold;
 }
 #guide a {
-	color: inherit;
+	color: var(--guide-text);
 	text-decoration: none;
 }
 #guide a.back {
@@ -48,7 +37,6 @@
 
 #guide .list {
 	display: flex;
-	flex-wrap: wrap;
 	gap: 14px;
 	padding-top: 14px;
 }
@@ -99,7 +87,6 @@
 	height: 84px;
 	object-fit: cover;
 	background: var(--guide-picture);
-	border-radius: 0.25rem;
 }
 /* What you go to, the largest */
 #guide .name {
@@ -120,99 +107,7 @@
 	line-clamp: 2;
 	overflow: hidden;
 }
-#guide .item:hover .thumbnail,
-#guide .item:focus .thumbnail {
-	opacity: 0.85;
-}
 
 #guide .error {
 	padding: 14px 0;
-}
-
-/* In a viewer: its Destinations panel, dark, the whole panel, one row */
-#guide.client-viewer,
-body.viewer #guide {
-	--guide-background: #2b2b2b;
-	--guide-text: #fff;
-	--guide-muted: #cfcfcf;
-	--guide-line: #3d3d3d;
-	--guide-highlight: #ffde00;
-	--guide-picture: #444;
-	font-family: "Liberation Sans", Arial, Roboto, "Helvetica", sans-serif;
-	background: var(--guide-background);
-	color: var(--guide-text);
-	padding: 0 10px 10px;
-	border: 0;
-	border-radius: 0;
-	overflow: hidden;
-}
-body.viewer #guide {
-	height: 100vh;
-	margin: 0;
-}
-body.viewer .layout {
-	padding: 0;
-}
-body.viewer {
-	margin: 0;
-	background: var(--guide-background, #2b2b2b);
-}
-#guide.client-viewer .header,
-body.viewer #guide .header {
-	padding: 8px 0;
-	border-bottom: 1px solid var(--guide-line);
-}
-#guide.client-viewer h1,
-#guide.client-viewer h2,
-body.viewer #guide h1,
-body.viewer #guide h2 {
-	margin: 0;
-	font-family: inherit;
-	font-size: 1rem;
-	font-weight: bold;
-	letter-spacing: normal;
-	line-height: 1.4;
-	color: var(--guide-text);
-}
-/* The decorations a site gives its titles (a bar over them) are not the panel's */
-#guide.client-viewer h1::before,
-#guide.client-viewer h1::after,
-#guide.client-viewer h2::before,
-#guide.client-viewer h2::after,
-body.viewer #guide h1::before,
-body.viewer #guide h1::after,
-body.viewer #guide h2::before,
-body.viewer #guide h2::after {
-	content: none;
-}
-#guide.client-viewer a,
-body.viewer #guide a {
-	color: var(--guide-text);
-}
-#guide.client-viewer a.back,
-body.viewer #guide a.back {
-	color: var(--guide-muted);
-}
-#guide.client-viewer a.back:hover,
-body.viewer #guide a.back:hover,
-#guide.client-viewer .item:hover .name,
-#guide.client-viewer .item:focus .name,
-body.viewer #guide .item:hover .name,
-body.viewer #guide .item:focus .name {
-	color: var(--guide-highlight);
-}
-#guide.client-viewer .item:hover .thumbnail,
-body.viewer #guide .item:hover .thumbnail {
-	opacity: 1;
-}
-#guide.client-viewer .thumbnail,
-body.viewer #guide .thumbnail {
-	border-radius: 0;
-}
-#guide.client-viewer .list,
-body.viewer #guide .list {
-	flex-wrap: nowrap;
-	flex-grow: 1;
-	overflow-x: auto;
-	overflow-y: hidden;
 }

@@ -36,22 +36,41 @@ final class View
     /** The class of the visitor the block being made is for (Destination::client()), for its teleport links. */
     private string $client = 'browser';
 
-    /** The files each block needs, under the assets of the helpers. */
+    /**
+     * The files each block needs, under the assets of the helpers: its styles in layers, the common ones (`css`: what it is made of),
+     * then the ones of the client it is shown to alone (`web` for a browser, `viewer` for a viewer: their own choices).
+     */
     private const BLOCK_FILES = [
-        'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']],
+        'destination_guide' => ['css' => ['css/blocks.css', 'css/guide.css'], 'web' => ['css/guide.web.css'], 'viewer' => ['css/guide.viewer.css'], 'js' => ['js/guide.js']],
         'popular_places' => ['css' => ['css/blocks.css', 'css/places.css'], 'js' => []],
         'profile' => ['css' => ['css/profile.css'], 'js' => []],
-        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'js' => ['js/search.js']],
+        'search' => ['css' => ['css/blocks.css', 'css/search.css'], 'web' => ['css/search.web.css'], 'js' => ['js/search.js']],
     ];
 
+    /** The layer of the styles of each client (Destination::CLIENTS): a browser has the web's, a viewer the viewer's, never both. */
+    public const LAYERS = ['browser' => 'web', 'viewer' => 'viewer'];
+
     /**
-     * The files a block needs, for a site that shows the block in its own pages (and links them from where it has the helpers).
+     * The files a block needs, for a site that shows the block in its own pages (and links them from where it has the helpers): its
+     * common styles, then the ones of the client (`browser`, `viewer`) it is shown to.
      *
      * @return array{css:list<string>,js:list<string>} paths under the assets of the helpers (`assets/`)
      */
-    public static function blockFiles(string $name): array
+    public static function blockFiles(string $name, string $client = 'browser'): array
     {
-        return (self::BLOCK_FILES[str_replace('-', '_', $name)] ?? []) + ['css' => [], 'js' => []];
+        $files = self::BLOCK_FILES[str_replace('-', '_', $name)] ?? [];
+
+        return ['css' => array_merge($files['css'] ?? [], $files[self::LAYERS[$client] ?? 'web'] ?? []), 'js' => $files['js'] ?? []];
+    }
+
+    /**
+     * The styles of a page of the helpers: the common ones, then the ones of its client (`browser`, `viewer`).
+     *
+     * @return list<string> paths under the assets of the helpers (`assets/`)
+     */
+    public static function pageStyles(string $client): array
+    {
+        return ['css/page.css', 'css/page.' . (self::LAYERS[$client] ?? 'web') . '.css'];
     }
 
     /** The levels of the notices to the visitor, as the sites name them too (Grav's messages). */
@@ -118,7 +137,7 @@ final class View
             ? (string) $args['client']
             : Destination::client(isset($args['agent']) ? (string) $args['agent'] : null);
         $data = Blocks::data($name, $grid, $args);
-        foreach (self::BLOCK_FILES[$name] ?? [] as $kind => $files) {
+        foreach (self::blockFiles($name, $this->client) as $kind => $files) {
             $this->files[$kind] = array_values(array_unique(array_merge($this->files[$kind], $files)));
         }
         $this->found = (($data['found'] ?? true) !== false);
@@ -232,7 +251,12 @@ final class View
         foreach (['svg', 'png'] as $ext) {
             $logo ??= $this->asset($grid, "images/logos/logo.$ext") === null ? null : "$prefix/assets/images/logos/logo.$ext";
         }
-        $stylesheet = $this->asset($grid, 'css/page.css');
+        // The styles of the page for its client, versioned by their date
+        $stylesheets = array_map(function (string $file) use ($grid, $prefix): string {
+            $found = $this->asset($grid, $file);
+
+            return "$prefix/assets/$file" . ($found === null ? '' : '?v=' . filemtime($found));
+        }, self::pageStyles($viewer ? 'viewer' : 'browser'));
 
         // What the grid is and says (its info, its status, its message of the day): none on a host without the database of a grid
         $sidebars = (!$viewer || $page === 'splash') && $grid->hasDatabase();
@@ -248,7 +272,7 @@ final class View
             'news' => '',
             'menu' => $this->menu($grid, $prefix),
             'labels' => self::labels(),
-            'stylesheet' => "$prefix/assets/css/page.css" . ($stylesheet === null ? '' : '?v=' . filemtime($stylesheet)),
+            'stylesheets' => $stylesheets,
             'assets' => array_map(
                 fn(array $files): array => array_map(fn(string $file): string => "$prefix/assets/$file", $files),
                 $this->files,

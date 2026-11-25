@@ -1,0 +1,9 @@
+/* The pages of the helpers in a viewer (View::pageStyles()), over page.css: the content alone in the viewer's panel, compact, in
+   its colours, light or dark as the viewer says */
+:root { --bg: #f7f7f5; --fg: #1c1c1a; --muted: #66665f; --accent: #3a5ea8; --card: #fff; --line: #deded8; --warning: #b45309; --error: #b91c1c; }
+@media (prefers-color-scheme: dark) {
+    :root { --bg: #151514; --fg: #ececea; --muted: #9a9a92; --accent: #8fb0f0; --card: #1f1f1d; --line: #34342f; --warning: #f59e0b; --error: #f87171; }
+}
+body { background: var(--bg); color: var(--fg); }
+a { color: var(--accent); }
+.layout { padding: .75rem; }

@@ -10,7 +10,7 @@ describe('The style of the search', function () {
         $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/search.css');
 
         // The style of its pictures too (blocks.css), the ones of the places and of the classifieds
-        expect($files['css'])->toBe(['css/blocks.css', 'css/search.css'])
+        expect($files['css'])->toBe(['css/blocks.css', 'css/search.css', 'css/search.web.css'])
             ->and($css)->toContain('.search-topics')
             ->and($css)->toContain('.visually-hidden');
     });
@@ -48,7 +48,8 @@ describe('The box of the search', function () {
         expect($twig)->toMatch('#class="block block-search search-\{\{ topic \}\} client-\{\{ client[^"]*"#')
             ->and(strpos($twig, 'class="block-title"'))->toBeLessThan((int) strpos($twig, '<div class="search-box">'))
             ->and(strpos($twig, '<div class="search-box">'))->toBeLessThan((int) strpos($twig, 'class="search-topics"'))
-            ->and($css)->toContain('.block-search.client-browser .search-box { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: .5rem; }');
+            ->and($css)->not->toContain('.search-box {')
+            ->and((string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/search.web.css'))->toContain('.block-search .search-box { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: .5rem; }');
     });
 });
 

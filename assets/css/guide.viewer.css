@@ -1,0 +1,63 @@
+/**
+ * css/guide.viewer.css: the destination guide in a viewer (View::blockFiles()), over guide.css: the viewers' Destinations panel,
+ * dark, its title in it, one row scrolling sideways; on a page of its own (body.viewer: the helpers', the w4os plugin's) the whole
+ * panel, without a margin.
+ *
+ * @package    w4os/w4os-helpers
+ * @license    AGPLv3
+ */
+
+#guide {
+	--guide-background: #2b2b2b;
+	--guide-text: #fff;
+	--guide-muted: #cfcfcf;
+	--guide-line: #3d3d3d;
+	--guide-highlight: #ffde00;
+	--guide-picture: #444;
+	font-family: "Liberation Sans", Arial, Roboto, "Helvetica", sans-serif;
+	background: var(--guide-background);
+	color: var(--guide-text);
+	padding: 0 10px 10px;
+	overflow: hidden;
+}
+body.viewer #guide {
+	height: 100vh;
+	margin: 0;
+}
+body.viewer .layout {
+	padding: 0;
+}
+body.viewer {
+	background: var(--guide-background, #2b2b2b);
+}
+#guide .header {
+	padding: 8px 0;
+	border-bottom: 1px solid var(--guide-line);
+}
+#guide h1,
+#guide h2 {
+	margin: 0;
+	font-family: inherit;
+	font-size: 1rem;
+	font-weight: bold;
+	letter-spacing: normal;
+	line-height: 1.4;
+	color: var(--guide-text);
+}
+/* The decorations a site gives its titles (a bar over them) are not the panel's */
+#guide h1::before,
+#guide h1::after,
+#guide h2::before,
+#guide h2::after {
+	content: none;
+}
+#guide .item:hover .name,
+#guide .item:focus .name {
+	color: var(--guide-highlight);
+}
+#guide .list {
+	flex-wrap: nowrap;
+	flex-grow: 1;
+	overflow-x: auto;
+	overflow-y: hidden;
+}

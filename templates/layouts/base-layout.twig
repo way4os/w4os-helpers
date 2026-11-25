@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}{{ grid_name }}{% endblock %}</title>
         {# The styles in the head, versioned by their date: the page is styled when it shows, and a browser keeps them #}
-        <link rel="stylesheet" href="{{ stylesheet }}">
+        {% for css in stylesheets %}<link rel="stylesheet" href="{{ css }}">{% endfor %}
         {% for css in assets.css %}<link rel="stylesheet" href="{{ css }}">{% endfor %}
         {# The brand of the site, over the variables of the stylesheets: its icon, its font, its accent color #}
         {% if brand.icon %}<link rel="icon" href="{{ brand.icon }}"><link rel="apple-touch-icon" href="{{ brand.icon }}">{% endif %}

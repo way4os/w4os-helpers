@@ -262,26 +262,23 @@ describe('the pictures of the guide and of the popular places: the parcel, never
     });
 
     test('the dark look of the viewers is the one of the viewer only: in a browser the colours are the theme\'s', function () {
-        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/guide.css');
-        $base = substr($css, (int) strpos($css, '*/'), (int) strpos($css, '/* In a viewer') - (int) strpos($css, '*/'));
+        $read = fn(string $file) => (string) file_get_contents(dirname(__DIR__, 2) . "/assets/css/$file");
 
-        expect($base)
-            ->not->toContain('#2b2b2b')
-            ->toContain('color: inherit')
-            ->and($css)
-            ->toContain('#guide.client-viewer')
-            ->toContain('body.viewer #guide');
+        expect($read('guide.css') . $read('guide.web.css'))->not->toContain('#2b2b2b')
+            ->and($read('guide.web.css'))->toContain('color: inherit')
+            ->and($read('guide.viewer.css'))->toContain('#2b2b2b', 'body.viewer #guide');
     });
 
     test('in a viewer it is the whole panel, never a box framed in it (the frame of the blocks of a page)', function () {
-        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/css/guide.css');
-        preg_match('/#guide\.client-viewer,\s*body\.viewer #guide \{[^}]*\}/', $css, $panel);
+        $read = fn(string $file) => (string) file_get_contents(dirname(__DIR__, 2) . "/assets/css/$file");
 
-        expect($panel[0] ?? '')->toContain('border: 0;')->toContain('border-radius: 0;');
+        // The frame is the web's (page.web.css): a viewer never has it to undo
+        expect($read('guide.viewer.css') . $read('page.viewer.css') . $read('page.css'))->not->toMatch('/\.block[^{]*\{[^}]*border:/')
+            ->and($read('guide.viewer.css'))->toContain("body.viewer #guide {\n\theight: 100vh;\n\tmargin: 0;");
     });
 
     test('a site that shows the blocks in its pages knows the files they need', function () {
-        expect(W4OS\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/blocks.css', 'css/guide.css'], 'js' => ['js/guide.js']])
+        expect(W4OS\Helpers\View\View::blockFiles('destination_guide'))->toBe(['css' => ['css/blocks.css', 'css/guide.css', 'css/guide.web.css'], 'js' => ['js/guide.js']])
             ->and(W4OS\Helpers\View\View::blockFiles('popular-places'))->toBe(['css' => ['css/blocks.css', 'css/places.css'], 'js' => []])
             ->and(W4OS\Helpers\View\View::blockFiles('motd'))->toBe(['css' => [], 'js' => []]);
     });

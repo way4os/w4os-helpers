@@ -1,0 +1,2 @@
+/* The search in a browser (View::blockFiles()), over search.css: its box, as the boxes of the grid info and of its status */
+.block-search .search-box { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); border-radius: .5rem; }

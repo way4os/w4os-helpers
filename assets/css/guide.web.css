@@ -1,0 +1,31 @@
+/**
+ * css/guide.web.css: the destination guide in a browser (View::blockFiles()), over guide.css: a block of the page as the popular
+ * places are, on the column of the content, without a background, in the colours of the theme (light or dark), its title the one
+ * of the blocks, its cards on as many rows as they need.
+ *
+ * @package    w4os/w4os-helpers
+ * @license    AGPLv3
+ */
+
+#guide {
+	--guide-text: inherit;
+	--guide-muted: color-mix(in srgb, currentColor 65%, transparent);
+	--guide-line: color-mix(in srgb, currentColor 20%, transparent);
+	--guide-highlight: inherit;
+	--guide-picture: color-mix(in srgb, currentColor 10%, transparent);
+	color: inherit;
+}
+/* Its title is the one of the blocks, a line of its own as theirs */
+#guide .header > .block-title {
+	flex-basis: 100%;
+}
+#guide .list {
+	flex-wrap: wrap;
+}
+#guide .thumbnail {
+	border-radius: 0.25rem;
+}
+#guide .item:hover .thumbnail,
+#guide .item:focus .thumbnail {
+	opacity: 0.85;
+}
