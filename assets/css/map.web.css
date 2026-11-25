@@ -70,6 +70,15 @@
 .block-map .leaflet-popup-content .w4os-tp-menu {
 	z-index: 1000;
 }
+/* The coordinates in a popup: small, their values as OpenSim writes them */
+.block-map .map-popup .map-coords {
+	margin: 0.25rem 0 0;
+	font-size: 0.8rem;
+	opacity: 0.8;
+}
+.block-map .map-popup .map-coords:first-child {
+	margin-top: 0;
+}
 /* The region picker (Tom Select), over the map at its top right, framed as Leaflet's controls */
 .block-map .map.is-drawn {
 	position: relative;

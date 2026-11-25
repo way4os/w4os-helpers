@@ -77,6 +77,8 @@ describe('The map of the grid', function () {
             ->toContain('block.dataset.mapFill && fill();', 'window.innerHeight - top)')
             // A picker of the regions by their names, top right (Tom Select): the one picked fills the map, its popup open
             ->toContain('new TomSelect(', 'view.after(box)', 'map.flyToBounds(area', 'map.once("moveend", () => popup(region, area.getCenter()))', 'texts.find_region', 'texts.no_region')
+            // A click gives its coordinates as OpenSim writes them: the region's location and the position in it, the free location on the water
+            ->toContain("coords(texts.location || \"Location\", region.x + \",\" + region.y)", 'coords(texts.free_location || "Free location"', '(latlng.lng - region.x) * 256')
             // A click gives the teleport link of the list, its menu with it
             ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)')
             // Its layers (Leaflet's panes, z-index 400 and up) in a stacking context of their own, never over the menus of the site
@@ -91,7 +93,7 @@ describe('The map of the grid', function () {
         $html = $twig->render('components/map-block.twig', [
             'name' => 'map', 'helpers_block' => 'map', 'title' => 'Map', 'level' => 'h2', 'labels' => [],
             'tiles' => '/grid-map/{z}/{x}/{y}.jpg', 'bounds' => ['minX' => 1000, 'minY' => 1000, 'maxX' => 1001, 'maxY' => 1000], 'center' => ['x' => 1000, 'y' => 1000],
-            'texts' => ['zoom_in' => 'Zoom in', 'zoom_out' => 'Zoom out', 'find_region' => 'Find a region', 'no_region' => 'No region found'],
+            'texts' => ['zoom_in' => 'Zoom in', 'zoom_out' => 'Zoom out', 'find_region' => 'Find a region', 'no_region' => 'No region found', 'location' => 'Location', 'position' => 'Position', 'free_location' => 'Free location'],
             'regions' => [['name' => 'Welcome', 'x' => 1000, 'y' => 1000, 'width' => 1, 'height' => 1, 'online' => true, 'links' => []], ['name' => 'Sea', 'x' => 1001, 'y' => 1000, 'width' => 2, 'height' => 2, 'online' => false, 'links' => []]],
         ]);
 
