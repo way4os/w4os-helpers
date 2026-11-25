@@ -60,10 +60,16 @@ describe('The map of the grid', function () {
             ->and((string) file_get_contents($assets . 'js/map.js'))->not->toMatch('#https?://#');
     });
 
-    test('places its tiles as the maps of Second Life do: a region a unit, the zoom of the tiles reversed', function () use ($assets) {
+    test('places its tiles as the maps of Second Life do: a region a unit, the zoom of the tiles reversed, enlarged from closer', function () use ($assets) {
         $js = (string) file_get_contents($assets . 'js/map.js');
 
-        expect($js)->toContain('crs: L.CRS.Simple', 'zoomOffset: 1', 'zoomReverse: true', 'Math.pow(2, zoom - 1)', '(Math.abs(coords.y) - 1) * regions', 'maxBounds')
+        expect($js)->toContain('crs: L.CRS.Simple', 'const ZOOM = { min: 1, native: 8, max: 10 };', 'ZOOM.native + 1 - Math.min(this._tileZoom, ZOOM.native)', 'Math.pow(2, zoom - 1)', '(Math.abs(coords.y) - 1) * regions', 'maxNativeZoom: ZOOM.native', 'maxBounds')
+            // It opens on its whole, a region about 128 px wide at most, 32 px at least, on the center the engine gives
+            ->toContain('const VIEW = { closest: 7, farthest: 5 };', 'Math.max(VIEW.farthest, Math.min(VIEW.closest, map.getBoundsZoom(grid)))', '[Number(center.y), Number(center.x)]')
+            // The name of each region above it, from 64 px a region
+            ->toContain('const LABELS = 6;', 'direction: "top", className: "map-label"', 'map.getZoom() < LABELS')
+            // The whole height left in the window when the page asks it
+            ->toContain('block.dataset.mapFill && fill();', 'window.innerHeight - top - 16')
             // A click gives the teleport link of the list, its menu with it
             ->toContain('.map-region', 'W4OSTeleportLinks?.setup(content)')
             // Its buttons Leaflet's, whatever a theme does with [role=button]
@@ -81,8 +87,9 @@ describe('The map of the grid', function () {
         ]);
 
         expect($html)->toContain('<section class="block block-map" data-helpers-block="map">', '<h2 class="block-title">Map</h2>', 'data-map-tiles="/grid-map/{z}/{x}/{y}.jpg"', '<div class="map-view" hidden></div>')
-            ->toContain('<li class="map-region" data-x="1000" data-y="1000" data-width="1" data-height="1"><span data-w4os-tp>Welcome</span></li>')
-            ->toContain('<li class="map-region is-offline" data-x="1001" data-y="1000" data-width="2" data-height="2">');
+            ->toContain('<li class="map-region" data-name="Welcome" data-x="1000" data-y="1000" data-width="1" data-height="1"><span data-w4os-tp>Welcome</span></li>')
+            ->toContain('<li class="map-region is-offline" data-name="Sea" data-x="1001" data-y="1000" data-width="2" data-height="2">')
+            ->not->toContain('data-map-fill');
     });
 
     test('shows the regions of the engine, their size in regions and their teleport links, at the address of the tiles the site gives', function () {
@@ -94,6 +101,8 @@ describe('The map of the grid', function () {
             ->and($regions['Plaza'])->toMatchArray(['width' => 1, 'height' => 1, 'online' => true])
             ->and(array_column($regions['Welcome']['links']['browser'], 'link'))->toContain('hop://grid.example.org:8002/Welcome')
             ->and($data['tiles'])->toBe('/grid-map/{z}/{x}/{y}.jpg')
+            ->and($data['fill'])->toBeFalse()
+            ->and(Blocks::data('map', helpers_map_grid(), ['fill' => 'true'])['fill'])->toBeTrue()
             ->and($data['bounds'])->toBe(['minX' => 1000, 'minY' => 1000, 'maxX' => 1004, 'maxY' => 1002])
             ->and($data['center'])->toBe(['x' => 1000.5, 'y' => 1000.5])
             // Its title the engine's, in the language of the page

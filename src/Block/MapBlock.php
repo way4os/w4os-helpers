@@ -57,6 +57,8 @@ final class MapBlock implements Block
             'bounds' => (array) ($map['bounds'] ?? []),
             'center' => (array) ($map['center'] ?? []),
             'texts' => ['zoom_in' => I18n::text('Zoom in'), 'zoom_out' => I18n::text('Zoom out')],
+            // The whole height left in the window, when the map is the page (`fill`)
+            'fill' => in_array(strtolower(trim((string) ($args['fill'] ?? ''))), ['true', '1', 'yes', 'on'], true),
         ];
     }
 

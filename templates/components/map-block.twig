@@ -1,14 +1,14 @@
 {% extends 'components/block-component.twig' %}
-{# The map of the grid (MapBlock): in a browser its tiles, drawn by js/map.js (Leaflet) in .map-view, a click on a region giving its
-   name and its teleport link; without a script, and in a viewer (it has its own world map), the list of the regions with their
+{# The map of the grid (MapBlock): in a browser its tiles, drawn by js/map.js (Leaflet) in .map-view (the whole height left in the
+   window when the page asks it: `fill`), the names of the regions above them, a click on a region giving its name and its teleport link; without a script, and in a viewer (it has its own world map), the list of the regions with their
    teleport links, the one the popups of the map take theirs from #}
 {% block body %}
     {% if unavailable ?? false %}<p class="block-unavailable">{{ labels.unavailable }}</p>{% endif %}
-    <div class="map" data-map-tiles="{{ tiles }}" data-map-bounds="{{ bounds|json_encode }}" data-map-center="{{ center|json_encode }}" data-map-texts="{{ texts|json_encode }}">
+    <div class="map" data-map-tiles="{{ tiles }}" data-map-bounds="{{ bounds|json_encode }}" data-map-center="{{ center|json_encode }}" data-map-texts="{{ texts|json_encode }}"{% if fill ?? false %} data-map-fill="true"{% endif %}>
         <div class="map-view" hidden></div>
         <ul class="map-regions">
             {% for region in regions %}
-                <li class="map-region{{ region.online ? '' : ' is-offline' }}" data-x="{{ region.x }}" data-y="{{ region.y }}" data-width="{{ region.width }}" data-height="{{ region.height }}">{{ tp_link(region.links, region.name) }}</li>
+                <li class="map-region{{ region.online ? '' : ' is-offline' }}" data-name="{{ region.name }}" data-x="{{ region.x }}" data-y="{{ region.y }}" data-width="{{ region.width }}" data-height="{{ region.height }}">{{ tp_link(region.links, region.name) }}</li>
             {% endfor %}
         </ul>
     </div>

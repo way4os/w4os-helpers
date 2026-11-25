@@ -21,6 +21,24 @@
 	margin: 0;
 	padding: 0;
 }
+/* The name of a region above it: on the water, never a box; none from too far (map-labels-hidden, js/map.js) */
+.block-map .leaflet-tooltip.map-label {
+	padding: 0 0.25rem;
+	border: 0;
+	background: none;
+	box-shadow: none;
+	color: #fff;
+	font-weight: 600;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	text-shadow: 0 0 3px #000, 0 0 6px #000;
+}
+.block-map .leaflet-tooltip.map-label::before {
+	display: none;
+}
+.block-map .map-labels-hidden .map-label {
+	display: none;
+}
 /* The popup of a region: its teleport link, its menu over the map */
 .block-map .leaflet-popup-content {
 	margin: 0.6rem 0.9rem;
