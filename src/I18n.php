@@ -100,6 +100,12 @@ final class I18n
         return self::$current;
     }
 
+    /** The language in use as a page says it (`lang` of html: fr-FR), `en` for English. */
+    public static function tag(): string
+    {
+        return str_replace('_', '-', self::$current);
+    }
+
     /**
      * A time in the language in use, by PHP's Intl formatter (ISO without it): `list` the short date, today and yesterday by their
      * name, with its time (a list: when someone joined); `date` the medium date (a profile: since when); `long` the medium date with

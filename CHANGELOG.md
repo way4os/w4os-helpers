@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- fix (i18n): the html of a page says the language of its text (lang), never en for every language
 - new (i18n): the language of a page from ?lang=, the w4os_lang cookie, the lang cookie (saved into w4os_lang), the browser
 - change (search): the picture of a result through its model on its grid (SearchResult::realPicture())
 - fix (search): a result without a real picture shows none in its detail (never the image of its title)

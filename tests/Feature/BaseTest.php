@@ -216,6 +216,15 @@ describe('a service the grid does not provide here', function () {
             ->and($suite->getHeaderLine('Set-Cookie'))->toBe('');
     });
 
+    test('say on their page the language of its text', function () {
+        $page = static fn(string $languages): string => (string) base_app('/helpers/', [])->handle(
+            (new ServerRequestFactory())->createServerRequest('GET', '/helpers/')->withHeader('Accept-Language', $languages)->withHeader('User-Agent', 'Mozilla/5.0'),
+        )->getBody();
+
+        expect($page('de-DE,de;q=0.9'))->toContain('<html lang="de-DE">')
+            ->and($page('en'))->toContain('<html lang="en">');
+    });
+
     test('a page the grid gives no address of is served at its default path under the base, where the menu links it', function () {
         $dir = sys_get_temp_dir() . '/helpers-default-pages-' . bin2hex(random_bytes(4));
         mkdir($dir, 0o755, true);

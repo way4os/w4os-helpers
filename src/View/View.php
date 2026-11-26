@@ -140,6 +140,8 @@ final class View
         $this->loader = new FilesystemLoader($templates);
         $this->twig = new Twig($this->loader, ['autoescape' => 'html']);
         $this->twig->addFunction(new \Twig\TwigFunction('picture', Picture::tag(...), ['is_safe' => ['html']]));
+        // The language of the text of the page, as it is rendered (I18n::use() of its request)
+        $this->twig->addFunction(new \Twig\TwigFunction('page_lang', I18n::tag(...)));
         $this->twig->addFunction(new \Twig\TwigFunction('tp_link', $this->tpLink(...), ['is_safe' => ['html']]));
         $this->twig->addFunction(new \Twig\TwigFunction('list_detail', $this->listDetail(...), ['is_safe' => ['html']]));
     }
