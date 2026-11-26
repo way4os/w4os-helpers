@@ -9,7 +9,7 @@
     <div class="profile-items-details">
         {% for item in items %}
             <article id="profile-{{ kind }}-{{ loop.index }}" class="profile-item">
-                {{ picture(assets ~ '/' ~ item.picture ~ '.jpg', null, 'profile-item-picture') }}
+                {% if item.picture %}{{ picture(assets ~ '/' ~ item.picture ~ '.jpg', null, 'profile-item-picture') }}{% endif %}
                 <div class="profile-item-text">
                     <h3>{{ item.name }}</h3>
                     <p class="profile-item-description">{% if item.description %}{{ item.description|nl2br }}{% else %}{{ labels.no_description }}{% endif %}</p>

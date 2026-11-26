@@ -419,7 +419,9 @@ describe('the teleport links of the blocks, for where they are shown (Destinatio
 
         expect($item('http://grid.example.org:8002', []))->toBe(guide_link('grid.example.org:8002/My Region/10/20/30'))
             ->and($item('http://grid.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30')
-            ->and($item('http://other.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30');
+            ->and($item('http://other.example.org:8002', ['agent' => 'Mozilla/5.0 SecondLife/7.1.9 (Firestorm)']))->toBe('secondlife://grid.example.org:8002/secondlife/My%20Region/10/20/30')
+            // A pick without a picture has none
+            ->and(W4OS\Helpers\Block\ProfileBlock::item($row, guide_grid('edge-cases', 'http://grid.example.org:8002'), [])['picture'])->toBe('');
     });
 
     test('a page knows where it is shown from the user agent, and its blocks link for it: the login screen of a viewer', function () {
