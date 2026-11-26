@@ -40,7 +40,7 @@ final class HealthBlock implements Block
         }
 
         return [
-            'title' => I18n::text('Health'),
+            'title' => I18n::text('Diagnostics'),
             'groups' => $groups,
             'when' => I18n::date(time(), 'long', 'UTC') . ' UTC',
             'cert_title' => I18n::text('Certificate'),

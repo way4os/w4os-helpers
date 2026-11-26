@@ -96,8 +96,8 @@ msgid "Grid Status"
 msgstr "Gridstatus"
 
 #: src/Block/HealthBlock.php:43
-msgid "Health"
-msgstr "Gezondheid"
+msgid "Diagnostics"
+msgstr "Diagnose"
 
 #: src/Block/HealthBlock.php:46
 msgid "Certificate"

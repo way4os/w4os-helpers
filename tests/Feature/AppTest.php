@@ -146,3 +146,17 @@ test('a picture the grid sends to its external web assets service is sent there,
     expect([$picture->getStatusCode(), $picture->getHeaderLine('Location')])
         ->toBe([302, 'https://assets.example.org/a/cb2052ae-d161-43e9-b11b-c834217823cd.jpg']);
 })->skip(fn() => W4OS\Engine\Assets\ImagickConverter::available(), 'imagick reads JPEG 2000 here');
+
+test('a 500 is its code and its label, then the file the helpers cannot read and the account they run as', function () {
+    $file = '/etc/opensim/grids/kimbered/Robust.HG.ini';
+    $unreadable = App::create(static fn(string $nick) => throw new \W4OS\Engine\Exceptions\SetupFailedException("cannot read $file"));
+    $other = App::create(static fn(string $nick) => throw new \RuntimeException('a secret of the code'));
+
+    $said = helpers_get($unreadable, '/');
+    $body = (string) $said->getBody();
+    $hidden = (string) helpers_get($other, '/')->getBody();
+
+    expect($said->getStatusCode())->toBe(500)
+        ->and($body)->toContain('500 Internal Server Error', $file, \W4OS\Engine\Health\Health::account())
+        ->and($hidden)->toContain('500 Internal Server Error')->not->toContain('a secret of the code');
+});

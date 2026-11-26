@@ -48,11 +48,36 @@ final class App
             return $handler->handle($request);
         });
         $app->add(new GridMiddleware($grids));
-        $app->addErrorMiddleware(false, true, true);
+        $errors = $app->addErrorMiddleware(false, true, true);
+        $errors->setDefaultErrorHandler(self::errors($errors->getDefaultErrorHandler()));
 
         // The services the grid is configured with (see Engine::paths()): whatever no other route took
         $app->map(['GET', 'POST'], '/{path:.*}', Site::class);
 
         return $app;
+    }
+
+    /**
+     * What an error answers: the ones of HTTP as Slim says them (404, 405...), any other `500 Internal Server Error`, then the one
+     * fact that helps when there is one: the file of the grid the helpers cannot read, and the account they run as.
+     */
+    private static function errors(callable $slim): \Closure
+    {
+        return static function ($request, \Throwable $error, bool $display, bool $log, bool $details) use ($slim) {
+            if ($error instanceof \Slim\Exception\HttpException) {
+                return $slim($request, $error, $display, $log, $details);
+            }
+            error_log(sprintf('w4os-helpers: %s: %s (%s:%d)', $error::class, $error->getMessage(), $error->getFile(), $error->getLine()));
+            $fact = $error instanceof \W4OS\Engine\Exceptions\SetupFailedException && preg_match('/^cannot read (\S+)/', $error->getMessage(), $m) === 1
+                ? sprintf('%s: not readable by %s', $m[1], \W4OS\Engine\Health\Health::account())
+                : '';
+            $response = (new \Slim\Psr7\Factory\ResponseFactory())->createResponse(500)->withHeader('Content-Type', 'text/html; charset=utf-8');
+            $response->getBody()->write(sprintf(
+                "<!DOCTYPE html>\n<html><head><meta charset=\"utf-8\"><title>500 Internal Server Error</title></head><body>\n<h1>500 Internal Server Error</h1>\n%s</body></html>\n",
+                $fact === '' ? '' : '<p>' . htmlspecialchars($fact) . "</p>\n",
+            ));
+
+            return $response;
+        };
     }
 }

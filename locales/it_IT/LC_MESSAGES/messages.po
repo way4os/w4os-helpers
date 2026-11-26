@@ -96,8 +96,8 @@ msgid "Grid Status"
 msgstr "Stato della griglia"
 
 #: src/Block/HealthBlock.php:43
-msgid "Health"
-msgstr "Salute"
+msgid "Diagnostics"
+msgstr "Diagnostica"
 
 #: src/Block/HealthBlock.php:46
 msgid "Certificate"
