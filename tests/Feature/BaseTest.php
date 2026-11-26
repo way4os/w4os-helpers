@@ -8,7 +8,8 @@ use W4OS\Engine\Models\Grid;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /**
- * A grid whose web site is https://example.com, its helpers under $base (the path of its economy), its pages at the addresses given.
+ * A grid whose web site is https://example.com, its helpers under $base (HelpersURL of its Helpers.ini; its economy follows them),
+ * its pages at the addresses given.
  *
  * @param array<string,string> $info the keys of [GridInfoService]
  */
@@ -23,6 +24,7 @@ function base_app(string $base, array $info, string $guide = ''): Slim\App
     }
     $guide === '' || array_push($lines, '[LoginService]', "DestinationGuide = \"$guide\"");
     file_put_contents("$dir/Robust.ini", implode("\n", $lines) . "\n");
+    file_put_contents(W4OS\Engine\Provisioning\Web\HelpersConfig::path($dir), "[Helpers]\nHelpersURL = \"https://example.com$base\"\n");
     $grid = Grid::at(helpers_environment(), $dir);
 
     return App::create(static fn(string $nick) => $grid);
@@ -60,6 +62,16 @@ describe('the helpers serve only under their base', function () {
             ->and(base_get($app, '/guide')->getStatusCode())->toBe(404);
         // The guide is the site's: /helpers/guide is no address of the grid, the helpers do not take it
         expect(base_get($app, '/helpers/guide')->getStatusCode())->toBe(404);
+    });
+
+    test('without HelpersURL, /helpers for a grid that has helpers (an economy on its site), never the path of its economy', function () {
+        $dir = sys_get_temp_dir() . '/helpers-default-' . bin2hex(random_bytes(4));
+        mkdir($dir, 0o755, true);
+        file_put_contents("$dir/Robust.ini", "[Const]\nWebURL = \"https://example.com\"\n[GridInfoService]\ngridname = \"Example\"\ngridnick = \"example\"\neconomy = \"https://example.com/opensim/\"\nsearch = \"https://example.com/helpers/search\"\n");
+        $app = App::create(static fn(string $nick) => Grid::at(helpers_environment(), $dir));
+
+        expect(base_get($app, '/helpers/search')->getStatusCode())->toBe(200)
+            ->and(base_get($app, '/opensim/search')->getStatusCode())->toBe(404);
     });
 
     test('another base: /helpers is nobody\'s', function () {
