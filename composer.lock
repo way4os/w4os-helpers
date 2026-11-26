@@ -3511,7 +3511,7 @@
             "dist": {
                 "type": "path",
                 "url": "../w4os-views",
-                "reference": "541ed1135bfd93ba07c7135ead0bc541c13a1de0"
+                "reference": "7c26bc4f29569f01c4333d37cc6a305f76dd074b"
             },
             "require": {
                 "ext-intl": "*",

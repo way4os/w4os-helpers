@@ -170,8 +170,8 @@ describe('the pictures of the guide and of the popular places: the parcel, never
             ->and($categories['Hypergrid'])->toBe('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
             // No picture: the image of its title, the engine's, never initials nor the placeholder
             ->and($categories['Apart'])->toBe(W4OS\Engine\Assets\TitleImage::id('Apart'))
-            ->and($html)->toContain('<span class="picture thumbnail"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
-            ->and($html)->toContain('<span class="picture thumbnail"><img src="/pictures/' . W4OS\Engine\Assets\TitleImage::id('Apart') . '.jpg"')
+            ->and($html)->toContain('<span class="w4os-picture picture thumbnail"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"')
+            ->and($html)->toContain('<span class="w4os-picture picture thumbnail"><img src="/pictures/' . W4OS\Engine\Assets\TitleImage::id('Apart') . '.jpg"')
             ->and($html)->not->toContain(W4OS\Engine\Assets\WebAssets::PLACEHOLDER)
             ->and($html)->not->toContain('data-initials');
     });
@@ -181,9 +181,9 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         $html = (new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates'))->block('popular_places', guide_grid('edge-cases', 'http://grid.example.org:8002'), ['assets' => '/pictures']);
 
         expect($html)->toContain('class="places"')
-            ->and($html)->toMatch('#<div class="place"><span class="w4os-tp"[^>]*><a class="w4os-tp-main" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '"[^>]*><span class="picture place-picture"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
+            ->and($html)->toMatch('#<div class="place"><span class="w4os-tp"[^>]*><a class="w4os-tp-main" href="' . preg_quote((string) guide_link('grid.example.org:8002/Welcome/128/128/25'), '#') . '"[^>]*><span class="w4os-picture picture place-picture"><img src="/pictures/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg"#')
             ->and($html)->not->toContain('data-initials')->not->toContain(W4OS\Engine\Assets\WebAssets::PLACEHOLDER)
-            ->and($html)->toContain('<span class="picture place-picture"><img src="/pictures/' . W4OS\Engine\Assets\TitleImage::id('Garden') . '.jpg"');
+            ->and($html)->toContain('<span class="w4os-picture picture place-picture"><img src="/pictures/' . W4OS\Engine\Assets\TitleImage::id('Garden') . '.jpg"');
     });
 
     test('the popular places take the options of w4os-wp 2.x and its defaults: the other grids and the land for sale, both left out unless asked', function () {
