@@ -209,6 +209,17 @@ describe('the pictures of the guide and of the popular places: the parcel, never
         expect($html)->toContain('<h2>Hypergrid</h2>')->and($html)->toContain('class="back"');
     });
 
+    test('a category opens on the page of the guide the site gives, wherever the block is shown, its back link there too; else on the page shown', function () {
+        W4OS\Engine\Data\Connections::using(fn () => guide_search());
+        $grid = guide_grid('edge-cases', 'http://grid.example.org:8002');
+        $urls = fn (array $args) => array_column(Blocks::data('destination_guide', $grid, $args)['items'], 'url');
+
+        expect($urls(['guide_page' => '/opensim/guide']))->each->toStartWith('/opensim/guide?category=')
+            ->and($urls([]))->each->toStartWith('?category=')
+            ->and(Blocks::data('destination_guide', $grid, ['guide_page' => '/opensim/guide', 'category' => 'Hypergrid'])['back']['url'])->toBe('/opensim/guide')
+            ->and(Blocks::data('destination_guide', $grid, ['category' => 'Hypergrid'])['back']['url'])->toBe('?');
+    });
+
     test('in a browser, the guide is a block of the page as the popular places are: its title as theirs, the class of its client for its style', function () {
         W4OS\Engine\Data\Connections::using(fn () => guide_search());
         $view = new W4OS\Helpers\View\View(dirname(__DIR__, 2) . '/templates');

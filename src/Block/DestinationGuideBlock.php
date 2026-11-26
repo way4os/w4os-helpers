@@ -13,7 +13,8 @@ use W4OS\Helpers\I18n;
  * places, its name, how many), then a card for each destination (the picture of its parcel, its name), linked as the viewers open
  * it where it is shown (Links::to(): the engine's AUTO), a region named alone being one of the grid. One category is the guide itself. The
  * engine finds the pictures (Grid::guide()), the image of a title where there is none; the block shows them. A destination's card
- * does not say where it is: its picture takes the room.
+ * does not say where it is: its picture takes the room. A category opens on the page of the guide (`guide_page`, the site's: the
+ * block may be on another page, the home), else on the page shown.
  */
 final class DestinationGuideBlock implements Block
 {
@@ -35,13 +36,15 @@ final class DestinationGuideBlock implements Block
         $category = count($sections) === 1 ? array_key_first($sections) : ($args['category'] ?? null);
         $category = isset($sections[$category]) ? $category : null;
         $login = $grid->loginUrl();
+        // The page a category opens on: the guide's, wherever the block is
+        $page = trim((string) ($args['guide_page'] ?? ''));
         if ($category === null) {
             $items = [];
             foreach ($sections as $name => $section) {
                 $count = count($section['destinations']);
                 $items[] = [
                     'name' => $name,
-                    'url' => '?' . http_build_query(['category' => $name]),
+                    'url' => $page . '?' . http_build_query(['category' => $name]),
                     'picture' => $section['picture'],
                     'data' => sprintf(I18n::plural('%s destination', '%s destinations', $count), $count),
                 ];
@@ -63,7 +66,7 @@ final class DestinationGuideBlock implements Block
                 ],
                 $sections[$category]['destinations'],
             ),
-            'back' => count($sections) > 1 ? ['url' => '?', 'label' => I18n::text('Back to categories')] : null,
+            'back' => count($sections) > 1 ? ['url' => $page !== '' ? $page : '?', 'label' => I18n::text('Back to categories')] : null,
         ];
     }
 }
