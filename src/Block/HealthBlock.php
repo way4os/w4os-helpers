@@ -20,6 +20,8 @@ final class HealthBlock implements Block
             Health::grid(['config' => $config, 'live' => $grid->gridInfo(), 'login' => (string) $grid->loginUrl()]),
         );
         $groups[] = ['file' => 'PHP', 'title' => '', 'rows' => Health::extensions()];
+        // The pools of the suite, each reached by the web server or not
+        ($pools = Health::pools()) === [] || ($groups[] = ['file' => 'PHP-FPM', 'title' => '', 'rows' => $pools]);
         $files = Health::files($config?->files() ?? []);
         $files === [] || ($groups[] = ['file' => 'files', 'title' => '', 'rows' => $files]);
         // The folders the helpers write as the web server: the pictures, and the state of the tasks (without it the search index never fills)
