@@ -72,6 +72,14 @@ final class I18n
         return self::$translator?->ngettext($singular, $plural, $count) ?? ($count === 1 ? $singular : $plural);
     }
 
+    /** Whether the helpers have a language (fr, pt-BR): English, or one they have a catalog of. */
+    public static function has(string $code): bool
+    {
+        $locale = self::locale($code);
+
+        return $locale === 'en' || ($locale !== null && self::catalog($locale) !== null);
+    }
+
     /** The catalog of a language, read once; null when the helpers have none. */
     private static function catalog(string $locale): ?Translator
     {

@@ -192,6 +192,30 @@ describe('a service the grid does not provide here', function () {
             ->and($logged)->toBe('');
     });
 
+    test('take the language of the cookie of the suite, then of the lang cookie (saved into it), then of the browser', function () {
+        $app = base_app('/helpers/', []);
+        $text = static fn(string $locale): string => '404 ' . ((W4OS\Engine\I18n\Catalog::messages($locale) + W4OS\Engine\I18n\Catalog::MESSAGES)['error_not_found']);
+        $ask = static fn(array $cookies, string $query = '') => $app->handle(
+            (new ServerRequestFactory())->createServerRequest('GET', '/helpers/nothing' . $query)->withHeader('Accept-Language', 'fr-FR,fr;q=0.9')
+                ->withCookieParams($cookies)->withQueryParams($query === '' ? [] : ['lang' => substr($query, 6)]),
+        );
+
+        $suite = $ask(['w4os_lang' => 'en']);
+        $asked = $ask(['w4os_lang' => 'en'], '?lang=de');
+        $other = $ask(['lang' => 'de']);
+        $unknown = $ask(['lang' => 'xx']);
+        $wrong = $ask(['w4os_lang' => 'xx']);
+
+        expect(trim((string) $suite->getBody()))->toBe('404 Not found')
+            ->and(trim((string) $asked->getBody()))->toBe($text('de_DE'))
+            ->and(trim((string) $other->getBody()))->toBe($text('de_DE'))
+            ->and($other->getHeaderLine('Set-Cookie'))->toBe('w4os_lang=de; Path=/; Max-Age=31536000; SameSite=Lax')
+            ->and(trim((string) $unknown->getBody()))->toBe($text('fr_FR'))
+            ->and($unknown->getHeaderLine('Set-Cookie'))->toBe('')
+            ->and(trim((string) $wrong->getBody()))->toBe($text('fr_FR'))
+            ->and($suite->getHeaderLine('Set-Cookie'))->toBe('');
+    });
+
     test('a page the grid gives no address of is served at its default path under the base, where the menu links it', function () {
         $dir = sys_get_temp_dir() . '/helpers-default-pages-' . bin2hex(random_bytes(4));
         mkdir($dir, 0o755, true);

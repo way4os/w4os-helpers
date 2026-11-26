@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace W4OS\Helpers\Http\Action;
 
+use W4OS\Engine\I18n\LanguageChoice;
 use W4OS\Helpers\Block\Blocks;
 use W4OS\Helpers\I18n;
 use W4OS\Helpers\View\View;
@@ -42,8 +43,18 @@ final class Site
 
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        // The language of the visitor: the one a page asks (?lang=fr), else the one of the browser
-        I18n::use((string) ($request->getQueryParams()['lang'] ?? $request->getHeaderLine('Accept-Language')));
+        // The language of the visitor, as every app of the suite takes it (LanguageChoice): the one a page asks (?lang=fr), the
+        // cookie of the suite, the lang cookie of another app (then saved into the cookie of the suite), the browser
+        $asked = $request->getQueryParams()['lang'] ?? null;
+        [$languages, $save] = LanguageChoice::pick(is_string($asked) ? $asked : null, $request->getCookieParams(), $request->getHeaderLine('Accept-Language'), I18n::has(...));
+        I18n::use($languages);
+        $answer = $this->serve($request, $response);
+
+        return $save === null ? $answer : $answer->withAddedHeader('Set-Cookie', LanguageChoice::cookie($save));
+    }
+
+    private function serve(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
         $answer = $this->engine->answer($request);
         if ($answer !== null) {
             return $answer;

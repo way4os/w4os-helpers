@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (i18n): the language of a page from ?lang=, the w4os_lang cookie, the lang cookie (saved into w4os_lang), the browser
 - change (search): the picture of a result through its model on its grid (SearchResult::realPicture())
 - fix (search): a result without a real picture shows none in its detail (never the image of its title)
 - fix (search): no picture in the rows of its results, in any kind; the picture in the detail only, 280 px high at most
