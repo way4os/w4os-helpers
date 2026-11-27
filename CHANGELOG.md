@@ -1,6 +1,6 @@
 ## Changelog
 
-### Unreleased
+### 3.0.0-beta.15
 
 - new (diagnostics): the copy of the guide of another server, its age and the last failure of its server
 - new (diagnostics): the pools of the suite, each reached by the web server or not
