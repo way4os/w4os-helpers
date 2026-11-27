@@ -20,6 +20,8 @@ final class HealthBlock implements Block
             Health::grid(['config' => $config, 'live' => $grid->gridInfo(), 'login' => (string) $grid->loginUrl()]),
         );
         $groups[] = ['file' => 'PHP', 'title' => '', 'rows' => Health::extensions()];
+        // The copy of the guide of another server, its age and the last failure of its server
+        ($copy = $grid->guideCopy()) === null || ($groups[] = ['file' => 'guide', 'title' => '', 'rows' => [Health::guideCopy($copy, time())]]);
         // The pools of the suite, each reached by the web server or not
         ($pools = Health::pools()) === [] || ($groups[] = ['file' => 'PHP-FPM', 'title' => '', 'rows' => $pools]);
         $files = Health::files($config?->files() ?? []);

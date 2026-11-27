@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- new (diagnostics): the copy of the guide of another server, its age and the last failure of its server
 - new (diagnostics): the pools of the suite, each reached by the web server or not
 - fix (errors): a 500 is 500 Internal Server Error, then the file of the grid not readable and the account; Diagnostics
 - fix (i18n): the html of a page says the language of its text (lang), never en for every language
