@@ -1,5 +1,9 @@
 ## Changelog
 
+### Unreleased
+
+- change (notices): a notice keeps its lines, a command as code on a line of its own (w4os-views Notice)
+
 ### 3.0.0-beta.15
 
 - new (diagnostics): the copy of the guide of another server, its age and the last failure of its server

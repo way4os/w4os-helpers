@@ -38,7 +38,7 @@
                 {# The notices to the visitor (View::notify()), at the start of the content #}
                 {% if notices %}
                     <div class="notices" role="status">
-                        {% for notice in notices %}<p class="notice notice-{{ notice.level }}">{{ notice.text }}</p>{% endfor %}
+                        {% for notice in notices %}<p class="notice notice-{{ notice.level }}">{{ notice.html|raw }}</p>{% endfor %}
                     </div>
                 {% endif %}
                 {{ main }}

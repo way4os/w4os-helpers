@@ -32,6 +32,14 @@ describe('The notices to the visitor', function () {
             ->and((string) notices_get('/')->getBody())->not->toContain('class="notices"');
     });
 
+    test('keep their lines, a command as code on a line of its own', function () {
+        View::notify('warning', "The module <gloebit> is not enabled.\nsudo opensim module enable gloebit\nOr leave the setting out");
+
+        expect((string) notices_get('/')->getBody())->toContain(
+            '<p class="notice notice-warning">The module &lt;gloebit&gt; is not enabled.<br><code class="w4os-command">sudo opensim module enable gloebit</code><br>Or leave the setting out</p>',
+        );
+    });
+
     test('of a block go with it, for the zone of messages of the site that shows it', function () {
         View::notify('error', 'The search is closed.');
         $block = notices_get('/blocks/motd');

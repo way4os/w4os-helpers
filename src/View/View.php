@@ -300,8 +300,8 @@ final class View
             'logo_url' => $logo,
             // The brand of the site (IconURL, AccentColor, Font, FontURL of [Helpers]): what is not said keeps the look of the helpers
             'brand' => $grid->brand(),
-            // Last: what the blocks of the page said is in
-            'notices' => self::notices(),
+            // Last: what the blocks of the page said is in; each with its lines, a command as code (the views)
+            'notices' => array_map(static fn(array $notice): array => $notice + ['html' => \W4OS\Views\Notice::html($notice['text'])], self::notices()),
         ]);
         $this->found = $found;
 
