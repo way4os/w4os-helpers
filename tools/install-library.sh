@@ -4,9 +4,9 @@
 helpers_dir=$(dirname $(dirname $(readlink -f $0)))
 echo "helpers_dir $helpers_dir"
 
-if [ ! -e "vendor/w4os/w4os-helpers" ]
+if [ ! -e "vendor/way4os/w4os-helpers" ]
 then
-  echo "This script must be run from a project using w4os/w4os-helpers as a library"
+  echo "This script must be run from a project using way4os/w4os-helpers as a library"
   exit 0
 fi
 

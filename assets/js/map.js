@@ -8,7 +8,7 @@
  * grid; Leaflet's zoom 8 is the tiles' zoom 1 (a region to a tile of 256 pixels), each zoom out a tile of twice as many regions, named
  * by the region of its bottom left corner. Closer than 8, the tiles of zoom 1 enlarged.
  *
- * @package    w4os/w4os-helpers
+ * @package    way4os/w4os-helpers
  * @license    AGPLv3
  */
 (() => {

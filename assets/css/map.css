@@ -2,7 +2,7 @@
  * css/map.css: the map of the grid, what it is made of wherever it is shown: the list of its regions, each a teleport link (the
  * map itself in a browser: map.web.css, js/map.js; the list alone in a viewer: map.viewer.css).
  *
- * @package    w4os/w4os-helpers
+ * @package    way4os/w4os-helpers
  * @license    AGPLv3
  */
 .block-map .map-regions {

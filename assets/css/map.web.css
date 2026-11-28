@@ -2,7 +2,7 @@
  * css/map.web.css: the map of the grid in a browser, over map.css: its tiles (Leaflet, js/map.js) as wide as the block, as high as
  * a good part of the window; the list of the regions once the map is drawn left to the map.
  *
- * @package    w4os/w4os-helpers
+ * @package    way4os/w4os-helpers
  * @license    AGPLv3
  */
 .block-map .map-view {

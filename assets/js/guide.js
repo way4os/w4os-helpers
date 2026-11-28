@@ -1,8 +1,8 @@
 /**
  * js/guide.js
  *
- * @package    w4os/w4os-helpers
- * @subpackage    w4os/w4os-helpers/guide
+ * @package    way4os/w4os-helpers
+ * @subpackage    way4os/w4os-helpers/guide
  *
  * @author     Gudule Lapointe <gudule@speculoos.world>
  * @link       https://github.com/way4os/w4os-helpers

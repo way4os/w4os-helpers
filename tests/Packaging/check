@@ -93,10 +93,10 @@ apt-get install -y -qq curl unzip php-fpm caddy mariadb-server imagemagick \
 php=$(php -r "echo PHP_MAJOR_VERSION . \".\" . PHP_MINOR_VERSION;")
 
 echo "The package"
-check "the package ships its libraries as links, whatever the machine that built it has" "dpkg-deb -c \"\$(newest /dist w4os-helpers)\" | grep -q \"^l.*vendor/w4os/w4os-engine -> /usr/share/w4os-engine\" && dpkg-deb -c \"\$(newest /dist w4os-helpers)\" | grep -q \"^l.*vendor/magicoli/opensim-rest-php -> /usr/share/opensim-rest-php\""
+check "the package ships its libraries as links, whatever the machine that built it has" "dpkg-deb -c \"\$(newest /dist w4os-helpers)\" | grep -q \"^l.*vendor/way4os/w4os-engine -> /usr/share/w4os-engine\" && dpkg-deb -c \"\$(newest /dist w4os-helpers)\" | grep -q \"^l.*vendor/way4os/opensim-rest-php -> /usr/share/opensim-rest-php\""
 check "it is installed, it depends on the engine and rest-php" "dpkg -s w4os-helpers | grep -q \"^Depends:.*w4os-engine.*opensim-rest-php\""
 check "its application is in /usr/share/w4os-helpers, its document root public/" "[ -f /usr/share/w4os-helpers/public/index.php ] && [ -f /usr/share/w4os-helpers/src/App.php ] && [ -f /usr/share/w4os-helpers/vendor/autoload.php ]"
-check "the engine and rest-php come from their packages, by links" "[ -L /usr/share/w4os-helpers/vendor/w4os/w4os-engine ] && [ -L /usr/share/w4os-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ]"
+check "the engine and rest-php come from their packages, by links" "[ -L /usr/share/w4os-helpers/vendor/way4os/w4os-engine ] && [ -L /usr/share/w4os-helpers/vendor/way4os/opensim-rest-php ] && [ -f /usr/share/w4os-helpers/vendor/way4os/w4os-engine/src/Models/Grid.php ]"
 check "the libraries it brings itself are in its vendor folder" "[ -d /usr/share/w4os-helpers/vendor/slim/slim ] && [ -d /usr/share/w4os-helpers/vendor/twig/twig ]"
 check "the folders it writes as the web server are made for www-data" "[ \"\$(stat -c %U /var/cache/w4os-helpers/tasks)\" = www-data ] && [ \"\$(stat -c %U /var/cache/w4os-helpers/cache)\" = www-data ]"
 check "the folders of the install are the account of the instances, which the web server cannot write" "getent passwd opensim >/dev/null && ! runuser -u www-data -- test -w /var/lib/opensim && ! runuser -u www-data -- test -w /var/cache/opensim"
@@ -146,9 +146,9 @@ printf "@opensim_helpers path /helpers*\nhandle @opensim_helpers {\n\troot * /us
 dpkg -i "$(newest /dist opensim-helpers)" "$(newest /dist w4os-helpers)" >/dev/null 2>&1
 check "an upgrade from opensim-helpers brings w4os-helpers, the old name an empty package" "dpkg-query -W -f=\"\\\${db:Status-Abbrev}\\n\" w4os-helpers opensim-helpers | grep -c ^ii | grep -qx 2 && dpkg -s opensim-helpers | grep -q \"^Depends:.*w4os-helpers\" && [ ! -e /usr/share/opensim-helpers ] && [ ! -e /var/cache/opensim-helpers ]"
 check "the web config of the helpers names the path of w4os-helpers" "grep -q \"root \\* /usr/share/w4os-helpers/public\" /etc/caddy/sites-enabled/demo.caddyfile && ! grep -q opensim-helpers/ /etc/caddy/sites-enabled/demo.caddyfile"
-check "the libraries are links after the upgrade, not empty folders" "[ -L /usr/share/w4os-helpers/vendor/w4os/w4os-engine ] && [ -L /usr/share/w4os-helpers/vendor/magicoli/opensim-rest-php ] && [ -f /usr/share/w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ]"
+check "the libraries are links after the upgrade, not empty folders" "[ -L /usr/share/w4os-helpers/vendor/way4os/w4os-engine ] && [ -L /usr/share/w4os-helpers/vendor/way4os/opensim-rest-php ] && [ -f /usr/share/w4os-helpers/vendor/way4os/w4os-engine/src/Models/Grid.php ]"
 mkdir /tmp/zip && cd /tmp/zip && unzip -q "$(ls -v /dist/*.zip | tail -1)"
-check "the zip has the helpers and a complete vendor folder, no composer.lock, no tests" "[ -f w4os-helpers/public/index.php ] && [ -f w4os-helpers/vendor/twig/twig/src/Environment.php ] && [ -f w4os-helpers/vendor/w4os/w4os-engine/src/Models/Grid.php ] && [ ! -L w4os-helpers/vendor/w4os/w4os-engine ] && [ ! -e w4os-helpers/composer.lock ] && [ ! -e w4os-helpers/tests ]"
+check "the zip has the helpers and a complete vendor folder, no composer.lock, no tests" "[ -f w4os-helpers/public/index.php ] && [ -f w4os-helpers/vendor/twig/twig/src/Environment.php ] && [ -f w4os-helpers/vendor/way4os/w4os-engine/src/Models/Grid.php ] && [ ! -L w4os-helpers/vendor/way4os/w4os-engine ] && [ ! -e w4os-helpers/composer.lock ] && [ ! -e w4os-helpers/tests ]"
 chmod -R a+rX /tmp/zip
 (cd /tmp/zip/w4os-helpers/public && runuser -u www-data -- env OPENSIM_GRID=demo php -S 127.0.0.1:8092 index.php >/tmp/zip.log 2>&1 &)
 sleep 2

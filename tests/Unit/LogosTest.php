@@ -32,9 +32,9 @@ describe('The logos of w4os and OpenSimulator', function () use ($root) {
     test('are refreshed by composer with the development tools, never by an install without them (the packages)', function () use ($root) {
         $script = json_decode((string) file_get_contents("$root/composer.json"), true)['scripts']['logos'];
         $dir = sys_get_temp_dir() . '/helpers-logos-' . bin2hex(random_bytes(4));
-        mkdir("$dir/vendor/w4os/w4os-engine/share/images/logos", 0o755, true);
+        mkdir("$dir/vendor/way4os/w4os-engine/share/images/logos", 0o755, true);
         mkdir("$dir/assets/images/logos", 0o755, true);
-        file_put_contents("$dir/vendor/w4os/w4os-engine/share/images/logos/new.png", 'new');
+        file_put_contents("$dir/vendor/way4os/w4os-engine/share/images/logos/new.png", 'new');
         $run = static fn(string $mode) => shell_exec('cd ' . escapeshellarg($dir) . " && COMPOSER_DEV_MODE=$mode $script");
 
         $run('0');

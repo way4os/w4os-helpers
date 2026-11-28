@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ad9537a961921b46c0d6491efeb42488",
+    "content-hash": "837145eb7caa54bcf14aeb2c4b05224d",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -1075,55 +1075,6 @@
                 }
             ],
             "time": "2026-10-10T21:55:35+00:00"
-        },
-        {
-            "name": "magicoli/opensim-rest-php",
-            "version": "dev-charm-dev",
-            "dist": {
-                "type": "path",
-                "url": "../opensim-rest-php",
-                "reference": "f803765924c183d71b9622c1769c4684d9f655ff"
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-libxml": "*",
-                "ext-simplexml": "*",
-                "php": ">=7.3"
-            },
-            "require-dev": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
-                "magicoli/bash-tools": "^1.0.7",
-                "magicoli/build-tools": "^0.2.0",
-                "magicoli/pest-failure-summary": "^1.0",
-                "pestphp/pest": "^3.0",
-                "phpcompatibility/php-compatibility": "dev-develop",
-                "squizlabs/php_codesniffer": "^4.0"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "class-rest.php"
-                ]
-            },
-            "scripts": {
-                "test": [
-                    "pest"
-                ]
-            },
-            "license": [
-                "AGPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Gudule Lapointe",
-                    "email": "gudule@speculoos.world"
-                }
-            ],
-            "description": "OpenSimulator REST PHP library and command-line client",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
         },
         {
             "name": "nesbot/carbon",
@@ -3416,12 +3367,64 @@
             "time": "2026-09-25T13:20:01+00:00"
         },
         {
-            "name": "w4os/w4os-engine",
+            "name": "way4os/opensim-rest-php",
+            "version": "dev-charm-dev",
+            "dist": {
+                "type": "path",
+                "url": "../opensim-rest-php",
+                "reference": "9b06d40f076bcabd606622140c124de6cf80e83c"
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-libxml": "*",
+                "ext-simplexml": "*",
+                "php": ">=7.3"
+            },
+            "replace": {
+                "magicoli/opensim-rest-php": "self.version"
+            },
+            "require-dev": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
+                "magicoli/bash-tools": "^1.0.7",
+                "magicoli/build-tools": "^0.2.0",
+                "magicoli/pest-failure-summary": "^1.0",
+                "pestphp/pest": "^3.0",
+                "phpcompatibility/php-compatibility": "dev-develop",
+                "squizlabs/php_codesniffer": "^4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "class-rest.php"
+                ]
+            },
+            "scripts": {
+                "test": [
+                    "pest"
+                ]
+            },
+            "license": [
+                "AGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Gudule Lapointe",
+                    "email": "gudule@speculoos.world"
+                }
+            ],
+            "description": "OpenSimulator REST PHP library and command-line client",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "way4os/w4os-engine",
             "version": "dev-charm-dev",
             "dist": {
                 "type": "path",
                 "url": "../opensim-engine",
-                "reference": "754ff6c014941e0a1a0c5d8b031e6b7ff5ef8964"
+                "reference": "f352b62bc9030b6d9a502d2a7c30fb35aa9fb0ae"
             },
             "require": {
                 "egulias/email-validator": "^4.0",
@@ -3439,7 +3442,6 @@
                 "laminas/laminas-escaper": "^2.12@stable",
                 "magicoli/container-tools": "@dev",
                 "magicoli/kick-inside": "^0.1.0",
-                "magicoli/opensim-rest-php": "@dev",
                 "php": ">=8.2",
                 "phpxmlrpc/phpxmlrpc": "^4.11",
                 "platoniq/random-name-generator": "^1.0",
@@ -3447,7 +3449,11 @@
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
                 "symfony/mime": "^7.4",
-                "symfony/yaml": "^7.4"
+                "symfony/yaml": "^7.4",
+                "way4os/opensim-rest-php": "@dev"
+            },
+            "replace": {
+                "magicoli/opensim-engine": "self.version"
             },
             "require-dev": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
@@ -3506,12 +3512,12 @@
             }
         },
         {
-            "name": "w4os/w4os-views",
+            "name": "way4os/w4os-views",
             "version": "dev-charm-dev",
             "dist": {
                 "type": "path",
                 "url": "../w4os-views",
-                "reference": "7c26bc4f29569f01c4333d37cc6a305f76dd074b"
+                "reference": "b74e10779c40dbf0db8f56d5fb6081bf91892642"
             },
             "require": {
                 "ext-intl": "*",
@@ -3523,10 +3529,10 @@
             "require-dev": {
                 "magicoli/build-tools": "^0.1.2",
                 "pestphp/pest": "^3.8 || ^4.0",
-                "w4os/w4os-engine": "@dev"
+                "way4os/w4os-engine": "@dev"
             },
             "suggest": {
-                "w4os/w4os-engine": "the engine's own rules (Access, Catalog) when the bridge bundles it; without it, the same rules read from its contract"
+                "way4os/w4os-engine": "the engine's own rules (Access, Catalog) when the bridge bundles it; without it, the same rules read from its contract"
             },
             "type": "library",
             "autoload": {
@@ -7569,10 +7575,10 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "magicoli/opensim-rest-php": 20,
         "phpcompatibility/php-compatibility": 20,
-        "w4os/w4os-engine": 20,
-        "w4os/w4os-views": 20
+        "way4os/opensim-rest-php": 20,
+        "way4os/w4os-engine": 20,
+        "way4os/w4os-views": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

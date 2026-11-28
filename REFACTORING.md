@@ -1,7 +1,7 @@
 # Refactoring of opensim-helpers into a Slim 4 project
 
 Decided 2026-10-20. The old scripts (`query.php`, `currency.php`, `offline.php`...) are NOT kept as they are: priority is a clear
-structure, Slim 4, PSR-4, PSR-7/15, standards, the current engine (`magicoli/opensim-engine`) and its OpenAPI.
+structure, Slim 4, PSR-4, PSR-7/15, standards, the current engine (`way4os/w4os-engine`) and its OpenAPI.
 Work step by step; each step ends green (`vendor/bin/pest`), is committed alone, and is ticked here. Resume at the first unticked box.
 Economy of effort: port the logic, not the history; move code, do not rewrite what works; one test run per step.
 
@@ -76,7 +76,7 @@ docs/api/                   openapi.yaml of the helpers (generated or hand kept,
       Still to do: `tests/Packaging/check` in a container (not run), and the document root of the web server presets of the engine
       (`webroot-helpers`: `docroot = /var/www/html`) must become `/usr/share/opensim-helpers/public` (engine tests expect the former).
 - [x] 8. Docs: README (practical questions), DEVELOPERS.md (layout above), CHANGELOG one line.
-- [x] 9. Cleanup: phpcs, `composer update magicoli/opensim-engine`, full suite, remove this file's "Steps" or tick all.
+- [x] 9. Cleanup: phpcs, `composer update way4os/w4os-engine`, full suite, remove this file's "Steps" or tick all.
 
 ## Notes for whoever resumes
 

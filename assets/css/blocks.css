@@ -2,7 +2,7 @@
  * css/blocks.css: what every block that shows pictures shares. A place without a picture has the image of its title, the engine's:
  * a picture as the others.
  *
- * @package    w4os/w4os-helpers
+ * @package    way4os/w4os-helpers
  * @license    AGPLv3
  */
 /* A picture of the grid (picture() of the templates, W4OS\Views\Picture): the picture on a tint of the text; a person without one

@@ -1,5 +1,5 @@
 {
-    "name": "w4os/w4os-helpers",
+    "name": "way4os/w4os-helpers",
     "description": "Helpers needed to enable common functionalties like search, currency, events in OpenSimulator grids.",
     "type": "library",
     "license": "AGPL-3.0-or-later",
@@ -20,8 +20,8 @@
         "ext-pdo": "*",
         "ext-session": "*",
         "ext-simplexml": "*",
-        "magicoli/opensim-rest-php": "@dev",
-        "w4os/w4os-engine": "@dev",
+        "way4os/opensim-rest-php": "@dev",
+        "way4os/w4os-engine": "@dev",
         "twig/twig": "^3.8",
         "slim/slim": "^4",
         "slim/psr7": "^1",
@@ -30,7 +30,7 @@
         "nesbot/carbon": "3.15.1",
         "gettext/gettext": "^5.7",
         "gettext/translator": "^1.2",
-        "w4os/w4os-views": "@dev",
+        "way4os/w4os-views": "@dev",
         "npm-asset/leaflet": "1.9.4",
         "npm-asset/tom-select": "2.7.0"
     },
@@ -45,7 +45,7 @@
     },
     "repositories": [
         {
-            "name": "w4os/w4os-engine",
+            "name": "way4os/w4os-engine",
             "url": "../opensim-engine/",
             "type": "path",
             "options": {
@@ -53,7 +53,7 @@
             }
         },
         {
-            "name": "magicoli/opensim-rest-php",
+            "name": "way4os/opensim-rest-php",
             "url": "../opensim-rest-php/",
             "type": "path",
             "options": {
@@ -61,7 +61,7 @@
             }
         },
         {
-            "name": "w4os/w4os-views",
+            "name": "way4os/w4os-views",
             "url": "../w4os-views/",
             "type": "path",
             "options": {
@@ -96,13 +96,16 @@
     "minimum-stability": "dev",
     "scripts": {
         "test": "pest",
-        "logos": "php -r 'if (getenv(\"COMPOSER_DEV_MODE\") === \"0\") { exit; } foreach (glob(\"vendor/w4os/w4os-engine/share/images/logos/*.png\") ?: [] as $logo) { copy($logo, \"assets/images/logos/\" . basename($logo)); }'",
+        "logos": "php -r 'if (getenv(\"COMPOSER_DEV_MODE\") === \"0\") { exit; } foreach (glob(\"vendor/way4os/w4os-engine/share/images/logos/*.png\") ?: [] as $logo) { copy($logo, \"assets/images/logos/\" . basename($logo)); }'",
         "post-install-cmd": [
             "@logos"
         ],
         "post-update-cmd": [
             "@logos"
         ]
+    },
+    "replace": {
+        "magicoli/opensim-helpers": "self.version"
     },
     "suggest": {
         "ext-gettext": "translations of the messages, which stay in English without it",
